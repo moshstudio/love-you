@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npx drizzle-kit generate:*)",
+      "Bash(npm run dev)",
+      "Bash(tasklist:*)",
+      "Bash(findstr:*)",
+      "Bash(taskkill:*)",
+      "Bash(powershell:*)",
+      "Bash(npx wrangler build:*)",
+      "Bash(npx opennextjs-cloudflare build:*)",
+      "Bash(handle.exe:*)",
+      "Bash(dir:*)"
+    ]
+  }
+}

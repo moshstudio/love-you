@@ -1,0 +1,218 @@
+{
+  "Navigation": {
+    "brand": "Love You",
+    "login": "Login",
+    "register": "Register"
+  },
+  "Home": {
+    "heroTitle": "Capture Your Memories",
+    "heroDescription": "Save all your photos, trips, and stories in one beautiful place. Share with loved ones through magical links and stunning visual effects.",
+    "getStarted": "Get Started Free",
+    "features": {
+      "upload": {
+        "title": "Upload Photos",
+        "description": "Easily upload and organize your photos into beautiful albums with captions and locations."
+      },
+      "stories": {
+        "title": "Write Stories",
+        "description": "Document your journey with beautiful stories that accompany your photos and memories."
+      },
+      "share": {
+        "title": "Share & Celebrate",
+        "description": "Generate shareable links to let friends and family view your albums with special effects."
+      }
+    },
+    "effects": {
+      "title": "Special Effects",
+      "christmas": {
+        "title": "Christmas Tree",
+        "description": "Display your photos in a beautiful Christmas tree formation with festive effects."
+      },
+      "comingSoon": {
+        "title": "More Coming Soon",
+        "description": "We're constantly adding new and exciting ways to display your memories."
+      }
+    },
+    "cta": {
+      "title": "Ready to Start Your Journey?",
+      "description": "Create your account today and start sharing your memories with the world.",
+      "button": "Sign Up Now"
+    },
+    "footer": "© 2024 Love You. All rights reserved.",
+    "loading": "Loading..."
+  },
+  "Login": {
+    "subtitle": "Welcome back, romantic soul",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign In",
+    "submitting": "Logging in...",
+    "noAccount": "Don't have an account?",
+    "createAccount": "Create one",
+    "placeholders": {
+      "email": "your@email.com",
+      "password": "••••••••"
+    },
+    "errorCredentials": "Invalid email or password"
+  },
+  "Register": {
+    "title": "Join Love You",
+    "subtitle": "Start your romantic journey",
+    "email": "Email",
+    "username": "Username",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "submit": "Create Account",
+    "submitting": "Registering...",
+    "hasAccount": "Already have an account?",
+    "login": "Login here",
+    "errorMismatch": "Passwords do not match",
+    "errorGeneric": "Registration failed",
+    "placeholders": {
+      "email": "your@email.com",
+      "username": "your username",
+      "password": "••••••••"
+    }
+  },
+  "Albums": {
+    "title": "Your Albums",
+    "greeting": "Hello",
+    "logout": "Logout",
+    "newAlbum": "New Album",
+    "cancel": "Cancel",
+    "noAlbums": {
+      "title": "No albums found",
+      "description": "Start collecting your memories by creating your first album.",
+      "create": "Create one now"
+    },
+    "viewAlbum": "View Album",
+    "form": {
+      "title": "Create New Album",
+      "name": "Title",
+      "description": "Description",
+      "location": "Location",
+      "startDate": "Start",
+      "endDate": "End",
+      "submit": "Create Album",
+      "placeholders": {
+        "title": "e.g. Summer Trip 2026",
+        "description": "Write something special about this album...",
+        "location": "Where did you go?"
+      }
+    }
+  },
+  "AlbumDetail": {
+    "backToAlbums": "← Back to Albums",
+    "location": "📍 {location}",
+    "loading": "Loading...",
+    "notFound": "Album not found",
+    "uploadPhoto": "Upload Photo",
+    "addStory": "Add Story",
+    "shareAlbum": "Share Album",
+    "cancel": "Cancel",
+    "upload": {
+      "title": "Upload Photo",
+      "fileLabel": "Photo *",
+      "photo": "Photo",
+      "captionLabel": "Caption",
+      "captionPlaceholder": "Photo caption",
+      "submit": "Upload",
+      "errorFile": "Please select a file",
+      "errorGeneric": "Failed to upload photo"
+    },
+    "story": {
+      "title": "Add Story",
+      "titleLabel": "Title *",
+      "titlePlaceholder": "Story title",
+      "contentLabel": "Content *",
+      "contentPlaceholder": "Your story...",
+      "submit": "Add Story",
+      "errorGeneric": "Failed to create story"
+    },
+    "share": {
+      "title": "Share Album",
+      "instruction": "Share this link with others:",
+      "copyLink": "Copy Link",
+      "generateLink": "Generate Share Link",
+      "close": "Close",
+      "copied": "Link copied to clipboard!",
+      "errorGeneric": "Failed to create share link"
+    },
+    "tabs": {
+      "photos": "Photos ({count})",
+      "stories": "Stories ({count})"
+    },
+    "empty": {
+      "photos": "No photos yet. Upload one to get started!",
+      "stories": "No stories yet. Add one to get started!"
+    },
+    "delete": {
+      "confirmPhoto": "Are you sure you want to delete this photo?",
+      "confirmStory": "Are you sure you want to delete this story?",
+      "errorPhoto": "Failed to delete photo",
+      "errorStory": "Failed to delete story",
+      "button": "Delete"
+    }
+  },
+  "Game": {
+    "UI": {
+      "systemOnline": "LOVE-YOU // SYSTEM_ONLINE",
+      "locUnknown": "LOC: UNKNOWN",
+      "time": "TIME",
+      "initialize": "Initialize System",
+      "project": "PROJECT",
+      "initializingUplink": "INITIALIZING UPLINK...",
+      "selectMission": "SELECT MISSION",
+      "uploadMemory": "UPLOAD MEMORY",
+      "uploadMemorySub": "Encrypt and store visual data",
+      "accessArchives": "ACCESS ARCHIVES",
+      "accessArchivesSub": "Retrieve stored memory fragments",
+      "dataSecured": "DATA SECURED",
+      "memoryIntegrated": "Memory fragment successfully integrated into the core.",
+      "returnToRoot": "RETURN TO ROOT",
+      "uploadProtocol": "UPLOAD_PROTOCOL",
+      "abort": "ABORT",
+      "dragData": "DRAG VISUAL DATA HERE",
+      "clickToTransfer": "OR CLICK TO INITIATE TRANSFER",
+      "encrypting": "ENCRYPTING_PACKET...",
+      "analyzingBitmap": "ANALYZING BITMAP...",
+      "metadataExtracted": "METADATA EXTRACTED",
+      "locationSecured": "LOCATION SECURED",
+      "readyForUplink": "READY FOR UPLINK",
+      "targetLocked": "TARGET_LOCKED",
+      "recording": "RECORDING",
+      "liveFeed": "LIVE_FEED",
+      "noData": "NO_DATA",
+      "memoryStored": "MEMORY_STORED",
+      "coordinates": "COORDINATES: SECTOR 7G",
+      "delete": "DELETE",
+      "deleting": "DELETING...",
+      "confirmDelete": "CONFIRM DELETION: This action cannot be undone. Purge memory fragment?",
+      "incomingTransmission": "Incoming Transmission Datastream",
+      "viewArchives": "VIEW ARCHIVES"
+    },
+    "HUD": {
+      "gps": "GPS",
+      "locked": "LOCKED",
+      "time": "TIME",
+      "synced": "SYNCED",
+      "lens": "LENS",
+      "size": "SIZE",
+      "logs": {
+        "0": "INITIALIZING NEURAL NET...",
+        "1": "LOADING MODEL: VISION-R1...",
+        "2": "DETECTING OBJECTS...",
+        "3": "FOUND: HUMAN FACE (CONFIDENCE 98%)",
+        "4": "FOUND: SMILE (HAPPINESS INDEX 0.9)",
+        "5": "ANALYZING EXIF DATA...",
+        "6": "ISO: 400 | APERTURE: f/1.8",
+        "7": "LOCATION DATA: TRIANGULATING...",
+        "8": "COORDINATES LOCKED: 34.05°N, 118.25°W",
+        "9": "CONTEXT: OUTDOOR / DAYLIGHT",
+        "10": "SENTIMENT ANALYSIS: POSITIVE",
+        "11": "MEMORIZING...",
+        "12": "COMPLETED."
+      }
+    }
+  }
+}
