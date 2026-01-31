@@ -1,5 +1,23 @@
-// ... imports
+"use client";
+
+import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
+import { motion } from "framer-motion";
+import { MapPin, Image as ImageIcon, ArrowLeft, Trash2 } from "lucide-react";
 import { albumsApi } from "@/lib/api";
+
+interface Photo {
+  id: string;
+  url: string;
+  caption?: string;
+  latitude?: number;
+  longitude?: number;
+}
+
+interface ArchivesViewProps {
+  albumId: string;
+  onBack: () => void;
+}
 
 interface Album {
   id: string;
@@ -8,14 +26,16 @@ interface Album {
   location?: string;
 }
 
-// ... existing Photo interface
-
 export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
   const t = useTranslations("Game.UI");
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [album, setAlbum] = useState<Album | null>(null);
   const [loading, setLoading] = useState(true);
-  // ... other states
+  const [showDeleteAlbumConfirm, setShowDeleteAlbumConfirm] = useState(false);
+  const [isDeletingAlbum, setIsDeletingAlbum] = useState(false);
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -46,7 +66,38 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
     fetchData();
   }, [albumId]);
 
-  // ... handleDelete
+  const handleDelete = async () => {
+    if (!selectedPhoto) return;
+    try {
+      setDeleting(true);
+      const res = await fetch(`/api/photos?id=${selectedPhoto.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setPhotos(photos.filter((p) => p.id !== selectedPhoto.id));
+        setSelectedPhoto(null);
+        setShowDeleteConfirm(false);
+      }
+    } catch (error) {
+      console.error("Failed to delete photo", error);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const handleDeleteAlbum = async () => {
+    if (!albumId) return;
+    try {
+      setIsDeletingAlbum(true);
+      await albumsApi.delete(albumId);
+      onBack();
+    } catch (error) {
+      console.error("Failed to delete album", error);
+    } finally {
+      setIsDeletingAlbum(false);
+      setShowDeleteAlbumConfirm(false);
+    }
+  };
 
   return (
     <div className='w-full max-w-6xl mx-auto p-4 z-20 h-full flex flex-col'>
@@ -70,13 +121,22 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
             </p>
           )}
         </div>
-        <button
-          onClick={onBack}
-          className='flex items-center gap-2 px-4 py-2 border border-slate-700 hover:border-cyan-500 text-slate-400 hover:text-cyan-400 transition-all group'
-        >
-          <ArrowLeft className='w-4 h-4 group-hover:-translate-x-1 transition-transform' />
-          [ {t("returnToRoot")} ]
-        </button>
+        <div className='flex items-center gap-3'>
+          <button
+            onClick={() => setShowDeleteAlbumConfirm(true)}
+            className='flex items-center gap-2 px-4 py-2 border border-red-900/30 hover:border-red-500 text-red-700 hover:text-red-400 transition-all font-mono text-xs'
+            title={t("delete")}
+          >
+            <Trash2 className='w-4 h-4' />[ {t("delete")} ]
+          </button>
+          <button
+            onClick={onBack}
+            className='flex items-center gap-2 px-4 py-2 border border-slate-700 hover:border-cyan-500 text-slate-400 hover:text-cyan-400 transition-all group'
+          >
+            <ArrowLeft className='w-4 h-4 group-hover:-translate-x-1 transition-transform' />
+            [ {t("returnToRoot")} ]
+          </button>
+        </div>
       </div>
 
       {/* Content */}
@@ -117,12 +177,14 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
                       ? t("incomingTransmission")
                       : photo.caption}
                   </p>
-                  {photo.latitude && (
-                    <div className='flex items-center gap-1 text-[10px] text-slate-400 mt-1 font-mono'>
-                      <MapPin className='w-3 h-3' />
-                      {photo.latitude.toFixed(4)}, {photo.longitude.toFixed(4)}
-                    </div>
-                  )}
+                  {photo.latitude !== undefined &&
+                    photo.longitude !== undefined && (
+                      <div className='flex items-center gap-1 text-[10px] text-slate-400 mt-1 font-mono'>
+                        <MapPin className='w-3 h-3' />
+                        {photo.latitude.toFixed(4)},{" "}
+                        {photo.longitude.toFixed(4)}
+                      </div>
+                    )}
                 </div>
 
                 {/* Corner Accents */}
@@ -225,6 +287,47 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
                 </motion.div>
               </div>
             )}
+          </motion.div>
+        </div>
+      )}
+      {/* Album Delete Confirmation Modal */}
+      {showDeleteAlbumConfirm && (
+        <div
+          className='fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm'
+          onClick={() => setShowDeleteAlbumConfirm(false)}
+        >
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className='bg-slate-900 border border-red-500/50 p-6 rounded-lg max-w-sm w-full shadow-[0_0_30px_rgba(239,68,68,0.2)]'
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className='flex items-center gap-3 text-red-500 mb-4 border-b border-red-900/30 pb-2'>
+              <Trash2 className='w-6 h-6 animate-pulse' />
+              <h3 className='text-lg font-bold tracking-wider font-mono'>
+                WARNING: DELETE ALBUM
+              </h3>
+            </div>
+            <p className='text-slate-300 font-mono text-sm leading-relaxed mb-6'>
+              {t("confirmDelete")}
+            </p>
+            <div className='flex gap-3 justify-end'>
+              <button
+                onClick={() => setShowDeleteAlbumConfirm(false)}
+                className='px-4 py-2 bg-slate-800 border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-all text-xs font-mono tracking-wide'
+                disabled={isDeletingAlbum}
+              >
+                [ ABORT ]
+              </button>
+              <button
+                onClick={handleDeleteAlbum}
+                className='px-4 py-2 bg-red-900/20 border border-red-500 text-red-400 hover:bg-red-900/40 hover:text-red-200 hover:shadow-[0_0_10px_rgba(239,68,68,0.4)] transition-all text-xs font-mono tracking-wide flex items-center gap-2'
+                disabled={isDeletingAlbum}
+              >
+                {isDeletingAlbum && <span className='animate-spin'>/</span>}[
+                CONFIRM_ERASE ]
+              </button>
+            </div>
           </motion.div>
         </div>
       )}

@@ -31,7 +31,7 @@ export default function RegisterPage() {
 
     try {
       await register(email, username, password);
-      router.push("/albums");
+      router.push("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errorGeneric"));
     } finally {

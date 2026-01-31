@@ -53,6 +53,9 @@ export default function AlbumDetailPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
   const t = useTranslations("AlbumDetail");
+  const gameT = useTranslations("Game.UI");
+
+  const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
 
   const [album, setAlbum] = useState<Album | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -65,6 +68,13 @@ export default function AlbumDetailPage() {
   const [shareUrl, setShareUrl] = useState("");
   const [showShareModal, setShowShareModal] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showItemDeleteModal, setShowItemDeleteModal] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState<{
+    id: string;
+    type: "photo" | "story";
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -115,15 +125,9 @@ export default function AlbumDetailPage() {
     }
   };
 
-  const handleDeletePhoto = async (photoId: string) => {
-    if (!confirm(t("delete.confirmPhoto"))) return;
-
-    try {
-      await photosApi.delete(photoId);
-      loadAlbumData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t("delete.errorPhoto"));
-    }
+  const handleDeletePhoto = (photoId: string) => {
+    setItemToDelete({ id: photoId, type: "photo" });
+    setShowItemDeleteModal(true);
   };
 
   const handleCreateStory = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -141,14 +145,37 @@ export default function AlbumDetailPage() {
     }
   };
 
-  const handleDeleteStory = async (storyId: string) => {
-    if (!confirm(t("delete.confirmStory"))) return;
+  const handleDeleteStory = (storyId: string) => {
+    setItemToDelete({ id: storyId, type: "story" });
+    setShowItemDeleteModal(true);
+  };
+
+  const handleConfirmItemDelete = async () => {
+    if (!itemToDelete) return;
 
     try {
-      await storiesApi.delete(storyId);
+      setIsDeleting(true);
+      if (itemToDelete.type === "photo") {
+        await photosApi.delete(itemToDelete.id);
+        if (selectedPhoto?.id === itemToDelete.id) {
+          setSelectedPhoto(null);
+        }
+      } else {
+        await storiesApi.delete(itemToDelete.id);
+      }
       loadAlbumData();
+      setShowItemDeleteModal(false);
+      setItemToDelete(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("delete.errorStory"));
+      setError(
+        err instanceof Error
+          ? err.message
+          : t(
+              `delete.error${itemToDelete.type === "photo" ? "Photo" : "Story"}`,
+            ),
+      );
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -160,6 +187,19 @@ export default function AlbumDetailPage() {
       setShareUrl(response.shareUrl);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("share.errorGeneric"));
+    }
+  };
+
+  const handleDeleteAlbum = async () => {
+    try {
+      setIsDeleting(true);
+      await albumsApi.delete(albumId);
+      router.push("/albums");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to delete album");
+      setShowDeleteModal(false);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -271,6 +311,15 @@ export default function AlbumDetailPage() {
                   <Share2 className='w-4 h-4' />
                   {t("shareAlbum")}
                 </button>
+                <div className='pt-4 border-t border-slate-800/50 mt-4'>
+                  <button
+                    onClick={() => setShowDeleteModal(true)}
+                    className='w-full flex items-center gap-3 px-4 py-3 border border-red-900/30 hover:border-red-500 hover:bg-red-500/10 text-red-700 hover:text-red-500 transition-all text-xs font-bold tracking-wider uppercase text-left'
+                  >
+                    <Trash2 className='w-4 h-4' />
+                    {gameT("delete")}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -431,7 +480,8 @@ export default function AlbumDetailPage() {
                         key={photo.id}
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        className='group relative bg-black border border-slate-800 hover:border-cyan-500/50 transition-all aspect-square overflow-hidden'
+                        onClick={() => setSelectedPhoto(photo)}
+                        className='group relative bg-black border border-slate-800 hover:border-cyan-500/50 transition-all aspect-square overflow-hidden cursor-pointer'
                       >
                         <img
                           src={photo.url}
@@ -447,7 +497,10 @@ export default function AlbumDetailPage() {
                           )}
                           <div className='flex justify-end pt-2 border-t border-slate-700/50'>
                             <button
-                              onClick={() => handleDeletePhoto(photo.id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeletePhoto(photo.id);
+                              }}
                               className='text-red-500 hover:text-red-400 p-1 hover:bg-red-900/20 rounded transition'
                               title={t("delete.button")}
                             >
@@ -583,6 +636,151 @@ export default function AlbumDetailPage() {
               >
                 <X className='w-5 h-5' />
               </button>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Image Viewer Modal */}
+      <AnimatePresence>
+        {selectedPhoto && (
+          <div
+            className='fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4'
+            onClick={() => setSelectedPhoto(null)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className='max-w-4xl w-full max-h-[90vh] flex flex-col bg-slate-900 border border-slate-700 rounded-lg overflow-hidden relative'
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className='relative flex-1 overflow-hidden bg-center bg-no-repeat bg-contain bg-black'>
+                <img
+                  src={selectedPhoto.url}
+                  alt={selectedPhoto.caption}
+                  className='w-full h-full object-contain'
+                />
+              </div>
+              <div className='p-4 border-t border-slate-800 bg-slate-900/50 backdrop-blur'>
+                <h3 className='text-xl font-bold text-white mb-1 font-mono'>
+                  {selectedPhoto.caption === "Incoming Transmission Datastream"
+                    ? gameT("incomingTransmission")
+                    : selectedPhoto.caption}
+                </h3>
+                <div className='flex justify-between items-end'>
+                  <div className='text-sm text-slate-400 font-mono space-y-1'>
+                    <div>ID: {selectedPhoto.id.substring(0, 8)}</div>
+                  </div>
+                  <div className='flex gap-2'>
+                    <button
+                      onClick={() => handleDeletePhoto(selectedPhoto.id)}
+                      className='px-4 py-2 border border-red-900/50 hover:border-red-500 text-red-700 hover:text-red-500 transition-colors text-sm font-mono flex items-center gap-2'
+                    >
+                      <Trash2 className='w-4 h-4' />[ {t("delete.button")} ]
+                    </button>
+                    <button
+                      onClick={() => setSelectedPhoto(null)}
+                      className='px-4 py-2 border border-slate-600 hover:border-white text-slate-300 hover:text-white transition-colors text-sm font-mono'
+                    >
+                      [ CLOSE_VIEWER ]
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+      {/* Delete Album Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <div
+            className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm'
+            onClick={() => setShowDeleteModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className='bg-slate-900 border border-red-500/50 p-6 rounded-lg max-w-sm w-full shadow-[0_0_30px_rgba(239,68,68,0.2)]'
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className='flex items-center gap-3 text-red-500 mb-4 border-b border-red-900/30 pb-2'>
+                <Trash2 className='w-6 h-6 animate-pulse' />
+                <h3 className='text-lg font-bold tracking-wider font-mono'>
+                  {gameT("warning")}: {gameT("deleteAlbum")}
+                </h3>
+              </div>
+              <p className='text-slate-300 font-mono text-sm leading-relaxed mb-6'>
+                {gameT("confirmDelete")}
+              </p>
+              <div className='flex gap-3 justify-end'>
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className='px-4 py-2 bg-slate-800 border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-all text-xs font-mono tracking-wide'
+                  disabled={isDeleting}
+                >
+                  [ {gameT("abort")} ]
+                </button>
+                <button
+                  onClick={handleDeleteAlbum}
+                  className='px-4 py-2 bg-red-900/20 border border-red-500 text-red-400 hover:bg-red-900/40 hover:text-red-200 hover:shadow-[0_0_10px_rgba(239,68,68,0.4)] transition-all text-xs font-mono tracking-wide flex items-center gap-2'
+                  disabled={isDeleting}
+                >
+                  {isDeleting && <span className='animate-spin'>/</span>}[
+                  {gameT("confirmErase")} ]
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Item Delete Modal */}
+      <AnimatePresence>
+        {showItemDeleteModal && (
+          <div
+            className='fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm'
+            onClick={() => setShowItemDeleteModal(false)}
+          >
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              className='bg-slate-900 border border-red-500/50 p-6 rounded-lg max-w-sm w-full shadow-[0_0_30px_rgba(239,68,68,0.2)]'
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className='flex items-center gap-3 text-red-500 mb-4 border-b border-red-900/30 pb-2'>
+                <Trash2 className='w-6 h-6 animate-pulse' />
+                <h3 className='text-lg font-bold tracking-wider font-mono'>
+                  {gameT("warning")}:{" "}
+                  {itemToDelete?.type === "photo"
+                    ? gameT("deletePhoto")
+                    : gameT("deleteStory")}
+                </h3>
+              </div>
+              <p className='text-slate-300 font-mono text-sm leading-relaxed mb-6'>
+                {itemToDelete?.type === "photo"
+                  ? t("delete.confirmPhoto")
+                  : t("delete.confirmStory")}
+              </p>
+              <div className='flex gap-3 justify-end'>
+                <button
+                  onClick={() => setShowItemDeleteModal(false)}
+                  className='px-4 py-2 bg-slate-800 border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-all text-xs font-mono tracking-wide'
+                  disabled={isDeleting}
+                >
+                  [ {gameT("abort")} ]
+                </button>
+                <button
+                  onClick={handleConfirmItemDelete}
+                  className='px-4 py-2 bg-red-900/20 border border-red-500 text-red-400 hover:bg-red-900/40 hover:text-red-200 hover:shadow-[0_0_10px_rgba(239,68,68,0.4)] transition-all text-xs font-mono tracking-wide flex items-center gap-2'
+                  disabled={isDeleting}
+                >
+                  {isDeleting && <span className='animate-spin'>/</span>}[
+                  {gameT("confirmErase")} ]
+                </button>
+              </div>
             </motion.div>
           </div>
         )}

@@ -188,6 +188,11 @@
       "delete": "删除",
       "deleting": "删除中...",
       "confirmDelete": "确认删除：此操作无法撤销。是否清除记忆碎片？",
+      "warning": "警告",
+      "confirmErase": "确认擦除",
+      "deleteAlbum": "删除相册",
+      "deletePhoto": "删除照片",
+      "deleteStory": "删除故事",
       "incomingTransmission": "接收传输数据流",
       "viewArchives": "查看档案"
     },

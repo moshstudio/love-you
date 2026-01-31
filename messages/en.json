@@ -188,6 +188,11 @@
       "delete": "DELETE",
       "deleting": "DELETING...",
       "confirmDelete": "CONFIRM DELETION: This action cannot be undone. Purge memory fragment?",
+      "warning": "WARNING",
+      "confirmErase": "CONFIRM ERASE",
+      "deleteAlbum": "DELETE ALBUM",
+      "deletePhoto": "DELETE PHOTO",
+      "deleteStory": "DELETE STORY",
       "incomingTransmission": "Incoming Transmission Datastream",
       "viewArchives": "VIEW ARCHIVES"
     },

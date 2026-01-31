@@ -1,5 +1,5 @@
-import GameUI from "@/components/game/GameUI";
+import LandingPage from "@/components/game/LandingPage";
 
 export default function Home() {
-  return <GameUI />;
+  return <LandingPage />;
 }

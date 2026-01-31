@@ -25,7 +25,7 @@ export default function LoginPage() {
     try {
       await login(email, password);
       router.refresh();
-      router.push("/albums");
+      router.push("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

@@ -15,7 +15,6 @@ import {
   FolderOpen,
   X,
   ChevronRight,
-  Trash2,
 } from "lucide-react";
 
 interface Album {
@@ -40,8 +39,6 @@ export default function AlbumsPage() {
     startDate: "",
     endDate: "",
   });
-  const [albumToDelete, setAlbumToDelete] = useState<string | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const { user, loading: authLoading, logout } = useAuth();
   const t = useTranslations("Albums");
@@ -92,20 +89,6 @@ export default function AlbumsPage() {
       loadAlbums();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create album");
-    }
-  };
-
-  const handleDeleteAlbum = async () => {
-    if (!albumToDelete) return;
-    try {
-      setIsDeleting(true);
-      await albumsApi.delete(albumToDelete);
-      setAlbumToDelete(null);
-      loadAlbums();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete album");
-    } finally {
-      setIsDeleting(false);
     }
   };
 
@@ -177,28 +160,30 @@ export default function AlbumsPage() {
             </p>
           </div>
 
-          <button
-            onClick={() => setShowCreateForm(!showCreateForm)}
-            className={`
-                group flex items-center gap-2 px-6 py-3 font-bold text-sm tracking-wider uppercase border
-                transition-all duration-300
-                ${
-                  showCreateForm
-                    ? "border-red-500/50 text-red-400 hover:bg-red-900/10"
-                    : "border-cyan-500/50 text-cyan-400 hover:bg-cyan-900/10 hover:shadow-[0_0_15px_rgba(34,211,238,0.2)]"
-                }
-            `}
-          >
-            {showCreateForm ? (
-              <>
-                <X className='w-4 h-4' />[ {t("cancel")} ]
-              </>
-            ) : (
-              <>
-                <Plus className='w-4 h-4' />[ {t("newAlbum")} ]
-              </>
-            )}
-          </button>
+          <div className='flex gap-4'>
+            <button
+              onClick={() => setShowCreateForm(!showCreateForm)}
+              className={`
+                  group flex items-center gap-2 px-6 py-3 font-bold text-sm tracking-wider uppercase border
+                  transition-all duration-300
+                  ${
+                    showCreateForm
+                      ? "border-red-500/50 text-red-400 hover:bg-red-900/10"
+                      : "border-cyan-500/50 text-cyan-400 hover:bg-cyan-900/10 hover:shadow-[0_0_15px_rgba(34,211,238,0.2)]"
+                  }
+              `}
+            >
+              {showCreateForm ? (
+                <>
+                  <X className='w-4 h-4' />[ {t("cancel")} ]
+                </>
+              ) : (
+                <>
+                  <Plus className='w-4 h-4' />[ {t("newAlbum")} ]
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* Create Album Form */}
@@ -379,22 +364,11 @@ export default function AlbumsPage() {
                     </div>
                   )}
 
-                  {/* Overlay Stats & Actions */}
+                  {/* Overlay Stats */}
                   <div className='absolute top-2 right-2 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity'>
                     <div className='bg-black/70 border border-cyan-500/30 text-cyan-400 text-[10px] px-2 py-1 font-mono'>
                       ID: {album.id.substring(0, 6)}
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        setAlbumToDelete(album.id);
-                      }}
-                      className='bg-red-900/80 border border-red-500/50 text-red-400 p-1 hover:bg-red-800 hover:text-white transition-colors'
-                      title={gameT("delete")}
-                    >
-                      <Trash2 className='w-3 h-3' />
-                    </button>
                   </div>
                 </div>
 
@@ -435,46 +409,7 @@ export default function AlbumsPage() {
         )}
 
         {/* Delete Confirmation Modal */}
-        {albumToDelete && (
-          <div
-            className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm'
-            onClick={() => setAlbumToDelete(null)}
-          >
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className='bg-slate-900 border border-red-500/50 p-6 rounded-lg max-w-sm w-full shadow-[0_0_30px_rgba(239,68,68,0.2)]'
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className='flex items-center gap-3 text-red-500 mb-4 border-b border-red-900/30 pb-2'>
-                <Trash2 className='w-6 h-6 animate-pulse' />
-                <h3 className='text-lg font-bold tracking-wider font-mono'>
-                  WARNING: DELETE ALBUM
-                </h3>
-              </div>
-              <p className='text-slate-300 font-mono text-sm leading-relaxed mb-6'>
-                {gameT("confirmDelete")}
-              </p>
-              <div className='flex gap-3 justify-end'>
-                <button
-                  onClick={() => setAlbumToDelete(null)}
-                  className='px-4 py-2 bg-slate-800 border border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white transition-all text-xs font-mono tracking-wide'
-                  disabled={isDeleting}
-                >
-                  [ {gameT("abort")} ]
-                </button>
-                <button
-                  onClick={handleDeleteAlbum}
-                  className='px-4 py-2 bg-red-900/20 border border-red-500 text-red-400 hover:bg-red-900/40 hover:text-red-200 hover:shadow-[0_0_10px_rgba(239,68,68,0.4)] transition-all text-xs font-mono tracking-wide flex items-center gap-2'
-                  disabled={isDeleting}
-                >
-                  {isDeleting && <span className='animate-spin'>/</span>}[
-                  CONFIRM_ERASE ]
-                </button>
-              </div>
-            </motion.div>
-          </div>
-        )}
+        {/* Delete Confirmation Modal removed */}
       </main>
     </div>
   );

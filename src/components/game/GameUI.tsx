@@ -229,7 +229,7 @@ export default function GameUI() {
               />
             )}
 
-            {gameState === "ARCHIVES" && (
+            {gameState === "ARCHIVES" && selectedAlbumId && (
               <ArchivesView
                 albumId={selectedAlbumId}
                 onBack={() => setGameState("ALBUMS_LIST")}
