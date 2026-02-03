@@ -2,12 +2,22 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Copy, MapPin, Clock, Aperture } from "lucide-react";
+import { Heart, Stars, Sparkles, Camera } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface AnalysisHUDProps {
   onComplete: () => void;
 }
+
+const HeartIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox='0 0 24 24'
+    fill='currentColor'
+    className={className}
+  >
+    <path d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' />
+  </svg>
+);
 
 export function AnalysisHUD({ onComplete }: AnalysisHUDProps) {
   const t = useTranslations("Game");
@@ -32,82 +42,87 @@ export function AnalysisHUD({ onComplete }: AnalysisHUDProps) {
 
   return (
     <div className='w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 z-20'>
-      {/* Visual Placeholder (The Image being Scanned) */}
+      {/* Visual Placeholder (The Memory being integrated) */}
       <motion.div
-        initial={{ opacity: 0, x: -50 }}
-        animate={{ opacity: 1, x: 0 }}
-        className='aspect-square bg-slate-900/80 border border-slate-700 rounded-lg relative overflow-hidden flex items-center justify-center p-4'
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className='aspect-square glass-panel rounded-3xl relative overflow-hidden flex items-center justify-center p-8'
       >
-        <div className='absolute inset-4 border border-cyan-500/30 rounded-lg'>
-          {/* Crosshairs */}
-          <div className='absolute top-0 left-1/2 -translate-x-1/2 h-4 w-px bg-cyan-500/50' />
-          <div className='absolute bottom-0 left-1/2 -translate-x-1/2 h-4 w-px bg-cyan-500/50' />
-          <div className='absolute left-0 top-1/2 -translate-y-1/2 w-4 h-px bg-cyan-500/50' />
-          <div className='absolute right-0 top-1/2 -translate-y-1/2 w-4 h-px bg-cyan-500/50' />
-        </div>
+        <div className='absolute inset-6 border-2 border-dashed border-rose-200/50 rounded-2xl animate-pulse' />
 
-        <div className='absolute top-4 right-4 text-xs text-cyan-500 font-mono flex flex-col items-end gap-1'>
+        {/* Decorative Hearts in corners */}
+        <HeartIcon className='absolute top-4 left-4 w-4 h-4 text-rose-300 opacity-40' />
+        <HeartIcon className='absolute top-4 right-4 w-4 h-4 text-rose-300 opacity-40' />
+        <HeartIcon className='absolute bottom-4 left-4 w-4 h-4 text-rose-300 opacity-40' />
+        <HeartIcon className='absolute bottom-4 right-4 w-4 h-4 text-rose-300 opacity-40' />
+
+        <div className='absolute top-6 right-6 text-[10px] text-rose-500 font-bold uppercase tracking-widest flex flex-col items-end gap-1'>
           <span>{t("UI.targetLocked")}</span>
-          <span className='animate-pulse'>{t("UI.recording")}</span>
+          <span className='animate-pulse text-rose-400'>
+            {t("UI.recording")}
+          </span>
         </div>
 
         <FileImagePlaceholder t={t} />
+
+        {/* Soft Scan Line */}
+        <motion.div
+          animate={{ y: [0, 300, 0] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          className='absolute left-0 right-0 h-10 bg-gradient-to-b from-transparent via-rose-300/20 to-transparent pointer-events-none'
+        />
       </motion.div>
 
       {/* Data Feed */}
       <motion.div
-        initial={{ opacity: 0, x: 50 }}
+        initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        className=' bg-black/60 border-l-2 border-cyan-500 p-6 font-mono text-sm relative'
+        className='p-8 rounded-3xl bg-white/30 dark:bg-rose-950/20 border border-rose-100/30 backdrop-blur-md relative overflow-hidden'
       >
-        <div className='absolute top-0 right-0 p-2 bg-cyan-900/20 text-cyan-400 text-xs'>
-          {t("UI.liveFeed")} //
+        <div className='absolute top-0 right-0 p-3 bg-rose-500 text-white text-[10px] font-bold tracking-widest uppercase rounded-bl-xl'>
+          {t("UI.liveFeed")}
         </div>
 
-        <div className='space-y-4'>
-          <div className='grid grid-cols-2 gap-4 mb-8'>
+        <div className='space-y-6'>
+          <div className='grid grid-cols-2 gap-3 mb-4'>
             <Metric
               label={t("HUD.gps")}
               value={t("HUD.locked")}
-              icon={MapPin}
-              color='text-green-400'
+              icon={Heart}
+              color='text-rose-500'
             />
             <Metric
               label={t("HUD.time")}
               value={t("HUD.synced")}
-              icon={Clock}
-              color='text-yellow-400'
+              icon={Sparkles}
+              color='text-amber-400'
             />
             <Metric
               label={t("HUD.lens")}
-              value='24mm'
-              icon={Aperture}
+              value='Full Focus'
+              icon={Camera}
               color='text-purple-400'
             />
             <Metric
-              label={t("HUD.size")}
-              value='4.2MB'
-              icon={Copy}
+              label='Sentiment'
+              value='Positive'
+              icon={Stars}
               color='text-blue-400'
             />
           </div>
 
-          <div className='h-64 overflow-y-auto space-y-1 pr-2 scrollbar-hide'>
+          <div className='h-64 overflow-y-auto space-y-2 pr-2 custom-scrollbar'>
             {dataLines.map((line, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
-                className='text-slate-300 border-b border-slate-800/50 pb-1'
+                className='text-rose-700 dark:text-rose-200 text-sm py-1 flex gap-3'
               >
-                <span className='text-slate-600 mr-2'>
-                  [{i.toString().padStart(2, "0")}]
-                </span>
+                <Heart className='w-3 h-3 mt-1 text-rose-400 flex-shrink-0' />
                 <span
                   className={
-                    // Check if line is the "COMPLETED" line (last one)
-                    // We compare with translated string for "COMPLETED" or just check index
-                    i === 12 ? "text-green-400 font-bold" : ""
+                    i === 12 ? "text-rose-600 dark:text-rose-400 font-bold" : ""
                   }
                 >
                   {line}
@@ -122,35 +137,36 @@ export function AnalysisHUD({ onComplete }: AnalysisHUDProps) {
   );
 }
 
-function Metric({ label, value, icon: Icon, color }: any) {
+interface MetricProps {
+  label: string;
+  value: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+}
+
+function Metric({ label, value, icon: Icon, color }: MetricProps) {
   return (
-    <div className='bg-slate-900/50 p-3 rounded border border-slate-800 flex items-center gap-3'>
+    <div className='bg-white/40 dark:bg-black/20 p-3 rounded-2xl border border-rose-100/50 flex items-center gap-3'>
       <Icon className={`w-5 h-5 ${color}`} />
       <div>
-        <div className='text-[10px] text-slate-500 tracking-wider'>{label}</div>
-        <div className='font-bold text-slate-200'>{value}</div>
+        <div className='text-[10px] text-rose-400/80 font-bold uppercase tracking-wider'>
+          {label}
+        </div>
+        <div className='font-bold text-rose-600 dark:text-rose-300 text-xs'>
+          {value}
+        </div>
       </div>
     </div>
   );
 }
 
-function FileImagePlaceholder({ t }: { t: any }) {
+function FileImagePlaceholder({ t }: { t: (key: string) => string }) {
   return (
-    <div className='text-slate-700 flex flex-col items-center'>
-      <svg
-        fill='none'
-        viewBox='0 0 24 24'
-        strokeWidth={1}
-        stroke='currentColor'
-        className='w-24 h-24 mb-2'
-      >
-        <path
-          strokeLinecap='round'
-          strokeLinejoin='round'
-          d='M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z'
-        />
-      </svg>
-      <span className='font-mono text-xs opacity-50'>{t("UI.noData")}</span>
+    <div className='text-rose-200 dark:text-rose-800 flex flex-col items-center'>
+      <HeartIcon className='w-24 h-24 mb-4 opacity-20' />
+      <span className='font-bold text-xs tracking-[0.2em] opacity-50 uppercase'>
+        {t("UI.noData")}
+      </span>
     </div>
   );
 }

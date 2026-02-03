@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 import { getDb } from "@/db";
-import { albums, users } from "@/db/schema";
+import { albums, users, photos } from "@/db/schema";
 import { auth } from "@/auth"; // Updated auth import
-import { eq } from "drizzle-orm";
+import { eq, getTableColumns, sql } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
@@ -18,11 +18,19 @@ export async function GET(request: NextRequest) {
     const db = getDb(env.DB);
 
     const userAlbums = await db
-      .select()
+      .select({
+        ...getTableColumns(albums),
+        latestPhotoUrl: sql<string>`(SELECT ${photos.url} FROM ${photos} WHERE ${photos.albumId} = ${albums.id} ORDER BY ${photos.uploadedAt} DESC LIMIT 1)`,
+      })
       .from(albums)
       .where(eq(albums.userId, userId));
 
-    return NextResponse.json(userAlbums);
+    const albumsWithCover = userAlbums.map((album) => ({
+      ...album,
+      coverPhotoUrl: album.coverPhotoUrl || album.latestPhotoUrl,
+    }));
+
+    return NextResponse.json(albumsWithCover);
   } catch (error) {
     console.error("Get albums error:", error);
     return NextResponse.json(
@@ -30,6 +38,14 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
+}
+
+interface CreateAlbumRequest {
+  title: string;
+  description?: string;
+  location?: string;
+  startDate?: string;
+  endDate?: string;
 }
 
 export async function POST(request: NextRequest) {
@@ -41,7 +57,7 @@ export async function POST(request: NextRequest) {
     const userId = session.user.id;
 
     const { title, description, location, startDate, endDate } =
-      (await request.json()) as any;
+      (await request.json()) as CreateAlbumRequest;
 
     if (!title) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });

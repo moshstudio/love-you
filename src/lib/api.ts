@@ -32,23 +32,6 @@ async function apiCall<T>(
   return response.json();
 }
 
-// Auth APIs
-export const authApi = {
-  // Register still uses manual call, but useAuth handles it via fetch directly now.
-  // We keep this for backward compatibility if used elsewhere.
-  register: (email: string, username: string, password: string) =>
-    apiCall("/auth/register", {
-      method: "POST",
-      body: JSON.stringify({ email, username, password }),
-    }),
-
-  login: (email: string, password: string) =>
-    apiCall("/auth/login", {
-      method: "POST",
-      body: JSON.stringify({ email, password }),
-    }),
-};
-
 // Albums APIs
 export const albumsApi = {
   list: () => apiCall("/albums", { method: "GET" }),

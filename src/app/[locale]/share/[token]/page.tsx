@@ -3,6 +3,18 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { shareApi } from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import ParticleBackground from "@/components/game/ParticleBackground";
+import {
+  Heart,
+  MapPin,
+  Image as ImageIcon,
+  FileText,
+  Sparkles,
+  X,
+  ArrowLeft,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface Album {
   id: string;
@@ -31,6 +43,8 @@ interface Story {
 export default function SharedAlbumPage() {
   const params = useParams();
   const token = params.token as string;
+  const detailT = useTranslations("AlbumDetail");
+  const gameT = useTranslations("Game.UI");
 
   const [album, setAlbum] = useState<Album | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
@@ -52,7 +66,11 @@ export default function SharedAlbumPage() {
       setPhotos(data.photos);
       setStories(data.stories);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load shared album");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "This shared link is no longer valid.",
+      );
     } finally {
       setLoading(false);
     }
@@ -60,158 +78,219 @@ export default function SharedAlbumPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
-        <div className="text-xl text-gray-600">Loading...</div>
+      <div className='min-h-screen flex items-center justify-center bg-background text-rose-500 font-sans'>
+        <div className='flex flex-col items-center gap-4'>
+          <div className='w-12 h-12 border-4 border-rose-100 border-t-rose-500 rounded-full animate-spin' />
+          <div className='text-xs tracking-widest animate-pulse font-bold uppercase'>
+            Opening Shared Memory...
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error || !album) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-purple-50">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-800 mb-4">Oops!</h1>
-          <p className="text-gray-600 text-lg">
-            {error || "This shared album is no longer available"}
+      <div className='min-h-screen flex items-center justify-center bg-background text-rose-500 font-sans p-6'>
+        <div className='text-center glass-panel p-12 rounded-[3.5rem] border-rose-100 max-w-sm'>
+          <div className='p-5 bg-rose-50 rounded-full inline-block mb-6'>
+            <Heart className='w-12 h-12 text-rose-300' />
+          </div>
+          <h1 className='text-3xl font-black text-rose-900 mb-4 tracking-tighter'>
+            Oops!
+          </h1>
+          <p className='text-rose-400 font-medium leading-relaxed mb-8'>
+            {error || "This shared story is no longer reachable."}
           </p>
+          <a
+            href='/'
+            className='text-rose-500 font-bold hover:underline uppercase text-xs tracking-widest'
+          >
+            Go back home
+          </a>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 to-purple-50">
+    <div className='min-h-screen bg-background text-foreground font-sans relative overflow-hidden selection:bg-rose-500/30'>
+      <ParticleBackground />
+
       {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-800">{album.title}</h1>
-          {album.description && (
-            <p className="text-gray-600 mt-2">{album.description}</p>
-          )}
-          {album.location && (
-            <p className="text-gray-500 mt-1">📍 {album.location}</p>
-          )}
+      <header className='fixed top-0 left-0 right-0 z-40 bg-white/20 dark:bg-black/20 backdrop-blur-md border-b border-rose-100/20'>
+        <div className='max-w-7xl mx-auto px-6 h-20 flex items-center justify-between'>
+          <div className='flex items-center gap-4'>
+            <div className='p-2 bg-rose-50 rounded-full'>
+              <Heart className='w-4 h-4 text-rose-500 fill-rose-500 animate-pulse' />
+            </div>
+            <h1 className='text-xl md:text-3xl font-black text-rose-900 dark:text-rose-100 truncate max-w-[200px] md:max-w-md tracking-tighter'>
+              {album.title}
+            </h1>
+          </div>
+          <div className='hidden sm:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-rose-300 bg-white/40 px-4 py-2 rounded-full border border-rose-100/50'>
+            Shared with Love
+          </div>
         </div>
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 py-12">
-        {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b">
-          <button
-            onClick={() => setActiveTab("photos")}
-            className={`px-4 py-2 font-bold transition ${
-              activeTab === "photos"
-                ? "text-pink-500 border-b-2 border-pink-500"
-                : "text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            Photos ({photos.length})
-          </button>
-          <button
-            onClick={() => setActiveTab("stories")}
-            className={`px-4 py-2 font-bold transition ${
-              activeTab === "stories"
-                ? "text-blue-500 border-b-2 border-blue-500"
-                : "text-gray-600 hover:text-gray-800"
-            }`}
-          >
-            Stories ({stories.length})
-          </button>
+      <main className='relative z-10 max-w-7xl mx-auto px-6 pt-32 pb-20'>
+        <div className='flex flex-col items-center mb-12 text-center'>
+          {album.description && (
+            <p className='text-rose-800/60 dark:text-rose-100/60 text-lg font-medium italic mb-6 max-w-3xl leading-relaxed'>
+              "{album.description}"
+            </p>
+          )}
+          <div className='flex items-center gap-6 text-[10px] font-black uppercase tracking-[0.2em] text-rose-300'>
+            {album.location && (
+              <span className='flex items-center gap-1.5'>
+                <MapPin className='w-3.5 h-3.5' /> {album.location}
+              </span>
+            )}
+            <span className='flex items-center gap-1.5'>
+              <ImageIcon className='w-3.5 h-3.5' /> {photos.length} MOMENTS
+            </span>
+          </div>
         </div>
 
-        {/* Photos Tab */}
-        {activeTab === "photos" && (
-          <div>
-            {photos.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-lg">
-                <p className="text-gray-600 text-lg">No photos in this album</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {photos.map((photo) => (
-                  <div
-                    key={photo.id}
-                    className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition cursor-pointer transform hover:scale-105"
-                    onClick={() => setSelectedPhoto(photo)}
-                  >
-                    <div className="aspect-square bg-gray-200 overflow-hidden">
-                      <img
-                        src={photo.url}
-                        alt={photo.caption || "Photo"}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    {photo.caption && (
-                      <div className="p-4">
-                        <p className="text-gray-700 line-clamp-2">{photo.caption}</p>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+        {/* Tabs */}
+        <div className='flex justify-center mb-10'>
+          <div className='flex gap-2 p-1.5 glass-panel rounded-full shelf-shadow border-rose-100/50'>
+            <button
+              onClick={() => setActiveTab("photos")}
+              className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${
+                activeTab === "photos"
+                  ? "bg-rose-500 text-white shadow-lg shadow-rose-200"
+                  : "text-rose-300 hover:text-rose-500 hover:bg-rose-50"
+              }`}
+            >
+              Glimpses ({photos.length})
+            </button>
+            <button
+              onClick={() => setActiveTab("stories")}
+              className={`px-8 py-3 rounded-full text-[10px] font-black uppercase tracking-wider transition-all ${
+                activeTab === "stories"
+                  ? "bg-rose-500 text-white shadow-lg shadow-rose-200"
+                  : "text-rose-300 hover:text-rose-500 hover:bg-rose-50"
+              }`}
+            >
+              Tales ({stories.length})
+            </button>
           </div>
-        )}
+        </div>
 
-        {/* Stories Tab */}
-        {activeTab === "stories" && (
-          <div>
-            {stories.length === 0 ? (
-              <div className="text-center py-12 bg-white rounded-lg">
-                <p className="text-gray-600 text-lg">No stories in this album</p>
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {stories.map((story) => (
-                  <div key={story.id} className="bg-white rounded-lg shadow-lg p-6">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
-                      {story.title}
-                    </h3>
-                    <p className="text-gray-700 whitespace-pre-wrap">
-                      {story.content}
-                    </p>
+        {/* Content */}
+        <AnimatePresence mode='wait'>
+          {activeTab === "photos" ? (
+            <motion.div
+              key='photos'
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8'
+            >
+              {photos.map((photo, index) => (
+                <motion.div
+                  key={photo.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                  onClick={() => setSelectedPhoto(photo)}
+                  className='group relative bg-white rounded-[2.5rem] p-3 border-4 border-white shadow-md hover:shadow-2xl hover:shadow-rose-100 transition-all cursor-pointer'
+                >
+                  <div className='aspect-square rounded-[2rem] overflow-hidden bg-rose-50'>
+                    <img
+                      src={photo.url}
+                      alt={photo.caption || "Memory"}
+                      className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-700'
+                    />
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                  <div className='absolute inset-4 rounded-[2rem] bg-rose-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center'>
+                    <div className='p-3 bg-white/90 rounded-full shadow-lg'>
+                      <Sparkles className='w-6 h-6 text-rose-500' />
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              key='stories'
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className='space-y-8 max-w-4xl mx-auto'
+            >
+              {stories.map((story) => (
+                <div
+                  key={story.id}
+                  className='glass-panel p-10 rounded-[3rem] relative border-rose-100 transition-all hover:bg-white hover:shadow-2xl hover:shadow-rose-50'
+                >
+                  <div className='text-[10px] text-rose-300 font-black uppercase tracking-[0.3em] mb-2'>
+                    STORY LOG
+                  </div>
+                  <h3 className='text-3xl font-black text-rose-900 mb-6 tracking-tighter'>
+                    {story.title}
+                  </h3>
+                  <p className='text-rose-800/80 dark:text-rose-100/80 whitespace-pre-wrap leading-relaxed font-medium text-lg italic italic-quote'>
+                    {story.content}
+                  </p>
+                </div>
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </main>
 
-      {/* Photo Modal */}
-      {selectedPhoto && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedPhoto(null)}
-        >
+      {/* Photo Viewer Modal */}
+      <AnimatePresence>
+        {selectedPhoto && (
           <div
-            className="bg-white rounded-lg shadow-xl max-w-4xl w-full"
-            onClick={(e) => e.stopPropagation()}
+            className='fixed inset-0 z-50 flex items-center justify-center bg-rose-950/40 backdrop-blur-md p-6'
+            onClick={() => setSelectedPhoto(null)}
           >
-            <div className="aspect-video bg-gray-200 overflow-hidden">
-              <img
-                src={selectedPhoto.url}
-                alt={selectedPhoto.caption || "Photo"}
-                className="w-full h-full object-contain"
-              />
-            </div>
-            {selectedPhoto.caption && (
-              <div className="p-6">
-                <p className="text-gray-700">{selectedPhoto.caption}</p>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className='max-w-5xl w-full max-h-[90vh] flex flex-col bg-white rounded-[3rem] shadow-2xl overflow-hidden relative border border-rose-100'
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className='relative flex-1 bg-rose-50/10 overflow-hidden'>
+                <img
+                  src={selectedPhoto.url}
+                  alt={selectedPhoto.caption}
+                  className='w-full h-full object-contain'
+                />
+                <button
+                  onClick={() => setSelectedPhoto(null)}
+                  className='absolute top-8 right-8 p-3 bg-white/80 hover:bg-white rounded-full shadow-lg transition-all text-rose-500'
+                >
+                  <ArrowLeft className='w-6 h-6' />
+                </button>
               </div>
-            )}
-            <div className="p-4 border-t flex justify-end">
-              <button
-                onClick={() => setSelectedPhoto(null)}
-                className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition"
-              >
-                Close
-              </button>
-            </div>
+              <div className='p-10 bg-white'>
+                <h3 className='text-3xl font-black text-rose-900 mb-2 tracking-tighter text-center'>
+                  {selectedPhoto.caption}
+                </h3>
+              </div>
+            </motion.div>
           </div>
-        </div>
-      )}
+        )}
+      </AnimatePresence>
+
+      {/* Footer */}
+      <footer className='relative z-10 py-12 text-center'>
+        <p className='text-rose-300 text-[10px] font-black uppercase tracking-widest'>
+          Keep your own memories safe with Love You.
+        </p>
+        <a
+          href='/register'
+          className='mt-4 inline-block px-8 py-3 bg-rose-50 text-rose-500 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-rose-100 transition-all'
+        >
+          Create Your story
+        </a>
+      </footer>
     </div>
   );
 }

@@ -7,6 +7,16 @@ import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 import ParticleBackground from "@/components/game/ParticleBackground";
 
+const HeartIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox='0 0 24 24'
+    fill='currentColor'
+    className={className}
+  >
+    <path d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z' />
+  </svg>
+);
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -34,29 +44,25 @@ export default function LoginPage() {
   };
 
   return (
-    <div className='relative min-h-screen flex items-center justify-center p-4 overflow-hidden font-mono text-cyan-500'>
+    <div className='relative min-h-screen flex items-center justify-center p-4 overflow-hidden font-sans selection:bg-rose-500/30'>
       <ParticleBackground />
-
-      {/* Decorative corner accents */}
-      <div className='fixed top-0 left-0 w-32 h-32 border-l-2 border-t-2 border-cyan-500/30 rounded-tl-3xl pointer-events-none' />
-      <div className='fixed bottom-0 right-0 w-32 h-32 border-r-2 border-b-2 border-cyan-500/30 rounded-br-3xl pointer-events-none' />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className='relative z-10 w-full max-w-md bg-slate-900/80 backdrop-blur-md border border-cyan-500/30 p-8 shadow-[0_0_50px_rgba(6,182,212,0.1)]'
+        className='relative z-10 w-full max-w-md glass-panel p-8 rounded-3xl shadow-xl'
       >
-        {/* Header decoration */}
-        <div className='absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-cyan-500 to-transparent opacity-50' />
-        <div className='absolute -top-3 left-4 bg-slate-900 px-2 text-xs tracking-widest text-cyan-500/70 border border-cyan-500/30'>
-          SYSTEM_ACCESS
+        <div className='flex justify-center mb-6'>
+          <div className='p-3 bg-rose-50 rounded-2xl'>
+            <HeartIcon className='w-8 h-8 text-rose-500 animate-pulse' />
+          </div>
         </div>
 
-        <h1 className='text-3xl font-black text-center mb-2 tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-500'>
+        <h1 className='text-3xl font-black text-center mb-2 tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-rose-400 via-rose-500 to-purple-500'>
           {navT("brand")}
         </h1>
-        <p className='text-center text-slate-400 mb-8 text-xs tracking-[0.2em] uppercase'>
+        <p className='text-center text-rose-400/80 mb-8 text-xs tracking-[0.2em] uppercase font-bold'>
           {t("subtitle")}
         </p>
 
@@ -65,70 +71,63 @@ export default function LoginPage() {
           className='space-y-6'
         >
           <div className='space-y-2'>
-            <label className='block text-xs font-bold tracking-widest text-cyan-400/80 uppercase'>
+            <label className='block text-xs font-bold tracking-widest text-rose-400 uppercase ml-1'>
               {t("email")}
             </label>
-            <div className='relative group'>
-              <input
-                type='email'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className='w-full bg-slate-800/50 border border-slate-700 text-cyan-100 px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors placeholder:text-slate-600'
-                placeholder={t("placeholders.email")}
-              />
-              {/* Corner accents for input */}
-              <div className='absolute top-0 right-0 w-2 h-2 border-t border-r border-slate-600 group-hover:border-cyan-500 transition-colors' />
-              <div className='absolute bottom-0 left-0 w-2 h-2 border-b border-l border-slate-600 group-hover:border-cyan-500 transition-colors' />
-            </div>
+            <input
+              type='email'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className='w-full bg-white/50 dark:bg-black/20 border border-rose-100 dark:border-rose-900/30 text-foreground px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition-all placeholder:text-rose-300'
+              placeholder={t("placeholders.email")}
+            />
           </div>
 
           <div className='space-y-2'>
-            <label className='block text-xs font-bold tracking-widest text-cyan-400/80 uppercase'>
+            <label className='block text-xs font-bold tracking-widest text-rose-400 uppercase ml-1'>
               {t("password")}
             </label>
-            <div className='relative group'>
-              <input
-                type='password'
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className='w-full bg-slate-800/50 border border-slate-700 text-cyan-100 px-4 py-3 focus:outline-none focus:border-cyan-500 transition-colors placeholder:text-slate-600'
-                placeholder={t("placeholders.password")}
-              />
-              <div className='absolute top-0 right-0 w-2 h-2 border-t border-r border-slate-600 group-hover:border-cyan-500 transition-colors' />
-              <div className='absolute bottom-0 left-0 w-2 h-2 border-b border-l border-slate-600 group-hover:border-cyan-500 transition-colors' />
-            </div>
+            <input
+              type='password'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className='w-full bg-white/50 dark:bg-black/20 border border-rose-100 dark:border-rose-900/30 text-foreground px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition-all placeholder:text-rose-300'
+              placeholder={t("placeholders.password")}
+            />
           </div>
 
           {error && (
-            <div className='bg-red-500/10 border border-red-500/50 text-red-400 px-4 py-3 text-sm flex items-center gap-2'>
-              <span className='animate-pulse'>⚠</span>
+            <div className='bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-900/30 text-red-500 px-4 py-3 rounded-xl text-sm flex items-center gap-2'>
+              <span className='animate-pulse'>❤</span>
               {error}
             </div>
           )}
 
           <motion.button
             type='submit'
-            whileHover={{ scale: 1.02 }}
+            whileHover={{
+              scale: 1.02,
+              boxShadow: "0 0 20px rgba(255, 107, 129, 0.2)",
+            }}
             whileTap={{ scale: 0.98 }}
             disabled={loading}
-            className='w-full bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/50 text-cyan-400 font-bold py-4 uppercase tracking-widest hover:shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all disabled:opacity-50 disabled:cursor-not-allowed group relative overflow-hidden'
+            className='w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-4 rounded-xl uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden'
           >
             <span className='relative z-10'>
-              [ {loading ? t("submitting") : t("submit")} ]
+              {loading ? t("submitting") : t("submit")}
             </span>
-            <div className='absolute inset-0 bg-gradient-to-r from-transparent via-cyan-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700' />
           </motion.button>
         </form>
 
-        <div className='text-center mt-8 text-slate-500 text-xs tracking-wider'>
+        <div className='text-center mt-8 text-rose-400/60 text-xs tracking-wider'>
           {t("noAccount")}{" "}
           <Link
             href='/register'
-            className='text-cyan-400 hover:text-cyan-300 font-bold ml-2 hover:underline decoration-cyan-500/30 underline-offset-4'
+            className='text-rose-500 hover:text-rose-600 font-bold ml-2 transition-colors'
           >
-            {t("createAccount")}P
+            {t("createAccount")}
           </Link>
         </div>
       </motion.div>

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
+import { Heart } from "lucide-react";
 
 export function Visualizer() {
   const t = useTranslations("Game.UI");
@@ -24,40 +25,48 @@ export function Visualizer() {
     };
 
     const draw = () => {
-      ctx.fillStyle = "rgba(0, 0, 0, 0.1)"; // Trails
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      if (!ctx) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
       const cx = canvas.width / 2;
       const cy = canvas.height / 2;
-      const radius = 100;
+      const radius = 80;
 
-      angle += 0.02;
+      angle += 0.03;
 
-      // Draw a "Galaxy" or "Tree" structure
-      for (let i = 0; i < 50; i++) {
-        const offset = (i / 50) * Math.PI * 2;
-        const r = radius + Math.sin(angle * 3 + offset * 5) * 20;
-
-        const x = cx + Math.cos(angle + offset) * r;
-        const y = cy + Math.sin(angle + offset) * r * 0.5; // Flattened for 3D effect
-
-        const size = Math.sin(angle + offset) * 2 + 3;
-        const alpha = (Math.sin(angle + offset) + 1) / 2;
+      // Draw pulsing romantic rings
+      for (let i = 0; i < 3; i++) {
+        const pulse = Math.sin(angle + i * 2) * 5;
+        const r = radius + i * 30 + pulse;
+        const alpha = 0.5 - i * 0.15;
 
         ctx.beginPath();
-        ctx.arc(x, y, size > 0 ? size : 0, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(34, 211, 238, ${alpha})`;
-        ctx.fill();
+        ctx.arc(cx, cy, r, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(255, 107, 129, ${alpha})`;
+        ctx.lineWidth = 2;
+        ctx.stroke();
 
-        // Vertical lines for "Tree" feel
-        if (i % 5 === 0) {
+        // Add some soft particles on the rings
+        for (let j = 0; j < 12; j++) {
+          const particleAngle = angle * (i + 1) * 0.5 + (j / 12) * Math.PI * 2;
+          const px = cx + Math.cos(particleAngle) * r;
+          const py = cy + Math.sin(particleAngle) * r;
+
           ctx.beginPath();
-          ctx.moveTo(x, y);
-          ctx.lineTo(x, y + 50);
-          ctx.strokeStyle = `rgba(167, 139, 250, ${alpha * 0.5})`;
-          ctx.stroke();
+          ctx.arc(px, py, 2, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(255, 182, 193, ${alpha + 0.2})`;
+          ctx.fill();
         }
       }
+
+      // Draw a central soft glow
+      const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+      gradient.addColorStop(0, "rgba(255, 182, 193, 0.4)");
+      gradient.addColorStop(1, "rgba(255, 255, 255, 0)");
+      ctx.fillStyle = gradient;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+      ctx.fill();
 
       animationId = requestAnimationFrame(draw);
     };
@@ -73,22 +82,29 @@ export function Visualizer() {
   }, []);
 
   return (
-    <div className='w-full h-96 relative flex items-center justify-center'>
-      <div className='absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent z-10' />
+    <div className='w-full h-96 relative flex items-center justify-center overflow-visible'>
       <canvas
         ref={canvasRef}
         className='w-full h-full'
       />
+      <div className='absolute inset-0 flex items-center justify-center'>
+        <motion.div
+          animate={{ scale: [1, 1.1, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <Heart className='w-20 h-20 text-rose-500 fill-rose-100/50' />
+        </motion.div>
+      </div>
       <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 2 }}
-        className='absolute bottom-10 text-center z-20'
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 1 }}
+        className='absolute bottom-0 text-center z-20'
       >
-        <h3 className='text-xl font-bold text-white mb-2'>
+        <h3 className='text-3xl font-black text-rose-500 mb-2'>
           {t("memoryStored")}
         </h3>
-        <p className='text-cyan-400 text-xs tracking-widest'>
+        <p className='text-rose-300 text-xs font-bold tracking-[0.3em] uppercase'>
           {t("coordinates")}
         </p>
       </motion.div>

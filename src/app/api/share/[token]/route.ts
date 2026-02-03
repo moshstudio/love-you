@@ -17,7 +17,7 @@ export async function GET(
     const link = await db
       .select()
       .from(sharedLinks)
-      .where(eq(sharedLinks.token, params.token))
+      .where(eq(sharedLinks.token, token))
       .limit(1);
 
     if (link.length === 0) {

@@ -59,8 +59,8 @@ export function useAuth() {
     await login(email, password);
   };
 
-  const logout = () => {
-    signOut({ callbackUrl: "/login" });
+  const logout = async () => {
+    await signOut({ redirect: false });
   };
 
   // Map NextAuth session user to our User interface

@@ -2,7 +2,7 @@
 
 import { useState, useRef, DragEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Upload, Scan, FileImage } from "lucide-react";
+import { Heart, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
 
 interface UploadMissionProps {
@@ -58,27 +58,27 @@ export function UploadMission({ onComplete, onBack }: UploadMissionProps) {
 
   return (
     <div className='w-full max-w-2xl mx-auto p-4 z-20'>
-      <div className='flex justify-between items-center mb-8 border-b border-cyan-900/50 pb-2'>
-        <h2 className='text-xl text-cyan-500 font-bold tracking-widest'>
-          // {t("uploadProtocol")}
+      <div className='flex justify-between items-center mb-10 border-b border-rose-100/50 pb-4'>
+        <h2 className='text-2xl text-rose-500 font-black tracking-tight'>
+          {t("uploadProtocol")}
         </h2>
         <button
           onClick={onBack}
-          className='text-slate-500 hover:text-white transition-colors text-sm'
+          className='text-rose-300 hover:text-rose-500 transition-colors text-sm font-bold uppercase tracking-widest'
         >
-          [ {t("abort")} ]
+          {t("abort")}
         </button>
       </div>
 
       <AnimatePresence mode='wait'>
         {!scanning ? (
           <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
+            initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             className={`
-              relative h-96 border-2 border-dashed rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all duration-300
-              ${isDragging ? "border-cyan-400 bg-cyan-900/20 shadow-[0_0_50px_rgba(34,211,238,0.2)]" : "border-slate-700 bg-black/40 hover:border-slate-500"}
+              relative h-96 border-4 border-dashed rounded-[3rem] flex flex-col items-center justify-center cursor-pointer transition-all duration-500
+              ${isDragging ? "border-rose-400 bg-rose-50 shadow-2xl shadow-rose-100" : "border-rose-100 bg-white/40 hover:border-rose-300 hover:bg-white/60"}
             `}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
@@ -93,22 +93,19 @@ export function UploadMission({ onComplete, onBack }: UploadMissionProps) {
               onChange={handleFileSelect}
             />
 
-            <div
-              className={`absolute inset-0 pointer-events-none transition-opacity duration-300 ${isDragging ? "opacity-100" : "opacity-0"}`}
+            <motion.div
+              animate={{ y: isDragging ? -10 : 0 }}
+              className='mb-6 bg-rose-100/50 p-6 rounded-full'
             >
-              <div className='absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-cyan-400'></div>
-              <div className='absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-cyan-400'></div>
-              <div className='absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-cyan-400'></div>
-              <div className='absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-cyan-400'></div>
-            </div>
+              <Heart
+                className={`w-16 h-16 ${isDragging ? "text-rose-500 fill-rose-200" : "text-rose-300"}`}
+              />
+            </motion.div>
 
-            <Upload
-              className={`w-16 h-16 mb-4 ${isDragging ? "text-cyan-400" : "text-slate-600"}`}
-            />
-            <p className='text-lg text-slate-300 font-mono tracking-wider'>
+            <p className='text-2xl text-rose-500 font-bold tracking-tight mb-2'>
               {t("dragData")}
             </p>
-            <p className='text-xs text-slate-500 mt-2'>
+            <p className='text-sm text-rose-300 font-medium'>
               {t("clickToTransfer")}
             </p>
           </motion.div>
@@ -116,48 +113,65 @@ export function UploadMission({ onComplete, onBack }: UploadMissionProps) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className='h-96 w-full flex flex-col items-center justify-center bg-black/60 border border-slate-700 rounded-lg relative overflow-hidden'
+            className='h-96 w-full flex flex-col items-center justify-center glass-panel border-rose-100 rounded-[3rem] relative overflow-hidden'
           >
-            {/* Scan line animation */}
-            <motion.div
-              animate={{ top: ["0%", "100%", "0%"] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-              className='absolute left-0 w-full h-1 bg-cyan-500/50 shadow-[0_0_20px_rgba(34,211,238,0.8)] z-10'
-            />
+            <div className='relative mb-8'>
+              <motion.div
+                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                transition={{ duration: 2, repeat: Infinity }}
+                className='absolute inset-0 bg-rose-200 blur-2xl rounded-full'
+              />
+              <Sparkles className='w-16 h-16 text-rose-500 relative z-10' />
+            </div>
 
-            <Scan className='w-16 h-16 text-cyan-400 animate-pulse mb-6' />
-
-            <div className='w-64 space-y-2'>
-              <div className='flex justify-between text-xs text-cyan-300 font-mono'>
+            <div className='w-64 space-y-4 text-center'>
+              <div className='flex justify-between text-xs text-rose-400 font-bold uppercase tracking-widest'>
                 <span>{t("encrypting")}</span>
                 <span>{Math.floor(progress)}%</span>
               </div>
-              <div className='h-1 bg-slate-800 w-full overflow-hidden'>
+              <div className='h-3 bg-rose-50 w-full rounded-full overflow-hidden shadow-inner'>
                 <motion.div
-                  className='h-full bg-cyan-500'
-                  style={{ width: `${progress}%` }}
+                  className='h-full bg-gradient-to-r from-rose-400 to-rose-500 rounded-full'
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progress}%` }}
                 />
               </div>
             </div>
 
-            <div className='mt-8 text-xs text-slate-500 font-mono text-left w-64 space-y-1'>
-              <p>
-                {">>"} {t("analyzingBitmap")}
+            <div className='mt-10 text-xs text-rose-400/80 font-bold text-center w-72 space-y-2 uppercase tracking-tight'>
+              <p className='flex items-center justify-center gap-2'>
+                <Heart className='w-3 h-3 fill-rose-200' />{" "}
+                {t("analyzingBitmap")}
               </p>
               {progress > 30 && (
-                <p className='text-cyan-600'>
-                  {">>"} {t("metadataExtracted")}
-                </p>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className='text-rose-500 flex items-center justify-center gap-2'
+                >
+                  <Heart className='w-3 h-3 fill-rose-300' />{" "}
+                  {t("metadataExtracted")}
+                </motion.p>
               )}
               {progress > 60 && (
-                <p className='text-cyan-600'>
-                  {">>"} {t("locationSecured")}
-                </p>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className='text-rose-500 flex items-center justify-center gap-2'
+                >
+                  <Heart className='w-3 h-3 fill-rose-400' />{" "}
+                  {t("locationSecured")}
+                </motion.p>
               )}
               {progress > 90 && (
-                <p className='text-green-500'>
-                  {">>"} {t("readyForUplink")}
-                </p>
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className='text-rose-600 flex items-center justify-center gap-2'
+                >
+                  <Heart className='w-3 h-3 fill-rose-500' />{" "}
+                  {t("readyForUplink")}
+                </motion.p>
               )}
             </div>
           </motion.div>

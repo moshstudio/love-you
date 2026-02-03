@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { albumsApi } from "@/lib/api";
 import { useTranslations } from "next-intl";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,11 +9,10 @@ import {
   Plus,
   MapPin,
   Camera,
-  FolderOpen,
+  FolderHeart,
   X,
   ChevronRight,
-  ArrowLeft,
-  Trash2,
+  Heart,
 } from "lucide-react";
 
 interface Album {
@@ -29,6 +29,12 @@ interface AlbumListProps {
   onSelectAlbum: (albumId: string) => void;
   onStartUpload: () => void;
 }
+
+const HeartOverlay = () => (
+  <div className='absolute inset-0 bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-opacity z-10 flex items-center justify-center'>
+    <Heart className='text-white w-8 h-8 fill-white/20 scale-0 group-hover:scale-110 transition-transform duration-500' />
+  </div>
+);
 
 export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
   const [albums, setAlbums] = useState<Album[]>([]);
@@ -88,44 +94,43 @@ export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
   return (
     <div className='w-full max-w-7xl mx-auto px-6 h-full flex flex-col z-20'>
       {/* Header Section */}
-      <div className='flex justify-between items-center mb-6 border-b border-cyan-900/50 pb-4 shrink-0 gap-4'>
+      <div className='flex justify-between items-center mb-8 border-b border-rose-100/50 pb-6 shrink-0 gap-4'>
         <div>
-          <h2 className='text-3xl font-bold text-cyan-500 tracking-wider mb-1 uppercase'>
-            // {t("title")}
+          <h2 className='text-4xl font-black text-rose-500 tracking-tight mb-1'>
+            {t("title")}
           </h2>
-          <p className='text-xs text-slate-500 tracking-widest'>
-            SECURE_DATA_STORAGE_UNITS
+          <p className='text-xs text-rose-300 font-bold tracking-[0.2em] uppercase'>
+            Our Beautiful Journey Together
           </p>
         </div>
 
-        <div className='flex gap-4'>
+        <div className='flex gap-3'>
           <button
             onClick={onStartUpload}
-            className='flex items-center gap-2 px-6 py-2 bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 hover:shadow-[0_0_15px_rgba(34,211,238,0.2)] font-bold text-sm tracking-wider uppercase transition-all duration-300 group'
+            className='flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-full font-bold text-sm shadow-lg shadow-rose-200 hover:bg-rose-600 transition-all group'
           >
-            <Camera className='w-4 h-4 group-hover:rotate-12 transition-transform' />
-            [ {gameT("uploadMemory")} ]
+            <Camera className='w-4 h-4' />
+            {gameT("uploadMemory")}
           </button>
 
           <button
             onClick={() => setShowCreateForm(!showCreateForm)}
             className={`
-                group flex items-center gap-2 px-6 py-2 font-bold text-sm tracking-wider uppercase border
-                transition-all duration-300
+                group flex items-center gap-2 px-6 py-2.5 font-bold text-sm rounded-full border transition-all
                 ${
                   showCreateForm
-                    ? "border-red-500/50 text-red-400 hover:bg-red-900/10"
-                    : "border-slate-700 text-slate-400 hover:border-cyan-500 hover:text-cyan-400 hover:bg-slate-800"
+                    ? "border-rose-200 text-rose-400 bg-rose-50"
+                    : "border-rose-100 text-rose-400 bg-white hover:border-rose-300 hover:bg-rose-50"
                 }
             `}
           >
             {showCreateForm ? (
               <>
-                <X className='w-4 h-4' />[ {t("cancel")} ]
+                <X className='w-4 h-4' /> {t("cancel")}
               </>
             ) : (
               <>
-                <Plus className='w-4 h-4' />[ {t("newAlbum")} ]
+                <Plus className='w-4 h-4' /> {t("newAlbum")}
               </>
             )}
           </button>
@@ -135,8 +140,8 @@ export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
       {/* Main Content Area - Scrollable */}
       <div className='flex-1 overflow-y-auto pr-2 custom-scrollbar pb-20'>
         {error && (
-          <div className='bg-red-900/20 border border-red-500/50 text-red-400 px-6 py-4 mb-8 flex items-center gap-2 text-sm'>
-            <span className='animate-pulse'>⚠</span>
+          <div className='bg-rose-50 border border-rose-200 text-rose-500 px-6 py-4 rounded-2xl mb-8 flex items-center gap-2 text-sm font-medium'>
+            <span className='animate-pulse'>❤</span>
             {error}
           </div>
         )}
@@ -150,15 +155,9 @@ export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
               exit={{ height: 0, opacity: 0 }}
               className='overflow-hidden mb-12'
             >
-              <div className='bg-slate-900/80 border border-cyan-500/30 p-8 relative'>
-                {/* Decorative corners */}
-                <div className='absolute top-0 left-0 w-2 h-2 border-t border-l border-cyan-500' />
-                <div className='absolute top-0 right-0 w-2 h-2 border-t border-r border-cyan-500' />
-                <div className='absolute bottom-0 left-0 w-2 h-2 border-b border-l border-cyan-500' />
-                <div className='absolute bottom-0 right-0 w-2 h-2 border-b border-r border-cyan-500' />
-
-                <h2 className='text-xl font-bold mb-6 text-cyan-100 flex items-center gap-2'>
-                  <FolderOpen className='w-5 h-5 text-cyan-500' />
+              <div className='glass-panel p-10 rounded-[2.5rem] relative border-rose-100/50'>
+                <h2 className='text-2xl font-bold mb-8 text-rose-600 flex items-center gap-3'>
+                  <FolderHeart className='w-6 h-6 text-rose-500' />
                   {t("form.title")}
                 </h2>
                 <form
@@ -167,7 +166,7 @@ export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
                 >
                   <div className='grid grid-cols-1 gap-6'>
                     <div>
-                      <label className='block text-xs font-bold text-cyan-500/70 mb-2 ml-1 uppercase tracking-wider'>
+                      <label className='block text-xs font-bold text-rose-400 uppercase tracking-widest mb-2 ml-1'>
                         {t("form.name")} *
                       </label>
                       <input
@@ -177,13 +176,13 @@ export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
                           setNewAlbum({ ...newAlbum, title: e.target.value })
                         }
                         required
-                        className='w-full px-5 py-3 bg-slate-800/50 border border-slate-700 focus:border-cyan-500 text-cyan-100 placeholder:text-slate-600 outline-none transition-all font-mono'
+                        className='w-full px-6 py-4 bg-white/50 border border-rose-100 rounded-2xl focus:border-rose-400 text-rose-700 placeholder:text-rose-200 outline-none transition-all shadow-inner'
                         placeholder={t("form.placeholders.title")}
                       />
                     </div>
 
                     <div>
-                      <label className='block text-xs font-bold text-cyan-500/70 mb-2 ml-1 uppercase tracking-wider'>
+                      <label className='block text-xs font-bold text-rose-400 uppercase tracking-widest mb-2 ml-1'>
                         {t("form.description")}
                       </label>
                       <textarea
@@ -194,7 +193,7 @@ export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
                             description: e.target.value,
                           })
                         }
-                        className='w-full px-5 py-3 bg-slate-800/50 border border-slate-700 focus:border-cyan-500 text-cyan-100 placeholder:text-slate-600 outline-none transition-all font-mono min-h-[100px]'
+                        className='w-full px-6 py-4 bg-white/50 border border-rose-100 rounded-2xl focus:border-rose-400 text-rose-700 placeholder:text-rose-200 outline-none transition-all shadow-inner min-h-[120px]'
                         placeholder={t("form.placeholders.description")}
                         rows={3}
                       />
@@ -202,7 +201,7 @@ export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
 
                     <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
                       <div>
-                        <label className='block text-xs font-bold text-cyan-500/70 mb-2 ml-1 uppercase tracking-wider'>
+                        <label className='block text-xs font-bold text-rose-400 uppercase tracking-widest mb-2 ml-1'>
                           {t("form.location")}
                         </label>
                         <div className='relative'>
@@ -215,16 +214,16 @@ export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
                                 location: e.target.value,
                               })
                             }
-                            className='w-full px-5 py-3 bg-slate-800/50 border border-slate-700 focus:border-cyan-500 text-cyan-100 placeholder:text-slate-600 outline-none transition-all font-mono'
+                            className='w-full px-6 py-4 bg-white/50 border border-rose-100 rounded-2xl focus:border-rose-400 text-rose-700 placeholder:text-rose-200 outline-none transition-all shadow-inner'
                             placeholder={t("form.placeholders.location")}
                           />
-                          <MapPin className='absolute right-4 top-3 w-4 h-4 text-slate-600' />
+                          <MapPin className='absolute right-6 top-4 w-5 h-5 text-rose-200' />
                         </div>
                       </div>
 
                       <div className='grid grid-cols-2 gap-4'>
                         <div>
-                          <label className='block text-xs font-bold text-cyan-500/70 mb-2 ml-1 uppercase tracking-wider'>
+                          <label className='block text-xs font-bold text-rose-400 uppercase tracking-widest mb-2 ml-1'>
                             {t("form.startDate")}
                           </label>
                           <input
@@ -236,11 +235,11 @@ export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
                                 startDate: e.target.value,
                               })
                             }
-                            className='w-full px-5 py-3 bg-slate-800/50 border border-slate-700 focus:border-cyan-500 text-cyan-100 outline-none transition-all font-mono'
+                            className='w-full px-6 py-4 bg-white/50 border border-rose-100 rounded-2xl focus:border-rose-400 text-rose-700 outline-none transition-all shadow-inner'
                           />
                         </div>
                         <div>
-                          <label className='block text-xs font-bold text-cyan-500/70 mb-2 ml-1 uppercase tracking-wider'>
+                          <label className='block text-xs font-bold text-rose-400 uppercase tracking-widest mb-2 ml-1'>
                             {t("form.endDate")}
                           </label>
                           <input
@@ -252,19 +251,19 @@ export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
                                 endDate: e.target.value,
                               })
                             }
-                            className='w-full px-5 py-3 bg-slate-800/50 border border-slate-700 focus:border-cyan-500 text-cyan-100 outline-none transition-all font-mono'
+                            className='w-full px-6 py-4 bg-white/50 border border-rose-100 rounded-2xl focus:border-rose-400 text-rose-700 outline-none transition-all shadow-inner'
                           />
                         </div>
                       </div>
                     </div>
                   </div>
 
-                  <div className='flex justify-end pt-4 border-t border-slate-800'>
+                  <div className='flex justify-end pt-6 border-t border-rose-100/50'>
                     <button
                       type='submit'
-                      className='bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 font-bold py-3 px-8 uppercase tracking-widest hover:shadow-[0_0_20px_rgba(6,182,212,0.2)] transition-all duration-300'
+                      className='bg-rose-500 hover:bg-rose-600 text-white font-bold py-4 px-12 rounded-full shadow-lg shadow-rose-200 transition-all'
                     >
-                      [ {t("form.submit")} ]
+                      {t("form.submit")}
                     </button>
                   </div>
                 </form>
@@ -275,99 +274,101 @@ export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
 
         {/* Albums Grid */}
         {loading ? (
-          <div className='min-h-[50vh] flex items-center justify-center text-cyan-500 font-mono'>
-            <div className='flex flex-col items-center gap-4'>
-              <div className='w-12 h-12 border-4 border-cyan-500/30 border-t-cyan-500 rounded-full animate-spin' />
-              <div className='text-xs tracking-widest animate-pulse'>
-                LOADING_ARCHIVES...
+          <div className='min-h-[50vh] flex items-center justify-center'>
+            <div className='flex flex-col items-center gap-6'>
+              <Heart className='w-16 h-16 text-rose-400 animate-pulse fill-rose-100' />
+              <div className='text-sm text-rose-300 font-bold tracking-[0.2em] animate-pulse uppercase'>
+                Revisiting Memories...
               </div>
             </div>
           </div>
         ) : albums.length === 0 ? (
-          <div className='flex flex-col items-center justify-center py-20 border border-dashed border-slate-700 rounded-lg bg-slate-900/50'>
-            <div className='text-6xl mb-6 opacity-20 text-cyan-500'>
-              <FolderOpen className='w-16 h-16' />
+          <div className='flex flex-col items-center justify-center py-24 border-2 border-dashed border-rose-100 rounded-[3rem] bg-white/40'>
+            <div className='mb-6 opacity-40 text-rose-300'>
+              <FolderHeart className='w-20 h-20' />
             </div>
-            <h3 className='text-xl font-bold text-cyan-500 mb-2 tracking-wider'>
+            <h3 className='text-2xl font-bold text-rose-500 mb-2'>
               {t("noAlbums.title")}
             </h3>
-            <p className='text-slate-500 text-sm mb-8 font-mono'>
+            <p className='text-rose-300 text-sm mb-10 text-center max-w-sm'>
               {t("noAlbums.description")}
             </p>
             <button
               onClick={() => setShowCreateForm(true)}
-              className='text-cyan-400 hover:text-cyan-300 font-bold hover:underline decoration-cyan-500/30 underline-offset-4 tracking-wide'
+              className='text-rose-500 hover:text-rose-600 font-bold decoration-rose-200 underline-offset-8 underline text-lg transition-all'
             >
-              [ {t("noAlbums.create")} ]
+              {t("noAlbums.create")}
             </button>
           </div>
         ) : (
-          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
             {albums.map((album) => (
-              <div
+              <motion.div
                 key={album.id}
+                whileHover={{ y: -10 }}
                 onClick={() => onSelectAlbum(album.id)}
-                className='group relative bg-slate-900 border border-slate-800 hover:border-cyan-500/50 transition-all duration-300 overflow-hidden cursor-pointer'
+                className='group relative bg-white/80 dark:bg-black/40 rounded-[3rem] p-4 m-4 border border-rose-100/50 hover:border-rose-300 hover:shadow-[0_20px_50px_rgba(255,182,193,0.3)] transition-all duration-500 cursor-pointer backdrop-blur-sm'
               >
                 {/* Image Area */}
-                <div className='aspect-[4/3] bg-slate-950 relative overflow-hidden'>
-                  <div className='absolute inset-0 bg-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity z-10' />
+                <div className='aspect-[4/3] rounded-[2.5rem] relative overflow-hidden bg-rose-50 border-4 border-white shadow-inner'>
+                  <HeartOverlay />
 
                   {album.coverPhotoUrl ? (
-                    <img
+                    <Image
                       src={album.coverPhotoUrl}
                       alt={album.title}
-                      className='w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500'
+                      fill
+                      sizes='(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw'
+                      className='object-cover group-hover:scale-110 transition-transform duration-700'
                     />
                   ) : (
-                    <div className='w-full h-full flex flex-col items-center justify-center text-slate-700'>
-                      <Camera className='w-12 h-12 mb-2 opacity-50' />
-                      <span className='text-xs tracking-widest opacity-50'>
-                        NO_IMG_DATA
+                    <div className='w-full h-full flex flex-col items-center justify-center text-rose-200'>
+                      <Camera className='w-12 h-12 mb-3 opacity-30 animate-pulse' />
+                      <span className='text-[10px] uppercase font-bold tracking-widest opacity-40'>
+                        Awaiting Memories
                       </span>
                     </div>
                   )}
 
-                  {/* Overlay Stats */}
-                  <div className='absolute top-2 right-2 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity'>
-                    <div className='bg-black/70 border border-cyan-500/30 text-cyan-400 text-[10px] px-2 py-1 font-mono'>
-                      ID: {album.id.substring(0, 6)}
+                  {/* Top Badge */}
+                  <div className='absolute top-4 right-4 z-20'>
+                    <div className='bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full shadow-sm flex items-center gap-2'>
+                      <Heart className='w-3 h-3 text-rose-500 fill-rose-500' />
+                      <span className='text-[10px] font-black text-rose-500 tracking-tighter uppercase'>
+                        Memory Storage
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Content Area */}
-                <div className='p-6 relative'>
-                  <h3 className='text-xl font-bold text-slate-200 mb-2 group-hover:text-cyan-400 transition-colors truncate tracking-wide'>
-                    {album.title}
-                  </h3>
+                <div className='px-6 py-8 flex flex-col'>
+                  <div className='flex justify-between items-start mb-3'>
+                    <h3 className='text-3xl font-black text-rose-900 dark:text-rose-100 group-hover:text-rose-500 transition-colors truncate tracking-tight'>
+                      {album.title}
+                    </h3>
+                  </div>
 
                   {album.description && (
-                    <p className='text-slate-500 text-xs mb-4 line-clamp-2 leading-relaxed font-mono'>
+                    <p className='text-rose-400/80 text-sm mb-8 line-clamp-2 leading-relaxed font-medium min-h-[2.5rem]'>
                       {album.description}
                     </p>
                   )}
 
-                  <div className='flex items-center justify-between mt-4 pt-4 border-t border-slate-800'>
-                    {album.location ? (
-                      <div className='flex items-center gap-1 text-cyan-600/70 text-xs uppercase tracking-wider'>
+                  <div className='flex items-center justify-between pt-6 border-t border-rose-50/50'>
+                    <div className='flex flex-col gap-1'>
+                      <div className='flex items-center gap-2 text-rose-300 text-[10px] font-bold uppercase tracking-[0.2em]'>
                         <MapPin className='w-3 h-3' />
-                        {album.location}
+                        {album.location || "Forever & Always"}
                       </div>
-                    ) : (
-                      <span></span>
-                    )}
+                    </div>
 
-                    <span className='text-slate-600 group-hover:text-cyan-400 text-xs tracking-widest flex items-center gap-1 transition-colors'>
-                      {t("viewAlbum")} <ChevronRight className='w-3 h-3' />
-                    </span>
+                    <div className='w-12 h-12 rounded-full bg-rose-50 text-rose-400 flex items-center justify-center group-hover:bg-rose-500 group-hover:text-white transition-all shadow-sm group-hover:shadow-rose-200'>
+                      <ChevronRight className='w-6 h-6' />
+                    </div>
                   </div>
                 </div>
-
-                {/* Corner decorations */}
-                <div className='absolute top-0 left-0 w-2 h-2 border-t border-l border-slate-700 group-hover:border-cyan-500 transition-colors' />
-                <div className='absolute bottom-0 right-0 w-2 h-2 border-b border-r border-slate-700 group-hover:border-cyan-500 transition-colors' />
-              </div>
+              </motion.div>
             ))}
           </div>
         )}

@@ -7,6 +7,15 @@ import { users } from "@/db/schema";
 import { eq } from "drizzle-orm";
 import { verifyPassword } from "@/lib/auth";
 
+// Extend types locally for now or move to d.ts
+interface CustomUser {
+  id?: string;
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+  username?: string;
+}
+
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
   providers: [
@@ -60,14 +69,15 @@ export const { auth, signIn, signOut, handlers } = NextAuth({
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.username = (user as any).username;
+        token.username = (user as CustomUser).username;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
-        (session.user as any).username = token.username as string;
+        // Extend session user type if needed or use module augmentation
+        (session.user as CustomUser).username = token.username as string;
       }
       return session;
     },

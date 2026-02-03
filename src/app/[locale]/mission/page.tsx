@@ -12,6 +12,11 @@ import { useAuth } from "@/hooks/useAuth";
 
 type MissionState = "UPLOAD" | "ANALYSIS" | "RESULT";
 
+interface Album {
+  id: string;
+  title: string;
+}
+
 export default function MissionPage() {
   const t = useTranslations("Game.UI");
   const [gameState, setGameState] = useState<MissionState>("UPLOAD");
@@ -34,9 +39,9 @@ export default function MissionPage() {
       try {
         const res = await fetch("/api/albums");
         if (res.ok) {
-          const albums = await res.json();
+          const albums: Album[] = await res.json();
           const missionAlbum = albums.find(
-            (a: any) => a.title === "Mission Logs",
+            (a) => a.title === "Our Story" || a.title === "Mission Logs",
           );
 
           if (missionAlbum) {
@@ -47,13 +52,14 @@ export default function MissionPage() {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                title: "Mission Logs",
-                description: "Encrypted visual data storage.",
-                location: "Sector 7G",
+                title: "Our Story",
+                description:
+                  "A collection of our most precious moments together.",
+                location: "Forever in my Heart",
               }),
             });
             if (createRes.ok) {
-              const newAlbum = await createRes.json();
+              const newAlbum = (await createRes.json()) as Album;
               setMissionAlbumId(newAlbum.id);
             }
           }
@@ -93,7 +99,7 @@ export default function MissionPage() {
   if (loading) return null;
 
   return (
-    <div className='relative w-full h-screen text-white overflow-hidden font-mono selection:bg-cyan-500/30'>
+    <div className='relative w-full h-screen text-slate-800 dark:text-white overflow-hidden font-sans selection:bg-rose-500/30'>
       <ParticleBackground />
 
       <main className='relative z-10 w-full h-full flex items-center justify-center p-6'>
@@ -110,22 +116,24 @@ export default function MissionPage() {
           )}
 
           {gameState === "RESULT" && (
-            <div className='flex flex-col items-center w-full'>
+            <div className='flex flex-col items-center w-full max-w-lg glass-panel p-12 rounded-[3rem] text-center'>
               <Visualizer />
-              <h2 className='text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-600 mb-4 mt-8'>
+              <h2 className='text-4xl font-black bg-clip-text text-transparent bg-gradient-to-br from-rose-400 to-purple-500 mb-6 mt-10'>
                 {t("dataSecured")}
               </h2>
-              <p className='text-slate-400 mb-8'>{t("memoryIntegrated")}</p>
-              <div className='flex gap-4'>
+              <p className='text-rose-400 font-medium mb-10 leading-relaxed'>
+                {t("memoryIntegrated")}
+              </p>
+              <div className='flex flex-col sm:flex-row gap-4 w-full'>
                 <button
                   onClick={() => router.push("/albums")}
-                  className='px-6 py-2 border border-cyan-500/50 hover:bg-cyan-500/10 text-cyan-400 transition-colors'
+                  className='flex-1 px-10 py-4 bg-rose-500 text-white font-black rounded-full shadow-lg shadow-rose-200 hover:bg-rose-600 transition-all uppercase tracking-widest text-sm'
                 >
-                  [ {t("viewArchives")} ]
+                  {t("viewArchives")}
                 </button>
                 <button
                   onClick={() => setGameState("UPLOAD")}
-                  className='px-6 py-2 border border-white/20 hover:bg-white/10 transition-colors'
+                  className='flex-1 px-10 py-4 bg-rose-50 text-rose-500 font-black rounded-full hover:bg-rose-100 transition-all uppercase tracking-widest text-sm'
                 >
                   {t("returnToRoot")}
                 </button>

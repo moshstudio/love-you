@@ -27,18 +27,45 @@ export default function ParticleBackground() {
       vy: number;
       size: number;
       color: string;
+      type: "heart" | "sparkle";
+      opacity: number;
+      rotation: number;
+      rotationSpeed: number;
 
       constructor() {
+        this.x = 0;
+        this.y = 0;
+        this.vx = 0;
+        this.vy = 0;
+        this.size = 0;
+        this.color = "";
+        this.type = "heart";
+        this.opacity = 0;
+        this.rotation = 0;
+        this.rotationSpeed = 0;
+
+        this.reset();
+        // Randomize initial position
         this.x = Math.random() * canvas!.width;
         this.y = Math.random() * canvas!.height;
+      }
+
+      reset() {
+        this.x = Math.random() * canvas!.width;
+        this.y = canvas!.height + 20;
         this.vx = (Math.random() - 0.5) * 0.5;
-        this.vy = (Math.random() - 0.5) * 0.5;
-        this.size = Math.random() * 2 + 1;
-        // Sci-fi colors: cyan, purple, white
+        this.vy = -(Math.random() * 0.5 + 0.3); // Rise slowly
+        this.size = Math.random() * 8 + 4;
+        this.opacity = Math.random() * 0.5 + 0.2;
+        this.rotation = Math.random() * Math.PI * 2;
+        this.rotationSpeed = (Math.random() - 0.5) * 0.02;
+        this.type = Math.random() > 0.3 ? "heart" : "sparkle";
+
         const colors = [
-          "rgba(0, 255, 255, 0.5)",
-          "rgba(147, 51, 234, 0.5)",
-          "rgba(255, 255, 255, 0.3)",
+          "rgba(255, 107, 129, ", // Rose
+          "rgba(255, 182, 193, ", // Light Pink
+          "rgba(255, 255, 255, ", // White
+          "rgba(255, 143, 163, ", // Pastel Pink
         ];
         this.color = colors[Math.floor(Math.random() * colors.length)];
       }
@@ -46,23 +73,62 @@ export default function ParticleBackground() {
       update() {
         this.x += this.vx;
         this.y += this.vy;
+        this.rotation += this.rotationSpeed;
 
-        if (this.x < 0 || this.x > canvas!.width) this.vx *= -1;
-        if (this.y < 0 || this.y > canvas!.height) this.vy *= -1;
+        if (this.y < -20) {
+          this.reset();
+        }
       }
 
       draw() {
         if (!ctx) return;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
-        ctx.fill();
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.rotate(this.rotation);
+        ctx.globalAlpha = this.opacity;
+        ctx.fillStyle = this.color + "1)";
+
+        if (this.type === "heart") {
+          this.drawHeart(0, 0, this.size);
+        } else {
+          this.drawSparkle(0, 0, this.size / 2);
+        }
+
+        ctx.restore();
+      }
+
+      drawHeart(x: number, y: number, size: number) {
+        ctx!.beginPath();
+        const d = size;
+        ctx!.moveTo(x, y + d / 4);
+        ctx!.bezierCurveTo(x, y, x - d / 2, y, x - d / 2, y + d / 4);
+        ctx!.bezierCurveTo(x - d / 2, y + d / 2, x, y + d * 0.75, x, y + d);
+        ctx!.bezierCurveTo(
+          x,
+          y + d * 0.75,
+          x + d / 2,
+          y + d / 2,
+          x + d / 2,
+          y + d / 4,
+        );
+        ctx!.bezierCurveTo(x + d / 2, y, x, y, x, y + d / 4);
+        ctx!.fill();
+      }
+
+      drawSparkle(x: number, y: number, size: number) {
+        ctx!.beginPath();
+        for (let i = 0; i < 4; i++) {
+          ctx!.rotate(Math.PI / 2);
+          ctx!.lineTo(size, 0);
+          ctx!.lineTo(0, size / 4);
+        }
+        ctx!.fill();
       }
     }
 
     const init = () => {
       particles = [];
-      const particleCount = Math.min(window.innerWidth / 10, 100);
+      const particleCount = Math.min(window.innerWidth / 20, 50);
       for (let i = 0; i < particleCount; i++) {
         particles.push(new Particle());
       }
@@ -72,26 +138,9 @@ export default function ParticleBackground() {
       if (!ctx) return;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw connections
-      particles.forEach((p, index) => {
+      particles.forEach((p) => {
         p.update();
         p.draw();
-
-        for (let j = index + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const dx = p.x - p2.x;
-          const dy = p.y - p2.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-
-          if (distance < 150) {
-            ctx.beginPath();
-            ctx.strokeStyle = `rgba(100, 100, 255, ${1 - distance / 150})`;
-            ctx.lineWidth = 0.5;
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-          }
-        }
       });
 
       animationFrameId = requestAnimationFrame(animate);
@@ -111,8 +160,11 @@ export default function ParticleBackground() {
   return (
     <canvas
       ref={canvasRef}
-      className='fixed inset-0 pointer-events-none z-0 bg-slate-900'
-      style={{ background: "linear-gradient(to bottom, #0f172a, #1e1b4b)" }}
+      className='fixed inset-0 pointer-events-none z-0'
+      style={{
+        background:
+          "linear-gradient(to bottom, var(--background), var(--secondary))",
+      }}
     />
   );
 }

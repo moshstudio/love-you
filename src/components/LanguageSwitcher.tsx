@@ -21,11 +21,11 @@ export default function LanguageSwitcher() {
     <button
       onClick={toggleLanguage}
       disabled={isPending}
-      className={`px-3 py-1 border border-cyan-500/30 text-cyan-400 text-xs font-mono hover:bg-cyan-500/10 transition-colors ${
+      className={`px-4 py-1.5 bg-rose-50 text-rose-500 text-[10px] font-black tracking-widest rounded-full hover:bg-rose-100 transition-all uppercase ${
         isPending ? "opacity-50 cursor-wait" : ""
       }`}
     >
-      [{locale === "en" ? "CN" : "EN"}]
+      {locale === "en" ? "中文" : "EN"}
     </button>
   );
 }
