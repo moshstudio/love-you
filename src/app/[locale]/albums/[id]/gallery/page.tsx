@@ -7,10 +7,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { albumsApi, photosApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import ParticleBackground from "@/components/game/ParticleBackground";
-import { ArrowLeft, Grid3X3, Trees, Maximize2 } from "lucide-react";
+import { ArrowLeft, Grid3X3, Trees, Maximize2, X } from "lucide-react";
 import { GalleryGrid } from "./components/GalleryGrid";
 import { ChristmasMode } from "./components/ChristmasMode";
-import { ImmersiveView } from "./components/ImmersiveView.tsx";
+import { ImmersiveView } from "./components/ImmersiveView";
 import { Album, Photo } from "./components/types";
 
 export default function AlbumGalleryPage() {
@@ -30,6 +30,19 @@ export default function AlbumGalleryPage() {
   // Immersive Mode State
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
+
+  // Track visited modes to keep them mounted
+  const [visitedModes, setVisitedModes] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (viewMode !== "grid") {
+      setVisitedModes((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(viewMode);
+        return newSet;
+      });
+    }
+  }, [viewMode]);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -68,7 +81,8 @@ export default function AlbumGalleryPage() {
     }
   };
 
-  if (authLoading || loading) {
+  // Only show full screen loading if we don't have data yet
+  if ((authLoading || loading) && !album) {
     return (
       <div className='min-h-screen flex flex-col items-center justify-center bg-black text-rose-500 font-sans'>
         <div className='w-12 h-12 border-4 border-rose-900 border-t-rose-500 rounded-full animate-spin mb-4' />
@@ -95,80 +109,91 @@ export default function AlbumGalleryPage() {
           Original code: (!isPlaying || viewMode !== "immersive")
       */}
       <AnimatePresence>
-        {(!isPlaying || viewMode !== "immersive") && (
-          <motion.header
-            initial={{ y: -100 }}
-            animate={{ y: 0 }}
-            exit={{ y: -100 }}
-            className='fixed top-0 left-0 right-0 z-40 p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent'
-          >
-            <div className='flex items-center gap-4'>
-              <button
-                onClick={() => router.push(`/albums/${albumId}`)}
-                className='p-3 bg-white/10 hover:bg-rose-500/20 text-rose-300 rounded-full backdrop-blur-md transition-all group border border-white/5'
-              >
-                <ArrowLeft className='w-5 h-5 group-hover:-translate-x-1 transition-transform' />
-              </button>
-              <div>
-                <h1 className='text-2xl font-black text-white tracking-tight'>
-                  {album.title}
-                </h1>
-                <p className='text-rose-400 text-xs font-bold tracking-widest uppercase'>
-                  {photos.length} Memories
-                </p>
+        {(!isPlaying || viewMode !== "immersive") &&
+          viewMode !== "christmas" && (
+            <motion.header
+              initial={{ y: -100 }}
+              animate={{ y: 0 }}
+              exit={{ y: -100 }}
+              className='fixed top-0 left-0 right-0 z-40 p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent'
+            >
+              <div className='flex items-center gap-4'>
+                <button
+                  onClick={() => router.push(`/albums/${albumId}`)}
+                  className='p-3 bg-white/10 hover:bg-rose-500/20 text-rose-300 rounded-full backdrop-blur-md transition-all group border border-white/5'
+                >
+                  <ArrowLeft className='w-5 h-5 group-hover:-translate-x-1 transition-transform' />
+                </button>
+                <div>
+                  <h1 className='text-2xl font-black text-white tracking-tight'>
+                    {album.title}
+                  </h1>
+                  <p className='text-rose-400 text-xs font-bold tracking-widest uppercase'>
+                    {photos.length} Memories
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {/* View Mode Toggle */}
-            <div className='flex bg-white/5 backdrop-blur-md rounded-full p-1 border border-white/10'>
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-3 rounded-full transition-all ${
-                  viewMode === "grid"
-                    ? "bg-rose-500 text-white shadow-lg shadow-rose-900/50"
-                    : "text-rose-400 hover:text-white"
-                }`}
-                title='Grid View'
-              >
-                <Grid3X3 className='w-4 h-4' />
-              </button>
-              <button
-                onClick={() => setViewMode("christmas")}
-                className={`p-3 rounded-full transition-all ${
-                  viewMode === "christmas"
-                    ? "bg-green-600 text-white shadow-lg shadow-green-900/50"
-                    : "text-rose-400 hover:text-white"
-                }`}
-                title='Holiday Mode'
-              >
-                <Trees className='w-4 h-4' />
-              </button>
-              <button
-                onClick={() => {
-                  setViewMode("immersive");
-                  setCurrentIndex(0);
-                  setIsPlaying(true);
-                }}
-                className={`p-3 rounded-full transition-all ${
-                  viewMode === "immersive"
-                    ? "bg-blue-600 text-white shadow-lg shadow-blue-900/50"
-                    : "text-rose-400 hover:text-white"
-                }`}
-                title='Immersive Mode'
-              >
-                <Maximize2 className='w-4 h-4' />
-              </button>
-            </div>
-          </motion.header>
-        )}
+              {/* View Mode Toggle */}
+              <div className='flex bg-white/5 backdrop-blur-md rounded-full p-1 border border-white/10'>
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className={`p-3 rounded-full transition-all ${
+                    viewMode === "grid"
+                      ? "bg-rose-500 text-white shadow-lg shadow-rose-900/50"
+                      : "text-rose-400 hover:text-white"
+                  }`}
+                  title='Grid View'
+                >
+                  <Grid3X3 className='w-4 h-4' />
+                </button>
+                <button
+                  onClick={() => setViewMode("christmas")}
+                  className={`p-3 rounded-full transition-all ${
+                    viewMode === "christmas"
+                      ? "bg-green-600 text-white shadow-lg shadow-green-900/50"
+                      : "text-rose-400 hover:text-white"
+                  }`}
+                  title='Holiday Mode'
+                >
+                  <Trees className='w-4 h-4' />
+                </button>
+                <button
+                  onClick={() => {
+                    setViewMode("immersive");
+                    setCurrentIndex(0);
+                    setIsPlaying(true);
+                  }}
+                  className={`p-3 rounded-full transition-all ${
+                    viewMode === "immersive"
+                      ? "bg-blue-600 text-white shadow-lg shadow-blue-900/50"
+                      : "text-rose-400 hover:text-white"
+                  }`}
+                  title='Immersive Mode'
+                >
+                  <Maximize2 className='w-4 h-4' />
+                </button>
+              </div>
+            </motion.header>
+          )}
       </AnimatePresence>
 
       {/* Main Content */}
       <main className='relative z-10 w-full h-full min-h-screen'>
-        <AnimatePresence mode='wait'>
-          {viewMode === "grid" && (
+        <div className='relative w-full h-full'>
+          <div
+            key='grid-wrapper'
+            style={{
+              visibility: viewMode === "grid" ? "visible" : "hidden",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              zIndex: 10,
+            }}
+          >
             <GalleryGrid
-              key='grid'
               photos={photos}
               onPhotoClick={(index) => {
                 setCurrentIndex(index);
@@ -176,28 +201,63 @@ export default function AlbumGalleryPage() {
                 setIsPlaying(false);
               }}
             />
+          </div>
+
+          {(viewMode === "christmas" || visitedModes.has("christmas")) && (
+            <div
+              key='christmas-wrapper'
+              style={{
+                visibility: viewMode === "christmas" ? "visible" : "hidden",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                zIndex: 20,
+              }}
+            >
+              <ChristmasMode
+                photos={photos}
+                onClose={() => setViewMode("grid")}
+                isActive={viewMode === "christmas"}
+              />
+            </div>
           )}
 
-          {viewMode === "christmas" && (
-            <ChristmasMode
-              key='christmas'
-              photos={photos}
-              onClose={() => setViewMode("grid")}
-            />
+          {(viewMode === "immersive" || visitedModes.has("immersive")) && (
+            <div
+              key='immersive-wrapper'
+              style={{
+                visibility: viewMode === "immersive" ? "visible" : "hidden",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                width: "100%",
+                height: "100%",
+                zIndex: 30,
+              }}
+            >
+              {viewMode === "immersive" && (
+                <button
+                  onClick={() => setViewMode("grid")}
+                  className='absolute top-6 right-6 z-50 p-3 rounded-full border border-white/10 text-white/50 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all group'
+                  aria-label='Exit Immersive View'
+                >
+                  <X className='w-5 h-5' />
+                </button>
+              )}
+              <ImmersiveView
+                photos={photos}
+                currentIndex={currentIndex}
+                onChangeIndex={setCurrentIndex}
+                isPlaying={isPlaying}
+                onTogglePlay={() => setIsPlaying(!isPlaying)}
+                onClose={() => setViewMode("grid")}
+                isActive={viewMode === "immersive"}
+              />
+            </div>
           )}
-
-          {viewMode === "immersive" && (
-            <ImmersiveView
-              key='immersive'
-              photos={photos}
-              currentIndex={currentIndex}
-              onChangeIndex={setCurrentIndex}
-              isPlaying={isPlaying}
-              onTogglePlay={() => setIsPlaying(!isPlaying)}
-              onClose={() => setViewMode("grid")}
-            />
-          )}
-        </AnimatePresence>
+        </div>
       </main>
     </div>
   );

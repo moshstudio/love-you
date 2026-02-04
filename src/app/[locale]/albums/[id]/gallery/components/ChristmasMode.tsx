@@ -34,12 +34,15 @@ import {
   HeartGestureHandler,
 } from "./effects/HeartEffect";
 import { GalaxyEffect } from "./effects/GalaxyEffect";
-import { ChristmasTreeEffect } from "./effects/ChristmasTreeEffect";
+import {
+  ChristmasTreeScene,
+  ChristmasTreeEffectLogic,
+} from "./effects/ChristmasTreeEffect"; // Updated import
 import { StarSystemEffect } from "./effects/StarSystemEffect";
 import { TimeTravelEffect } from "./effects/TimeTravelEffect";
 
 // --- Configuration ---
-const PARTICLE_COUNT = 4000;
+const PARTICLE_COUNT = 25000;
 const PARTICLE_SIZE = 0.12;
 const BASE_SPEED = 2.0;
 const HEART_SPEED = 8.0;
@@ -47,7 +50,7 @@ const HEART_SPEED = 8.0;
 const EFFECTS: Record<EffectType, EffectLogic> = {
   HEART: HeartLogic,
   GALAXY: GalaxyEffect,
-  TREE: ChristmasTreeEffect,
+  TREE: ChristmasTreeEffectLogic, // Use dummy logic for map, but we won't render ParticleSystem
   STAR_SYSTEM: StarSystemEffect,
   TIME_TRAVEL: TimeTravelEffect,
 };
@@ -109,13 +112,20 @@ const ParticleSystem = ({
     }
   }, [mode, color]);
 
+  // Accumulate time locally to support pausing
+  const localTime = useRef(0);
+
   useFrame((state, delta) => {
     if (!points.current) return;
+
+    // Cap delta to prevent huge jumps if frame was paused for a long time
+    const safeDelta = Math.min(delta, 0.1);
+    localTime.current += safeDelta;
+    const time = localTime.current;
 
     const positionsAttr = points.current.geometry.attributes
       .position as THREE.BufferAttribute;
     const currentPositions = positionsAttr.array as Float32Array;
-    const time = state.clock.getElapsedTime();
 
     // Update targets every frame because some effects are time-dependent
     const effect = EFFECTS[mode];
@@ -261,10 +271,16 @@ const PhotoItem = ({
   const tex = useTexture(proxiedUrl);
   const targetPos = useRef(new THREE.Vector3());
 
+  // Time ref for pause support
+  const localTime = useRef(0);
+
   useFrame((state, delta) => {
     if (!mesh.current) return;
 
-    const time = state.clock.getElapsedTime();
+    const safeDelta = Math.min(delta, 0.1);
+    localTime.current += safeDelta;
+    const time = localTime.current;
+
     const effect = EFFECTS[mode];
 
     // Focus Logic
@@ -364,16 +380,23 @@ const PhotoItem = ({
 interface ChristmasModeProps {
   photos: Photo[];
   onClose?: () => void;
+  isActive: boolean;
 }
 
-export const ChristmasMode = ({ photos, onClose }: ChristmasModeProps) => {
+export const ChristmasMode = ({
+  photos,
+  onClose,
+  isActive,
+}: ChristmasModeProps) => {
   const [mode, setMode] = useState<EffectType>("HEART");
-  const [color, setColor] = useState("#ff4d6d");
+  const [color, setColor] = useState("#FFD700");
   const [intensity, setIntensity] = useState(0.8);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScattered, setIsScattered] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [isGestureEnabled, setIsGestureEnabled] = useState(false);
+
+  // Debug logs removed
 
   const handleNext = () => {
     if (focusedIndex === null) return;
@@ -398,9 +421,16 @@ export const ChristmasMode = ({ photos, onClose }: ChristmasModeProps) => {
   ];
 
   return (
-    <div className='fixed inset-0 z-50 bg-black text-white font-sans select-none'>
+    <div
+      className='fixed inset-0 z-50 bg-black text-white font-sans select-none'
+      style={{
+        visibility: isActive ? "visible" : "hidden",
+        pointerEvents: isActive ? "auto" : "none",
+      }}
+    >
       {/* 3D Canvas */}
       <Canvas
+        frameloop={isActive ? "always" : "never"}
         dpr={[1, 2]}
         gl={{
           antialias: false,
@@ -411,7 +441,7 @@ export const ChristmasMode = ({ photos, onClose }: ChristmasModeProps) => {
       >
         <PerspectiveCamera
           makeDefault
-          position={[0, 0, 35]}
+          position={[0, 0, 65]}
         />
         <ambientLight intensity={0.5} />
         <pointLight
@@ -422,6 +452,8 @@ export const ChristmasMode = ({ photos, onClose }: ChristmasModeProps) => {
         <Suspense fallback={null}>
           {mode === "HEART" ? (
             <HeartScene isScattered={isScattered} />
+          ) : mode === "TREE" ? (
+            <ChristmasTreeScene />
           ) : (
             <ParticleSystem
               mode={mode}

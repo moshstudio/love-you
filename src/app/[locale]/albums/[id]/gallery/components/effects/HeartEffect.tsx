@@ -258,11 +258,21 @@ const InstancedHeartShape = ({
       // Scale up to world size (e.g. 15 units wide)
       const scale = 7;
 
-      // Random scatter position
+      // Random scatter position - Irregular Cloud
+      // Use spherical coordinates with randomized radius to avoid box corners
+      const u = Math.random();
+      const v = Math.random();
+      const theta = 2 * Math.PI * u;
+      const phi = Math.acos(2 * v - 1);
+
+      // Radius with variation for irregularity and larger size
+      const radius = 90 + Math.random() * 60;
+      const dist = Math.cbrt(Math.random()) * radius;
+
       const scatterPos = new THREE.Vector3(
-        (Math.random() - 0.5) * 70,
-        (Math.random() - 0.5) * 40,
-        (Math.random() - 0.5) * 40,
+        dist * Math.sin(phi) * Math.cos(theta) * 1.6, // Wider X axis
+        dist * Math.sin(phi) * Math.sin(theta),
+        dist * Math.cos(phi),
       );
 
       // Assign a random color
