@@ -1,11 +1,6 @@
 import * as THREE from "three";
 
-export type EffectType =
-  | "HEART"
-  | "GALAXY"
-  | "TREE"
-  | "STAR_SYSTEM"
-  | "TIME_TRAVEL";
+export type EffectType = "HEART" | "GALAXY" | "TREE";
 
 export interface EffectLogic {
   /**

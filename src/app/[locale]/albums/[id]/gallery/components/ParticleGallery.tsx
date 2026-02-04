@@ -5,7 +5,8 @@ import React, {
   useState,
   useCallback,
 } from "react";
-import { useFrame } from "@react-three/fiber";
+import { useFrame, useThree } from "@react-three/fiber";
+
 import * as THREE from "three";
 import { Photo } from "./types";
 import { vertexShader, fragmentShader } from "./shaders";
@@ -19,7 +20,7 @@ import {
 // ============================================================================
 // Configuration
 // ============================================================================
-const MORPH_DURATION = 2.5; // Seconds for galaxy -> image transition
+const MORPH_DURATION = 0.5; // Seconds for galaxy -> image transition
 
 // ============================================================================
 // Easing Functions (used in frame loop for perfect sync)
@@ -43,6 +44,7 @@ export const ParticleGallery: React.FC<ParticleGalleryProps> = ({
   const pointsRef = useRef<THREE.Points>(null);
   const materialRef = useRef<THREE.ShaderMaterial>(null);
   const imagePlaneRef = useRef<THREE.Mesh>(null);
+  const { viewport } = useThree();
 
   // Data Cache
   const particleCache = useRef<Map<string, any>>(new Map());
@@ -66,8 +68,12 @@ export const ParticleGallery: React.FC<ParticleGalleryProps> = ({
     targetRotation: { x: 0, y: 0, z: 0 }, // Always 0,0,0 for image view
 
     // Scale: for image plane aspect ratio
+    // Scale: captured start states
     startScale: { x: 1, y: 1, z: 1 },
-    targetScale: { x: 1, y: 1, z: 1 },
+    pointsStartScale: 1,
+
+    // Target info for dynamic sizing
+    currentRatio: 1,
 
     // Opacity: image plane
     targetRatio: 1,
@@ -226,7 +232,8 @@ export const ParticleGallery: React.FC<ParticleGalleryProps> = ({
 
       // Target scale based on image aspect ratio
       state.targetRatio = targetData.ratio;
-      state.targetScale = { x: 1, y: 1 / targetData.ratio, z: 1 };
+      state.currentRatio = targetData.ratio;
+      state.pointsStartScale = pointsRef.current?.scale.x || 1;
 
       // 5. Start transition
       state.progress = 0;
@@ -308,30 +315,50 @@ export const ParticleGallery: React.FC<ParticleGalleryProps> = ({
 
     // 3. Image plane scale & opacity + Particle opacity (SYNCHRONIZED)
     if (imagePlaneRef.current) {
+      // Calculate target Scale Factor S dynamically to fit viewport
+      let s = 1;
+      if (!state.isGalaxyMode && state.currentRatio) {
+        // Maximize size within viewport considering margins (90% of screen)
+        const maxWidth = viewport.width * 0.9;
+        const maxHeight = viewport.height * 0.9;
+
+        // Base size at scale 1 (defined by WORLD_SCALE in utils)
+        const baseW = WORLD_SCALE;
+        const baseH = WORLD_SCALE / state.currentRatio;
+
+        s = Math.min(maxWidth / baseW, maxHeight / baseH);
+      }
+
+      // Update Points Scale
+      if (pointsRef.current) {
+        const start = state.pointsStartScale;
+        const curr = start + (s - start) * easedT;
+        pointsRef.current.scale.set(curr, curr, curr);
+      }
+
       const startS = state.startScale;
-      const targetS = state.targetScale;
+      // Target for Plane: x=s (width), y=s/ratio (height), z=s
+      const targetX = s;
+      const targetY = s / state.currentRatio;
 
       // Scale lerp
-      imagePlaneRef.current.scale.x =
-        startS.x + (targetS.x - startS.x) * easedT;
-      imagePlaneRef.current.scale.y =
-        startS.y + (targetS.y - startS.y) * easedT;
-      imagePlaneRef.current.scale.z =
-        startS.z + (targetS.z - startS.z) * easedT;
+      imagePlaneRef.current.scale.x = startS.x + (targetX - startS.x) * easedT;
+      imagePlaneRef.current.scale.y = startS.y + (targetY - startS.y) * easedT;
+      imagePlaneRef.current.scale.z = startS.z + (targetX - startS.z) * easedT;
 
       // ========================================
       // Critical Timing Fix:
-      // - Particles complete morph during 0-90% of transition
-      // - Image fades in during last 10% (90%-100%)
-      // - Particles fade out during last 10% (as image fades in)
+      // - Particles complete morph during 0-80% of transition
+      // - Image fades in during last 20% (80%-100%)
+      // - Particles fade out during last 20% (as image fades in)
       // ========================================
       const mat = imagePlaneRef.current.material as THREE.MeshBasicMaterial;
 
-      // Image opacity: only starts at 90%, completes at 100%
-      const imageOpacityT = Math.max(0, (t - 0.9) / 0.1);
+      // Image opacity: only starts at 80%, completes at 100%
+      const imageOpacityT = Math.max(0, (t - 0.8) / 0.2);
       mat.opacity = easeOutCubic(imageOpacityT);
 
-      // Particle opacity: 100% until 90%, then fade to 0
+      // Particle opacity: 100% until 80%, then fade to 0
       const particleOpacity = 1.0 - imageOpacityT;
       uniforms.uParticleOpacity.value = particleOpacity;
 

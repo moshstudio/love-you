@@ -149,11 +149,7 @@ export default function AlbumGalleryPage() {
                 </button>
                 <button
                   onClick={() => setViewMode("christmas")}
-                  className={`p-3 rounded-full transition-all ${
-                    viewMode === "christmas"
-                      ? "bg-green-600 text-white shadow-lg shadow-green-900/50"
-                      : "text-rose-400 hover:text-white"
-                  }`}
+                  className='p-3 rounded-full transition-all text-rose-400 hover:text-white'
                   title='Holiday Mode'
                 >
                   <Trees className='w-4 h-4' />

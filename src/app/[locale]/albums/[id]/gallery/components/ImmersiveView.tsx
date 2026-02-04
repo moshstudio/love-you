@@ -10,23 +10,23 @@ import React, {
 import { Canvas, useFrame, useThree, extend } from "@react-three/fiber";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
-import { FontLoader, TextGeometry, MeshSurfaceSampler } from "three-stdlib";
 import TWEEN from "@tweenjs/tween.js";
+import { Stars } from "@react-three/drei";
 import { Photo } from "./types";
 import { ParticleGallery } from "./ParticleGallery";
 
-// 向 R3F 注册 TextGeometry
-extend({ TextGeometry });
+// 向 R3F 注册 TextGeometry - Removed as we use Canvas now
+// extend({ TextGeometry });
 
 // --- 配置 ---
 const PARTICLE_COUNT = 12000; // Intro particle count
 const ACTIVE_PARTICLE_RATIO = 0.95; // 参与组合变换的粒子比例
+// ACTIVE_PARTICLE_COUNT is defined below
+
 const ACTIVE_PARTICLE_COUNT = Math.floor(
   PARTICLE_COUNT * ACTIVE_PARTICLE_RATIO,
 );
-// 使用 jsdelivr 以提高在中国及全球的可靠性
-const FONT_URL =
-  "https://cdn.jsdelivr.net/npm/three/examples/fonts/helvetiker_bold.typeface.json";
+
 const GOLD_COLOR = new THREE.Color("#FFD700");
 
 // 烟花常量
@@ -44,54 +44,84 @@ const FIREWORK_COLORS = [
 
 // --- 辅助函数 ---
 
-// 在文本表面生成均匀分布的随机点
-const generateTextParticles = (
+// 使用 Canvas 生成文字粒子位置（支持中文）
+const generateCanvasTextParticles = (
   text: string,
-  font: any,
-  size: number,
+  particleCount: number = PARTICLE_COUNT,
   activeRatio: number = 0.95,
   scatterSpread: number = 60,
 ): Float32Array => {
-  const geometry = new TextGeometry(text, {
-    font: font,
-    size: size,
-    height: 0.5,
-    curveSegments: 32,
-    bevelEnabled: true,
-    bevelThickness: 0.05,
-    bevelSize: 0.02,
-    bevelOffset: 0,
-    bevelSegments: 4,
-  } as any);
+  if (typeof document === "undefined")
+    return new Float32Array(particleCount * 3);
 
-  geometry.center();
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return new Float32Array(particleCount * 3);
 
-  const material = new THREE.MeshBasicMaterial();
-  const mesh = new THREE.Mesh(geometry, material);
-  const sampler = new MeshSurfaceSampler(mesh).build();
+  const fontSize = 120;
+  // 使用支持中文的系统字体栈
+  const fontFamily =
+    '"Microsoft YaHei", "Heiti SC", "PingFang SC", "WenQuanYi Micro Hei", sans-serif';
+  ctx.font = `bold ${fontSize}px ${fontFamily}`;
 
-  const particles = new Float32Array(PARTICLE_COUNT * 3);
-  const tempPosition = new THREE.Vector3();
+  const measurements = ctx.measureText(text);
+  const textWidth = measurements.width;
+  const textHeight = fontSize;
 
-  const activeCount = Math.floor(PARTICLE_COUNT * activeRatio);
+  // 增加一些 Padding
+  canvas.width = textWidth + 40;
+  canvas.height = textHeight + 40;
 
-  for (let i = 0; i < PARTICLE_COUNT; i++) {
-    if (i < activeCount) {
-      sampler.sample(tempPosition);
-      particles[i * 3] = tempPosition.x;
-      particles[i * 3 + 1] = tempPosition.y;
-      particles[i * 3 + 2] = tempPosition.z;
-    } else {
-      particles[i * 3] = (Math.random() - 0.5) * scatterSpread;
-      particles[i * 3 + 1] = (Math.random() - 0.5) * scatterSpread;
-      particles[i * 3 + 2] = (Math.random() - 0.5) * scatterSpread;
+  // 重新设置 Font (因为调整 Canvas 大小后 Context 会重置)
+  ctx.font = `bold ${fontSize}px ${fontFamily}`;
+  ctx.fillStyle = "#FFFFFF";
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+  const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imgData.data;
+  const validPixels: number[] = [];
+
+  // 获取所有非透明像素坐标
+  for (let y = 0; y < canvas.height; y += 2) {
+    for (let x = 0; x < canvas.width; x += 2) {
+      const i = (y * canvas.width + x) * 4;
+      if (data[i + 3] > 128) {
+        validPixels.push(x, y);
+      }
     }
   }
 
-  geometry.dispose();
-  material.dispose();
+  const positions = new Float32Array(particleCount * 3);
+  const activeCount = Math.floor(particleCount * activeRatio);
+  // Scale factor: Canvas pixel -> World Unit
+  const scale = 0.2;
+  const offsetX = canvas.width / 2;
+  const offsetY = canvas.height / 2;
 
-  return particles;
+  for (let i = 0; i < particleCount; i++) {
+    if (i < activeCount && validPixels.length > 0) {
+      // 随机采样有效的像素点
+      const idx = Math.floor(Math.random() * (validPixels.length / 2)) * 2;
+      const px = validPixels[idx];
+      const py = validPixels[idx + 1];
+
+      // 映射到 3D 坐标，Y轴反转 (Canvas Y向下, 3D Y向上)
+      // 加入少量随机抖动，避免像素感太强
+      positions[i * 3] = (px - offsetX) * scale + (Math.random() - 0.5) * 0.3;
+      positions[i * 3 + 1] =
+        -(py - offsetY) * scale + (Math.random() - 0.5) * 0.3;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 2.0;
+    } else {
+      // 散开的粒子
+      positions[i * 3] = (Math.random() - 0.5) * scatterSpread;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * scatterSpread;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * scatterSpread;
+    }
+  }
+
+  return positions;
 };
 
 // 生成随机爆炸/云场（为 IntroScene 保留此辅助函数）
@@ -107,10 +137,16 @@ const generateRandomParticles = (spread: number = 50): Float32Array => {
 
 // --- Components ---
 
-const IntroScene = ({ onSequenceEnd }: { onSequenceEnd?: () => void }) => {
+const IntroScene = ({
+  onSequenceEnd,
+  text,
+}: {
+  onSequenceEnd?: () => void;
+  text: string;
+}) => {
   const pointsRef = useRef<THREE.Points>(null);
   const { camera } = useThree();
-  const [font, setFont] = useState<any>(null);
+  // Removed font state as we use Canvas now
 
   const currentPositions = useRef<Float32Array>(generateRandomParticles(100));
   const targetPositions = useRef<Float32Array | null>(null);
@@ -126,43 +162,27 @@ const IntroScene = ({ onSequenceEnd }: { onSequenceEnd?: () => void }) => {
   const nextStepTime = useRef(1.0); // Start first step at 1s
   const isSequenceActive = useRef(true);
 
+  // Pre-load logic (Canvas based)
   useEffect(() => {
-    const loader = new FontLoader();
-    loader.load(
-      FONT_URL,
-      (loadedFont) => {
-        setFont(loadedFont);
-      },
-      undefined,
-      (err) => {
-        console.error("Font loading failed:", err);
-      },
-    );
-  }, []);
-
-  // Pre-load logic (keep as is)
-  useEffect(() => {
-    if (!font) return;
-    const sequence = ["5", "4", "3", "2", "1", "2026"];
+    const sequence = ["5", "4", "3", "2", "1", text];
     const generateNext = (index: number) => {
       if (index >= sequence.length) return;
-      const text = sequence[index];
-      if (precomputedParticles.current[text]) {
+      const txt = sequence[index];
+      if (precomputedParticles.current[txt]) {
         generateNext(index + 1);
         return;
       }
       setTimeout(() => {
-        const size = text.length > 3 ? 15 : 20;
-        precomputedParticles.current[text] = generateTextParticles(
-          text,
-          font,
-          size,
+        // 使用 Canvas 生成粒子
+        precomputedParticles.current[txt] = generateCanvasTextParticles(
+          txt,
+          PARTICLE_COUNT,
         );
         generateNext(index + 1);
-      }, 50);
+      }, 20);
     };
     generateNext(0);
-  }, [font]);
+  }, [text]);
 
   // Tweens group just for this component instance
   const tweens = useRef(new TWEEN.Group());
@@ -246,25 +266,21 @@ const IntroScene = ({ onSequenceEnd }: { onSequenceEnd?: () => void }) => {
     tweens.current.update(time * 1000);
 
     // Sequence Logic (replaces setTimeout chain)
-    if (font && isSequenceActive.current && !isWarping.current) {
-      const numbers = ["5", "4", "3", "2", "1", "2026"];
+    // Sequence Logic
+    if (isSequenceActive.current && !isWarping.current) {
+      const numbers = ["5", "4", "3", "2", "1", text];
 
       if (time >= nextStepTime.current) {
         if (sequenceStep.current >= numbers.length) {
           isSequenceActive.current = false;
-          // Delay before warp
-          // We can trigger warp immediately or set a target time.
-          // Original logic: setTimeout(triggerWarp, 1000);
-          // We can just call triggerWarp here but it relies on time updates, so it's fine.
           triggerWarp();
         } else {
-          const text = numbers[sequenceStep.current];
-          const size = text.length > 3 ? 15 : 20;
+          const txt = numbers[sequenceStep.current];
 
-          let target = precomputedParticles.current[text];
+          let target = precomputedParticles.current[txt];
           if (!target) {
-            target = generateTextParticles(text, font, size);
-            precomputedParticles.current[text] = target;
+            target = generateCanvasTextParticles(txt, PARTICLE_COUNT);
+            precomputedParticles.current[txt] = target;
           }
           morphTo(target, 800);
 
@@ -601,6 +617,68 @@ const FireworksScene = ({
   );
 };
 
+// --- Settings Modal ---
+const SettingsModal = ({
+  isOpen,
+  onClose,
+  initialText,
+  onSave,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  initialText: string;
+  onSave: (text: string) => void;
+}) => {
+  const [text, setText] = useState(initialText);
+
+  useEffect(() => {
+    setText(initialText);
+  }, [initialText]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className='absolute inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm'>
+      <div className='w-96 bg-black/80 border border-[#FFD700]/30 rounded-xl p-6 shadow-[0_0_30px_rgba(255,215,0,0.1)]'>
+        <h3 className='text-[#FFD700] text-lg font-light tracking-widest mb-6 text-center'>
+          SETTINGS
+        </h3>
+
+        <div className='flex flex-col gap-4'>
+          <div>
+            <label className='block text-white/50 text-xs uppercase tracking-wider mb-2'>
+              Greeting Text
+            </label>
+            <input
+              type='text'
+              value={text}
+              onChange={(e) => setText(e.target.value)}
+              className='w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-[#FFD700] focus:outline-none focus:border-[#FFD700]/50 transition-colors'
+              placeholder='Enter text...'
+              maxLength={10}
+            />
+          </div>
+
+          <div className='flex gap-3 mt-4'>
+            <button
+              onClick={onClose}
+              className='flex-1 px-4 py-2 rounded-lg border border-white/10 text-white/50 hover:bg-white/5 hover:text-white transition-all text-sm uppercase tracking-wider'
+            >
+              Cancel
+            </button>
+            <button
+              onClick={() => onSave(text)}
+              className='flex-1 px-4 py-2 rounded-lg bg-[#FFD700]/10 border border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/20 hover:border-[#FFD700]/50 transition-all text-sm uppercase tracking-wider'
+            >
+              Save
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- UI Overlay ---
 const UIOverlay = () => {
   return (
@@ -641,6 +719,27 @@ export function ImmersiveView({
   const [scenePhase, setScenePhase] = useState<"intro" | "fireworks" | "main">(
     "intro",
   );
+  const [targetText, setTargetText] = useState("2026");
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [resetKey, setResetKey] = useState(0);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("immersive_greeting_text");
+    if (saved) setTargetText(saved);
+  }, []);
+
+  useEffect(() => {
+    if (isActive) {
+      setScenePhase("intro");
+      setResetKey((prev) => prev + 1);
+    }
+  }, [isActive]);
+
+  const handleSaveSettings = (text: string) => {
+    setTargetText(text);
+    localStorage.setItem("immersive_greeting_text", text);
+    setIsSettingsOpen(false);
+  };
 
   const handleWarpEnd = useCallback(() => {
     setScenePhase("fireworks");
@@ -659,6 +758,12 @@ export function ImmersiveView({
       }}
     >
       {scenePhase !== "main" && <UIOverlay />}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        initialText={targetText}
+        onSave={handleSaveSettings}
+      />
 
       {scenePhase === "main" && (
         <>
@@ -721,6 +826,12 @@ export function ImmersiveView({
               {currentIndex + 1} / {photos.length}
             </span>
             <button
+              onClick={() => setIsSettingsOpen(true)}
+              className='px-6 py-2 rounded-full border border-white/20 text-white/50 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all uppercase text-xs tracking-widest'
+            >
+              Settings
+            </button>
+            <button
               onClick={onClose}
               className='px-6 py-2 rounded-full border border-white/20 text-white/50 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all uppercase text-xs tracking-widest'
             >
@@ -747,7 +858,25 @@ export function ImmersiveView({
           attach='background'
         />
 
-        {scenePhase === "intro" && <IntroScene onSequenceEnd={handleWarpEnd} />}
+        <group position={[0, 0, -120]}>
+          <Stars
+            radius={200}
+            depth={50}
+            count={5000}
+            factor={6}
+            saturation={0}
+            fade
+            speed={1}
+          />
+        </group>
+
+        {scenePhase === "intro" && (
+          <IntroScene
+            key={resetKey}
+            onSequenceEnd={handleWarpEnd}
+            text={targetText}
+          />
+        )}
 
         {(scenePhase === "fireworks" || scenePhase === "main") && (
           <FireworksScene

@@ -1,6 +1,6 @@
-import React, { useMemo, useRef, useLayoutEffect } from "react";
+import React, { useMemo, useRef, useLayoutEffect, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Text, Float, Stars, Sparkles } from "@react-three/drei";
+import { Text, Float, Stars, Billboard } from "@react-three/drei";
 import * as THREE from "three";
 
 // Re-export a dummy logic object to satisfy the types if needed,
@@ -17,8 +17,8 @@ export const ChristmasTreeEffectLogic = {
     const p = new THREE.Vector3();
 
     // Tree dimensions for photos
-    const height = 40;
-    const baseRadius = 15;
+    const height = 28;
+    const baseRadius = 10;
 
     if (isPhoto) {
       // Spiral up
@@ -27,15 +27,23 @@ export const ChristmasTreeEffectLogic = {
 
       let r = baseRadius * (1 - h_norm) + 2; // Offset slightly outward
 
-      if (isScattered) {
-        r *= 2.5; // Move photos outward when scattered
-      }
-
       const y = (h_norm - 0.5) * height;
-      const x = Math.cos(angle) * r;
-      const z = Math.sin(angle) * r;
 
-      p.set(x, y, z);
+      if (isScattered) {
+        // Scatter photos into a ring/halo layout (same as HeartEffect)
+        // Photos form a horizontal ring around the center
+        const angle = (index / total) * Math.PI * 2 + time * 0.1;
+        const radius = 18; // Ring radius - reduced to match HeartEffect
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        const y = Math.sin(index * 0.5 + time) * 2; // Slight vertical wave
+
+        p.set(x, y, z);
+      } else {
+        const x = Math.cos(angle) * r;
+        const z = Math.sin(angle) * r;
+        p.set(x, y, z);
+      }
     } else {
       // Should not happen if we don't use ParticleSystem for TREE, but fallback:
       p.set(0, 0, 0);
@@ -49,8 +57,8 @@ export const ChristmasTreeEffectLogic = {
 };
 
 const COUNT = 1500; // Number of instances per geometry type
-const TREE_HEIGHT = 45;
-const TREE_RADIUS = 18;
+const TREE_HEIGHT = 30;
+const TREE_RADIUS = 12;
 
 // Colors
 const COLORS = [
@@ -61,25 +69,38 @@ const COLORS = [
 ];
 
 const tempObject = new THREE.Object3D();
-const tempColor = new THREE.Color();
 
 function TreeInstances({
   geometry,
   count,
   scaleMultiplier = 1,
+  isScattered,
+  themeColor = "#FFD700",
+  intensity = 0.8,
 }: {
   geometry: THREE.BufferGeometry;
   count: number;
   scaleMultiplier?: number;
+  isScattered: boolean;
+  themeColor?: string;
+  intensity?: number;
 }) {
+  // Compute emissive color from theme
+  const emissiveColor = useMemo(() => {
+    const c = new THREE.Color(themeColor);
+    const hsl = { h: 0, s: 0, l: 0 };
+    c.getHSL(hsl);
+    return new THREE.Color().setHSL(hsl.h, hsl.s * 0.5, hsl.l * 0.15);
+  }, [themeColor]);
   const meshRef = useRef<THREE.InstancedMesh>(null);
+  const phase = useRef(0); // 0 = tree, 1 = scattered
 
   const data = useMemo(() => {
     return Array.from({ length: count }).map((_, i) => {
+      // --- Tree Position (Target 0) ---
       // Golden spiral distribution for Volume
       const t = Math.random();
       // y goes from -height/2 to height/2
-      // actually let's base it on 0 to height
       const h = t * TREE_HEIGHT;
       const y = h - TREE_HEIGHT / 2;
 
@@ -90,6 +111,34 @@ function TreeInstances({
       const angle = Math.random() * Math.PI * 2;
       const x = Math.cos(angle) * r;
       const z = Math.sin(angle) * r;
+      const treePos = new THREE.Vector3(x, y, z);
+
+      // --- Scatter Position (Target 1) ---
+      // Random cloud distribution - more scattered and irregular
+      // Use spherical coordinates with random variations for organic look
+
+      // Random direction in 3D space (uniform on sphere surface)
+      const theta = Math.random() * Math.PI * 2; // horizontal angle
+      const phi = Math.acos(2 * Math.random() - 1); // vertical angle (uniform on sphere)
+
+      // Variable distance from center for cloud-like density
+      // Use a mix of distances to create depth
+      const minRadius = 35;
+      const maxRadius = 80;
+      // Bias towards middle range for cloud effect
+      const radiusFactor = Math.pow(Math.random(), 0.6);
+      const scatterRadius = minRadius + radiusFactor * (maxRadius - minRadius);
+
+      // Convert spherical to cartesian with added noise
+      const sx =
+        Math.sin(phi) * Math.cos(theta) * scatterRadius +
+        (Math.random() - 0.5) * 20;
+      const sy =
+        Math.cos(phi) * scatterRadius * 0.7 + (Math.random() - 0.5) * 15; // Slightly flattened vertically
+      const sz =
+        Math.sin(phi) * Math.sin(theta) * scatterRadius +
+        (Math.random() - 0.5) * 20;
+      const scatterPos = new THREE.Vector3(sx, sy, sz);
 
       const scale = (0.5 + Math.random() * 0.5) * scaleMultiplier;
 
@@ -97,10 +146,16 @@ function TreeInstances({
       const color = COLORS[Math.floor(Math.random() * COLORS.length)];
 
       return {
-        position: [x, y, z],
-        rotation: [Math.random() * Math.PI, Math.random() * Math.PI, 0],
+        treePos,
+        scatterPos,
+        rotation: new THREE.Euler(
+          Math.random() * Math.PI,
+          Math.random() * Math.PI,
+          0,
+        ),
         scale,
         color,
+        speed: Math.random() * 0.5 + 0.5,
       };
     });
   }, [count, scaleMultiplier]);
@@ -109,31 +164,56 @@ function TreeInstances({
     if (!meshRef.current) return;
 
     data.forEach((d, i) => {
-      const { position, rotation, scale, color } = d;
-      tempObject.position.set(
-        position[0] as number,
-        position[1] as number,
-        position[2] as number,
-      );
-      tempObject.rotation.set(
-        rotation[0] as number,
-        rotation[1] as number,
-        rotation[2] as number,
-      );
-      tempObject.scale.setScalar(scale as number);
-      tempObject.updateMatrix();
-
-      meshRef.current!.setMatrixAt(i, tempObject.matrix);
-      meshRef.current!.setColorAt(i, color);
+      meshRef.current!.setColorAt(i, d.color);
     });
-    meshRef.current.instanceMatrix.needsUpdate = true;
     meshRef.current.instanceColor!.needsUpdate = true;
   }, [data]);
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     if (!meshRef.current) return;
-    // Gentle rotation of the whole tree layer
-    meshRef.current.rotation.y += 0.002;
+
+    // Smoothly interpolate phase
+    const targetPhase = isScattered ? 1 : 0;
+    phase.current = THREE.MathUtils.lerp(
+      phase.current,
+      targetPhase,
+      delta * 2.0,
+    );
+
+    const time = state.clock.getElapsedTime();
+
+    // Rotate whole system slightly if tree
+    if (phase.current < 0.9) {
+      meshRef.current.rotation.y += 0.002 * (1 - phase.current);
+    }
+    // If fully scattered, maybe slow rotation or different movement?
+    // Let's keep the particles moving individually mostly.
+
+    data.forEach((d, i) => {
+      // Interpolate position
+      const currentPos = new THREE.Vector3()
+        .copy(d.treePos)
+        .lerp(d.scatterPos, phase.current);
+
+      // Add floating motion
+      const floatAmp = 0.5 + phase.current * 1.5; // Float more when scattered
+      currentPos.y += Math.sin(time * d.speed + i) * floatAmp;
+      currentPos.x += Math.cos(time * d.speed * 0.5 + i) * floatAmp * 0.2;
+
+      tempObject.position.copy(currentPos);
+
+      tempObject.rotation.set(
+        d.rotation.x + time * 0.5 * d.speed,
+        d.rotation.y + time * 0.3 * d.speed,
+        d.rotation.z,
+      );
+
+      tempObject.scale.setScalar(d.scale);
+      tempObject.updateMatrix();
+
+      meshRef.current!.setMatrixAt(i, tempObject.matrix);
+    });
+    meshRef.current.instanceMatrix.needsUpdate = true;
   });
 
   return (
@@ -144,14 +224,36 @@ function TreeInstances({
       <meshPhysicalMaterial
         roughness={0.2}
         metalness={0.9}
-        emissiveIntensity={0.5}
-        emissive='#222' // Slight self emissive for bloom base
+        emissiveIntensity={0.5 * intensity}
+        emissive={`#${emissiveColor.getHexString()}`}
       />
     </instancedMesh>
   );
 }
 
-export const ChristmasTreeScene = () => {
+interface ChristmasTreeSceneProps {
+  isScattered?: boolean;
+  displayText?: string;
+  themeColor?: string;
+  intensity?: number;
+}
+
+export const ChristmasTreeScene = ({
+  isScattered = false,
+  displayText = "2026 521",
+  themeColor = "#FFD700",
+  intensity = 0.8,
+}: ChristmasTreeSceneProps) => {
+  // Compute derived colors from themeColor
+  const themeColorObj = useMemo(
+    () => new THREE.Color(themeColor),
+    [themeColor],
+  );
+  const darkerThemeColor = useMemo(() => {
+    const hsl = { h: 0, s: 0, l: 0 };
+    themeColorObj.getHSL(hsl);
+    return new THREE.Color().setHSL(hsl.h, hsl.s * 0.8, hsl.l * 0.4);
+  }, [themeColorObj]);
   // Geometries
   const sphereGeo = useMemo(() => new THREE.SphereGeometry(0.5, 16, 16), []);
   const coneGeo = useMemo(() => new THREE.ConeGeometry(0.4, 1.2, 8), []);
@@ -170,87 +272,119 @@ export const ChristmasTreeScene = () => {
         fade
         speed={1}
       />
-      <Sparkles
-        count={500}
-        scale={60}
-        size={5}
-        speed={0.4}
-        opacity={0.5}
-        color='#FFD700'
-      />
 
-      {/* Floating Text */}
-      <Float
-        speed={2}
-        rotationIntensity={0.1}
-        floatIntensity={1}
-        floatingRange={[1, 2]}
+      {/* Floating Text - Billboard to always face camera */}
+      <Billboard
+        position={[0, 23, 0]}
+        follow={true}
+        lockX={false}
+        lockY={false}
+        lockZ={false}
       >
-        <Text
-          position={[0, 28, 0]}
-          fontSize={3}
-          maxWidth={200}
-          lineHeight={1}
-          letterSpacing={0.02}
-          textAlign='center'
-          anchorX='center'
-          anchorY='middle'
+        <Float
+          speed={2}
+          rotationIntensity={0}
+          floatIntensity={1}
         >
-          2026 祝你开心
-          <meshStandardMaterial
-            color='#FFD700'
-            emissive='#FFD700'
-            emissiveIntensity={2}
-            toneMapped={false}
-          />
-        </Text>
-      </Float>
+          <Text
+            fontSize={3}
+            color={themeColor}
+            font='https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff'
+            characters={displayText}
+            anchorX='center'
+            anchorY='middle'
+            outlineWidth={0.02}
+            outlineColor={`#${darkerThemeColor.getHexString()}`}
+            material-toneMapped={false}
+          >
+            {displayText}
+            <meshPhysicalMaterial
+              color={themeColor}
+              emissive={`#${darkerThemeColor.getHexString()}`}
+              emissiveIntensity={0.2 * intensity}
+              metalness={0.9}
+              roughness={0.1}
+              clearcoat={1}
+              clearcoatRoughness={0.1}
+              toneMapped={false}
+            />
+          </Text>
+          <Text
+            fontSize={3}
+            color={themeColor}
+            font='https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff'
+            characters={displayText}
+            anchorX='center'
+            anchorY='middle'
+            position={[0, 0, -0.1]}
+            fillOpacity={0.5 * intensity}
+          >
+            {displayText}
+          </Text>
+        </Float>
+      </Billboard>
 
       {/* Tree Layers - Composition of shapes */}
       <TreeInstances
         geometry={sphereGeo}
-        count={1000}
-        scaleMultiplier={1.2}
+        count={2000}
+        scaleMultiplier={0.6}
+        isScattered={isScattered}
+        themeColor={themeColor}
+        intensity={intensity}
       />
       <TreeInstances
         geometry={coneGeo}
-        count={1200}
-        scaleMultiplier={1.5}
+        count={2400}
+        scaleMultiplier={0.8}
+        isScattered={isScattered}
+        themeColor={themeColor}
+        intensity={intensity}
       />
       <TreeInstances
         geometry={cylGeo}
-        count={800}
-        scaleMultiplier={1}
+        count={1600}
+        scaleMultiplier={0.5}
+        isScattered={isScattered}
+        themeColor={themeColor}
+        intensity={intensity}
       />
       <TreeInstances
         geometry={boxGeo}
-        count={500}
-        scaleMultiplier={0.8}
+        count={1000}
+        scaleMultiplier={0.4}
+        isScattered={isScattered}
+        themeColor={themeColor}
+        intensity={intensity}
       />
 
-      {/* Central glowing core (trunk-ish) */}
-      <mesh position={[0, 0, 0]}>
-        <cylinderGeometry args={[1, 8, 30, 16]} />
-        <meshBasicMaterial
-          color='#FF4500'
-          transparent
-          opacity={0.1}
-          blending={THREE.AdditiveBlending}
-        />
-      </mesh>
+      {/* Central glowing core (trunk-ish) - Hide when scattered */}
+      {!isScattered && (
+        <mesh position={[0, 0, 0]}>
+          <cylinderGeometry args={[1, 8, 30, 16]} />
+          <meshBasicMaterial
+            color='#FF4500'
+            transparent
+            opacity={0.1}
+            blending={THREE.AdditiveBlending}
+          />
+        </mesh>
+      )}
 
-      {/* Floor Reflection/Platform */}
-      <mesh
-        rotation={[-Math.PI / 2, 0, 0]}
-        position={[0, -TREE_HEIGHT / 2 - 2, 0]}
-      >
-        <circleGeometry args={[30, 64]} />
-        <meshStandardMaterial
-          color='#000'
-          roughness={0}
-          metalness={0.8}
-        />
-      </mesh>
+      {/* Floor Reflection/Platform - Hide when scattered */}
+      {!isScattered && (
+        <mesh
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, -TREE_HEIGHT / 2 - 2, 0]}
+        >
+          <circleGeometry args={[30, 64]} />
+          <meshStandardMaterial
+            color='#000'
+            roughness={0}
+            metalness={0.8}
+          />
+        </mesh>
+      )}
     </group>
   );
 };

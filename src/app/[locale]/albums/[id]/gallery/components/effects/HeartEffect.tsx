@@ -3,7 +3,7 @@
 import React, { useMemo, useRef, useEffect, useState } from "react";
 import * as THREE from "three";
 import { useFrame } from "@react-three/fiber";
-import { Text, Float, Stars, Sparkles, Billboard } from "@react-three/drei";
+import { Text, Float, Stars, Billboard } from "@react-three/drei";
 import { EffectLogic } from "./types";
 
 // --- Logic for Photos (Orbiting/Heart Shape) ---
@@ -85,9 +85,27 @@ const COLORS = [
 
 interface HeartSceneProps {
   isScattered?: boolean;
+  displayText?: string;
+  themeColor?: string;
+  intensity?: number;
 }
 
-export const HeartScene = ({ isScattered = false }: HeartSceneProps) => {
+export const HeartScene = ({
+  isScattered = false,
+  displayText = "2026 521",
+  themeColor = "#FFD700",
+  intensity = 0.8,
+}: HeartSceneProps) => {
+  // Compute derived colors from themeColor
+  const themeColorObj = useMemo(
+    () => new THREE.Color(themeColor),
+    [themeColor],
+  );
+  const darkerThemeColor = useMemo(() => {
+    const hsl = { h: 0, s: 0, l: 0 };
+    themeColorObj.getHSL(hsl);
+    return new THREE.Color().setHSL(hsl.h, hsl.s * 0.8, hsl.l * 0.4);
+  }, [themeColorObj]);
   const textRef = useRef<THREE.Group>(null);
 
   // Create geometries - Smaller size for higher density
@@ -108,28 +126,24 @@ export const HeartScene = ({ isScattered = false }: HeartSceneProps) => {
         type='sphere'
         count={4000}
         isScattered={isScattered}
+        themeColor={themeColor}
+        intensity={intensity}
       />
       <InstancedHeartShape
         geometry={geometries.cone}
         type='cone'
         count={3000}
         isScattered={isScattered}
+        themeColor={themeColor}
+        intensity={intensity}
       />
       <InstancedHeartShape
         geometry={geometries.cylinder}
         type='cylinder'
         count={3000}
         isScattered={isScattered}
-      />
-
-      {/* Floating Particles (Gold Dust) */}
-      <Sparkles
-        count={500}
-        scale={30}
-        size={2}
-        speed={0.4}
-        opacity={0.6}
-        color='#FFD700'
+        themeColor={themeColor}
+        intensity={intensity}
       />
 
       {/* Background Star System */}
@@ -146,7 +160,7 @@ export const HeartScene = ({ isScattered = false }: HeartSceneProps) => {
       {/* Floating Text */}
       {/* Floating Text - Billboard to always face camera */}
       <Billboard
-        position={[0, 14, 0]}
+        position={[0, 18, 0]}
         follow={true}
         lockX={false}
         lockY={false}
@@ -159,20 +173,20 @@ export const HeartScene = ({ isScattered = false }: HeartSceneProps) => {
         >
           <Text
             fontSize={3}
-            color='#FFD700'
+            color={themeColor}
             font='https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff'
-            characters='2026 521'
+            characters={displayText}
             anchorX='center'
             anchorY='middle'
             outlineWidth={0.02}
-            outlineColor='#5c3a00'
+            outlineColor={`#${darkerThemeColor.getHexString()}`}
             material-toneMapped={false} // Important for bloom
           >
-            2026 521
+            {displayText}
             <meshPhysicalMaterial
-              color='#FFD700'
-              emissive='#AA5500'
-              emissiveIntensity={0.2}
+              color={themeColor}
+              emissive={`#${darkerThemeColor.getHexString()}`}
+              emissiveIntensity={0.2 * intensity}
               metalness={0.9}
               roughness={0.1}
               clearcoat={1}
@@ -182,15 +196,15 @@ export const HeartScene = ({ isScattered = false }: HeartSceneProps) => {
           </Text>
           <Text
             fontSize={3}
-            color='#FFD700'
+            color={themeColor}
             font='https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff'
-            characters='2026 521'
+            characters={displayText}
             anchorX='center'
             anchorY='middle'
             position={[0, 0, -0.1]}
-            fillOpacity={0.5}
+            fillOpacity={0.5 * intensity}
           >
-            2026 521
+            {displayText}
           </Text>
         </Float>
       </Billboard>
@@ -203,12 +217,23 @@ const InstancedHeartShape = ({
   type,
   count,
   isScattered,
+  themeColor = "#FFD700",
+  intensity = 0.8,
 }: {
   geometry: THREE.BufferGeometry;
   type: string;
   count: number;
   isScattered: boolean;
+  themeColor?: string;
+  intensity?: number;
 }) => {
+  // Compute emissive color from theme
+  const emissiveColor = useMemo(() => {
+    const c = new THREE.Color(themeColor);
+    const hsl = { h: 0, s: 0, l: 0 };
+    c.getHSL(hsl);
+    return new THREE.Color().setHSL(hsl.h, hsl.s * 0.5, hsl.l * 0.2);
+  }, [themeColor]);
   const meshRef = useRef<THREE.InstancedMesh>(null);
   const dummy = useMemo(() => new THREE.Object3D(), []);
 
@@ -349,8 +374,8 @@ const InstancedHeartShape = ({
         reflectivity={1}
         clearcoat={1}
         clearcoatRoughness={0.1}
-        emissive='#552200'
-        emissiveIntensity={0.2}
+        emissive={`#${emissiveColor.getHexString()}`}
+        emissiveIntensity={0.2 * intensity}
       />
     </instancedMesh>
   );
@@ -385,6 +410,17 @@ export const HeartGestureHandler = ({
   const requestRef = useRef<number | null>(null);
   const lastVideoTimeRef = useRef<number>(-1);
 
+  // Keep latest callbacks in refs to avoid stale closures in the animation loop
+  const onNavigateRef = useRef(onNavigate);
+  const setFocusedIndexRef = useRef(setFocusedIndex);
+  const setIsScatteredRef = useRef(setIsScattered);
+
+  useEffect(() => {
+    onNavigateRef.current = onNavigate;
+    setFocusedIndexRef.current = setFocusedIndex;
+    setIsScatteredRef.current = setIsScattered;
+  }, [onNavigate, setFocusedIndex, setIsScattered]);
+
   // State for gesture debouncing
   const lastGestureTime = useRef<number>(0);
   const gestureCooldown = 500; // ms
@@ -393,6 +429,7 @@ export const HeartGestureHandler = ({
 
   // Swipe detection
   const lastIndexX = useRef<number | null>(null);
+  const gestureHistory = useRef<number[]>([]); // To smooth out detection jitter
 
   useEffect(() => {
     const initMediaPipe = async () => {
@@ -555,7 +592,7 @@ export const HeartGestureHandler = ({
     // Logic 1: Fist (0 or 1 finger) -> Heart (Aggregate)
     if (extendedCount <= 1 && !indexExtended) {
       if (now - lastGestureTime.current > gestureCooldown) {
-        setIsScattered(false);
+        setIsScatteredRef.current(false);
         lastGestureTime.current = now;
       }
     }
@@ -563,35 +600,51 @@ export const HeartGestureHandler = ({
     // Logic 2: Open Hand (5 fingers) -> Scatter
     if (extendedCount === 5) {
       if (now - lastGestureTime.current > gestureCooldown) {
-        setIsScattered(true);
+        setIsScatteredRef.current(true);
         lastGestureTime.current = now;
       }
     }
 
     // Logic 3: Index Finger Only -> Select / Navigate
     if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
-      // Action A: Select (Focus)
-      if (now - lastGestureTime.current > gestureCooldown) {
-        setFocusedIndex((prev) => (prev !== null ? prev : 0));
-        lastGestureTime.current = now;
-      }
+      // Action A: Select (Focus) - Only if not swiping
+      // We'll prioritize swiping. If movement is minimal, then select.
 
-      // Action B: Swipe
       const currentX = landmarks[8].x;
 
       if (lastIndexX.current !== null) {
         const diff = currentX - lastIndexX.current;
-        const swipeThreshold = 0.04;
+        // Increase threshold slightly to avoid accidental swipes during "select"
+        const swipeThreshold = 0.03;
 
         if (now - lastSwipeTime.current > swipeCooldown) {
+          // Invert logic:
+          // Raw Diff > 0 means x increased (moved to Camera's RIGHT, which is USER'S LEFT).
+          // User: "Move Left 👈: Switches to the Next photo." -> So Diff > 0 -> Next.
+
           if (diff > swipeThreshold) {
-            onNavigate("prev"); // Mirror: Hand Right -> Prev
+            onNavigateRef.current("next");
             lastSwipeTime.current = now;
+            // Also update gesture time to prevent selection triggering immediately after
+            lastGestureTime.current = now;
           } else if (diff < -swipeThreshold) {
-            onNavigate("next"); // Mirror: Hand Left -> Next
+            onNavigateRef.current("prev");
             lastSwipeTime.current = now;
+            lastGestureTime.current = now;
           }
         }
+      }
+
+      // Select only if stable
+      if (
+        now - lastGestureTime.current > gestureCooldown &&
+        now - lastSwipeTime.current > 500
+      ) {
+        // Wait after swipe
+        setFocusedIndexRef.current((prev: number | null) =>
+          prev !== null ? prev : 0,
+        );
+        lastGestureTime.current = now;
       }
 
       lastIndexX.current = currentX;

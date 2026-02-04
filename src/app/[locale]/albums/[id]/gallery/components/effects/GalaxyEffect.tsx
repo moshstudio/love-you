@@ -1,4 +1,8 @@
+"use client";
+
+import React, { useMemo, useRef } from "react";
 import * as THREE from "three";
+import { Text, Float, Stars, Billboard } from "@react-three/drei";
 import { EffectLogic } from "./types";
 
 // Helper to get a stable random number from an index
@@ -21,9 +25,34 @@ const BAND_COLORS = [
 ];
 
 // Galaxy Effect Implementation
-// Galaxy Effect Implementation
 export const GalaxyEffect: EffectLogic = {
   getTargetPosition: (index, total, isPhoto, time, isScattered) => {
+    // 0. Scattered Mode (Diverge)
+    if (isScattered) {
+      if (isPhoto) {
+        // Photos form a clean viewing ring similar to Heart effect
+        const angle = (index / total) * Math.PI * 2 + time * 0.05;
+        const radius = 22; // Reduced to match HeartEffect size
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+        const y = Math.sin(index * 0.5 + time) * 2; // Slight vertical wave
+        return new THREE.Vector3(x, y, z);
+      } else {
+        // Particles scatter outwards (Big Bang) -> Starfield sphere
+        const rRand = seededRandom(index);
+        const theta = seededRandom(index + 1) * Math.PI * 2 + time * 0.02;
+        const phi = Math.acos(2 * seededRandom(index + 2) - 1); // Uniform sphere
+
+        const radius = 40 + rRand * 25; // Reduced radius (40-65) to match HeartEffect
+
+        const x = radius * Math.sin(phi) * Math.cos(theta);
+        const y = radius * Math.sin(phi) * Math.sin(theta);
+        const z = radius * Math.cos(phi);
+
+        return new THREE.Vector3(x, y, z);
+      }
+    }
+
     // 1. Separate into Planet Body (60%) and Rings (40%) - More rings for grandeur
     const rand = seededRandom(index);
     const isRing = rand > 0.6 || isPhoto;
@@ -34,8 +63,8 @@ export const GalaxyEffect: EffectLogic = {
 
     if (isRing) {
       // --- RINGS ---
-      const innerRadius = 26;
-      const outerRadius = 50;
+      const innerRadius = 16;
+      const outerRadius = 32;
 
       // Distribution: concentrated more towards inner/middle for solid look
       // Power of 2 pushes points towards inner radius, Power of 0.5 pushes to outer
@@ -52,7 +81,7 @@ export const GalaxyEffect: EffectLogic = {
       const ringSpeed = 0.1 + (1.0 / radius) * 3.0;
       const theta = angleOffset * (isPhoto ? 0.5 : 1.0) + index * 0.001; // Slower spread
 
-      const tilt = Math.PI / 6;
+      const tilt = Math.PI / 24;
 
       // Thinner disc for sharper look
       let y = (seededRandom(index + 2) - 0.5) * 0.05; // Extremely thin
@@ -61,9 +90,9 @@ export const GalaxyEffect: EffectLogic = {
 
       if (isPhoto) {
         // Uniform distribution logic for photos
-        // Radius: Uniform random between inner (26) and outer (50) minus padding
-        const minR = 28;
-        const maxR = 48;
+        // Radius: Uniform random between inner (16) and outer (32) minus padding
+        const minR = 18;
+        const maxR = 30;
 
         const rRandom = seededRandom(index + 100);
         const photoRadius = minR + rRandom * (maxR - minR);
@@ -84,7 +113,7 @@ export const GalaxyEffect: EffectLogic = {
       return new THREE.Vector3(x, yTitl, zTilt);
     } else {
       // --- PLANET BODY (JUPITER) ---
-      const planetRadius = 18;
+      const planetRadius = 12;
 
       // Volumetric filling with SHARP EDGE:
       // Mix: 50% Surface (Shell), 50% Volume
@@ -110,7 +139,7 @@ export const GalaxyEffect: EffectLogic = {
       const x = radiusAtY * Math.sin(theta);
       const z = radiusAtY * Math.cos(theta);
 
-      const tilt = Math.PI / 6;
+      const tilt = Math.PI / 16;
 
       const yTitl = y * Math.cos(tilt) - z * Math.sin(tilt);
       const zTilt = y * Math.sin(tilt) + z * Math.cos(tilt);
@@ -154,4 +183,96 @@ export const GalaxyEffect: EffectLogic = {
     // Slight shift to avoid flat color
     return new THREE.Color(r + shift, g + shift, b + shift);
   },
+};
+
+// --- Galaxy Scene Component with Floating Text ---
+interface GalaxySceneProps {
+  isScattered?: boolean;
+  displayText?: string;
+  themeColor?: string;
+  intensity?: number;
+}
+
+export const GalaxyScene = ({
+  isScattered = false,
+  displayText = "2026 521",
+  themeColor = "#FFD700",
+  intensity = 0.8,
+}: GalaxySceneProps) => {
+  // Compute derived colors from themeColor
+  const themeColorObj = useMemo(
+    () => new THREE.Color(themeColor),
+    [themeColor],
+  );
+  const darkerThemeColor = useMemo(() => {
+    const hsl = { h: 0, s: 0, l: 0 };
+    themeColorObj.getHSL(hsl);
+    return new THREE.Color().setHSL(hsl.h, hsl.s * 0.8, hsl.l * 0.4);
+  }, [themeColorObj]);
+  return (
+    <group>
+      {/* Background Star System */}
+      <Stars
+        radius={100}
+        depth={50}
+        count={5000}
+        factor={4}
+        saturation={0}
+        fade
+        speed={1}
+      />
+
+      {/* Floating Text - Billboard to always face camera */}
+      <Billboard
+        position={[0, 18, 0]}
+        follow={true}
+        lockX={false}
+        lockY={false}
+        lockZ={false}
+      >
+        <Float
+          speed={2}
+          rotationIntensity={0}
+          floatIntensity={1}
+        >
+          <Text
+            fontSize={3}
+            color={themeColor}
+            font='https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff'
+            characters={displayText}
+            anchorX='center'
+            anchorY='middle'
+            outlineWidth={0.02}
+            outlineColor={`#${darkerThemeColor.getHexString()}`}
+            material-toneMapped={false} // Important for bloom
+          >
+            {displayText}
+            <meshPhysicalMaterial
+              color={themeColor}
+              emissive={`#${darkerThemeColor.getHexString()}`}
+              emissiveIntensity={0.2 * intensity}
+              metalness={0.9}
+              roughness={0.1}
+              clearcoat={1}
+              clearcoatRoughness={0.1}
+              toneMapped={false}
+            />
+          </Text>
+          {/* Glow shadow layer */}
+          <Text
+            fontSize={3}
+            color={themeColor}
+            font='https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff'
+            characters={displayText}
+            anchorX='center'
+            anchorY='middle'
+            position={[0, 0, -0.1]}
+            fillOpacity={0.5 * intensity}
+          >
+            {displayText}
+          </Text>
+        </Float>
+      </Billboard>
+    </group>
+  );
 };
