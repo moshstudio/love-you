@@ -14,7 +14,10 @@ export async function POST(request: NextRequest) {
     }
     const userId = session.user.id;
 
-    const { albumId, expiresIn } = await request.json();
+    const { albumId, expiresIn } = (await request.json()) as {
+      albumId: string;
+      expiresIn?: number;
+    };
 
     if (!albumId) {
       return NextResponse.json(

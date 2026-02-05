@@ -209,14 +209,14 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
   };
 
   return (
-    <div className='w-full max-w-7xl mx-auto p-4 z-20 h-full flex flex-col'>
+    <div className='w-full max-w-7xl mx-auto p-3 sm:p-4 z-20 h-full flex flex-col'>
       {/* Header */}
-      <div className='flex justify-between items-center mb-8 border-b border-rose-100/50 pb-6 shrink-0'>
+      <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 border-b border-rose-100/50 pb-4 sm:pb-6 shrink-0 gap-4'>
         <div>
-          <h2 className='text-4xl text-rose-500 font-black tracking-tighter'>
+          <h2 className='text-2xl sm:text-4xl text-rose-500 font-black tracking-tighter'>
             {album ? album.title : t("accessArchives")}
           </h2>
-          <div className='text-rose-300 text-[10px] font-black uppercase tracking-[0.2em] mt-2 flex gap-6'>
+          <div className='text-rose-300 text-[9px] sm:text-[10px] font-black uppercase tracking-[0.1em] sm:tracking-[0.2em] mt-1.5 sm:mt-2 flex gap-3 sm:gap-6 flex-wrap'>
             {album?.location && (
               <span className='flex items-center gap-1.5'>
                 <MapPin className='w-3.5 h-3.5' /> {album.location}
@@ -227,33 +227,33 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
             </span>
           </div>
         </div>
-        <div className='flex items-center gap-3'>
+        <div className='flex items-center gap-2 sm:gap-3 flex-wrap'>
           <button
             onClick={() => router.push(`/albums/${albumId}/gallery`)}
-            className='p-3 bg-rose-50 text-rose-400 hover:bg-rose-100 rounded-full transition-all'
-            title={detailT("viewGallery") || "Gallery View"}
+            className='p-2 sm:p-3 bg-rose-50 text-rose-400 hover:bg-rose-100 rounded-full transition-all touch-target'
+            title={detailT("viewGallery")}
           >
-            <GalleryHorizontal className='w-5 h-5' />
+            <GalleryHorizontal className='w-4 h-4 sm:w-5 sm:h-5' />
           </button>
           <button
             onClick={() => setShowShareModal(true)}
-            className='p-3 bg-rose-50 text-rose-400 hover:bg-rose-100 rounded-full transition-all'
+            className='p-2 sm:p-3 bg-rose-50 text-rose-400 hover:bg-rose-100 rounded-full transition-all touch-target'
             title={detailT("shareAlbum")}
           >
-            <Share2 className='w-5 h-5' />
+            <Share2 className='w-4 h-4 sm:w-5 sm:h-5' />
           </button>
           <button
             onClick={() => setShowDeleteAlbumConfirm(true)}
-            className='p-3 bg-rose-50 text-rose-300 hover:text-rose-500 rounded-full transition-all'
+            className='p-2 sm:p-3 bg-rose-50 text-rose-300 hover:text-rose-500 rounded-full transition-all touch-target'
             title={t("delete")}
           >
-            <Trash2 className='w-5 h-5' />
+            <Trash2 className='w-4 h-4 sm:w-5 sm:h-5' />
           </button>
           <button
             onClick={onBack}
-            className='flex items-center gap-2 px-6 py-2.5 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-rose-200 font-bold group text-sm'
+            className='hidden sm:flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-rose-200 font-bold group text-xs sm:text-sm'
           >
-            <ArrowLeft className='w-4 h-4 group-hover:-translate-x-1 transition-transform' />
+            <ArrowLeft className='w-3 h-3 sm:w-4 sm:h-4 group-hover:-translate-x-1 transition-transform' />
             {t("returnToRoot")}
           </button>
         </div>
@@ -269,44 +269,52 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
       )}
 
       {/* Tabs */}
-      <div className='flex gap-2 mb-8 px-2'>
-        <button
-          onClick={() => setActiveTab("photos")}
-          className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.1em] transition-all ${
-            activeTab === "photos"
-              ? "bg-rose-500 text-white shadow-md shadow-rose-200"
-              : "bg-rose-50 text-rose-300 hover:text-rose-500"
-          }`}
-        >
-          {detailT("tabs.photos", { count: photos.length })}
-        </button>
-        <button
-          onClick={() => setActiveTab("stories")}
-          className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-[0.1em] transition-all ${
-            activeTab === "stories"
-              ? "bg-rose-500 text-white shadow-md shadow-rose-200"
-              : "bg-rose-50 text-rose-300 hover:text-rose-500"
-          }`}
-        >
-          {detailT("tabs.stories", { count: stories.length })}
-        </button>
+      <div className='flex flex-col sm:flex-row gap-2 sm:gap-2 mb-6 sm:mb-8 px-0 sm:px-2'>
+        <div className='flex gap-2 overflow-x-auto hide-scrollbar-mobile'>
+          <button
+            onClick={() => setActiveTab("photos")}
+            className={`px-4 sm:px-6 py-2 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-[0.05em] sm:tracking-[0.1em] transition-all whitespace-nowrap touch-target ${
+              activeTab === "photos"
+                ? "bg-rose-500 text-white shadow-md shadow-rose-200"
+                : "bg-rose-50 text-rose-300 hover:text-rose-500"
+            }`}
+          >
+            {detailT("tabs.photos", { count: photos.length })}
+          </button>
+          <button
+            onClick={() => setActiveTab("stories")}
+            className={`px-4 sm:px-6 py-2 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-[0.05em] sm:tracking-[0.1em] transition-all whitespace-nowrap touch-target ${
+              activeTab === "stories"
+                ? "bg-rose-500 text-white shadow-md shadow-rose-200"
+                : "bg-rose-50 text-rose-300 hover:text-rose-500"
+            }`}
+          >
+            {detailT("tabs.stories", { count: stories.length })}
+          </button>
+        </div>
 
         <div className='flex-1' />
 
         <div className='flex gap-2'>
           <button
             onClick={() => setShowUploadForm(!showUploadForm)}
-            className='flex items-center gap-2 px-4 py-2 bg-white border border-rose-100 text-rose-400 hover:bg-rose-50 rounded-full text-[10px] font-black uppercase tracking-widest transition-all'
+            className='flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-white border border-rose-100 text-rose-400 hover:bg-rose-50 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider sm:tracking-widest transition-all touch-target'
           >
-            <Upload className='w-3.5 h-3.5' />
-            {showUploadForm ? detailT("cancel") : detailT("uploadPhoto")}
+            <Upload className='w-3 h-3 sm:w-3.5 sm:h-3.5' />
+            <span className='hidden xs:inline'>
+              {showUploadForm ? detailT("cancel") : detailT("uploadPhoto")}
+            </span>
+            <span className='xs:hidden'>{detailT("upload.submit")}</span>
           </button>
           <button
             onClick={() => setShowStoryForm(!showStoryForm)}
-            className='flex items-center gap-2 px-4 py-2 bg-white border border-rose-100 text-rose-400 hover:bg-rose-50 rounded-full text-[10px] font-black uppercase tracking-widest transition-all'
+            className='flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-white border border-rose-100 text-rose-400 hover:bg-rose-50 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider sm:tracking-widest transition-all touch-target'
           >
-            <FileText className='w-3.5 h-3.5' />
-            {showStoryForm ? detailT("cancel") : detailT("addStory")}
+            <FileText className='w-3 h-3 sm:w-3.5 sm:h-3.5' />
+            <span className='hidden xs:inline'>
+              {showStoryForm ? detailT("cancel") : detailT("addStory")}
+            </span>
+            <span className='xs:hidden'>{detailT("story.submit")}</span>
           </button>
         </div>
       </div>
@@ -345,7 +353,9 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
                   disabled={isUploading}
                   className='px-6 py-2 bg-rose-500 text-white font-bold rounded-full text-xs uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  {isUploading ? "Uploading..." : detailT("upload.submit")}
+                  {isUploading
+                    ? detailT("processing")
+                    : detailT("upload.submit")}
                 </button>
               </form>
             </motion.div>
@@ -389,19 +399,19 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
           <div className='flex flex-col items-center justify-center h-64 gap-4'>
             <Sparkles className='w-10 h-10 text-rose-400 animate-spin-slow' />
             <div className='text-rose-300 text-sm font-bold tracking-widest animate-pulse uppercase'>
-              Opening Memory Vault...
+              {t("openingVault")}
             </div>
           </div>
         ) : activeTab === "photos" ? (
           photos.length === 0 ? (
-            <div className='flex flex-col items-center justify-center h-80 border-2 border-dashed border-rose-100 rounded-[3rem] bg-white/40'>
-              <ImageIcon className='w-16 h-16 text-rose-200 mb-4' />
-              <p className='text-rose-300 font-bold uppercase tracking-widest text-[10px]'>
+            <div className='flex flex-col items-center justify-center h-60 sm:h-80 border-2 border-dashed border-rose-100 rounded-2xl sm:rounded-[3rem] bg-white/40 mx-1 sm:mx-0'>
+              <ImageIcon className='w-12 h-12 sm:w-16 sm:h-16 text-rose-200 mb-3 sm:mb-4' />
+              <p className='text-rose-300 font-bold uppercase tracking-wider sm:tracking-widest text-[9px] sm:text-[10px]'>
                 {detailT("empty.photos")}
               </p>
             </div>
           ) : (
-            <div className='grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6'>
+            <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6'>
               {photos.map((photo, index) => (
                 <motion.div
                   key={photo.id}
@@ -409,7 +419,7 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
                   animate={{ opacity: 1, y: 0 }}
                   whileHover={{ y: -5 }}
                   transition={{ delay: index * 0.05 }}
-                  className='relative group aspect-square cursor-pointer overflow-hidden rounded-[2rem] border-4 border-white shadow-md hover:shadow-xl transition-all bg-white'
+                  className='relative group aspect-square cursor-pointer overflow-hidden rounded-xl sm:rounded-[2rem] border-2 sm:border-4 border-white shadow-md hover:shadow-xl transition-all bg-white'
                   onClick={() => setSelectedPhoto(photo)}
                 >
                   <img
@@ -417,8 +427,8 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
                     alt={photo.caption || "Memory"}
                     className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-700'
                   />
-                  <div className='absolute inset-0 bg-gradient-to-t from-rose-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-4'>
-                    <p className='text-[10px] text-white font-black truncate uppercase tracking-widest'>
+                  <div className='absolute inset-0 bg-gradient-to-t from-rose-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 sm:p-4'>
+                    <p className='text-[9px] sm:text-[10px] text-white font-black truncate uppercase tracking-wider sm:tracking-widest'>
                       {photo.caption}
                     </p>
                   </div>
@@ -428,14 +438,14 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
           )
         ) : /* Stories Tab */
         stories.length === 0 ? (
-          <div className='flex flex-col items-center justify-center h-80 border-2 border-dashed border-rose-100 rounded-[3rem] bg-white/40'>
-            <FileText className='w-16 h-16 text-rose-200 mb-4' />
-            <p className='text-rose-300 font-bold uppercase tracking-widest text-[10px]'>
+          <div className='flex flex-col items-center justify-center h-60 sm:h-80 border-2 border-dashed border-rose-100 rounded-2xl sm:rounded-[3rem] bg-white/40 mx-1 sm:mx-0'>
+            <FileText className='w-12 h-12 sm:w-16 sm:h-16 text-rose-200 mb-3 sm:mb-4' />
+            <p className='text-rose-300 font-bold uppercase tracking-wider sm:tracking-widest text-[9px] sm:text-[10px]'>
               {detailT("empty.stories")}
             </p>
           </div>
         ) : (
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+          <div className='grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6'>
             {stories.map((story, index) => (
               <motion.div
                 key={story.id}
@@ -526,24 +536,24 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
                     onClick={(e) => e.stopPropagation()}
                   >
                     <h3 className='text-2xl font-black text-rose-900 mb-4'>
-                      Let this memory fade?
+                      {detailT("letMemoryFade")}
                     </h3>
                     <p className='text-rose-400 text-sm mb-10 font-medium'>
-                      Are you sure you want to remove this beautiful moment?
+                      {detailT("confirmRemove")}
                     </p>
                     <div className='flex gap-3'>
                       <button
                         onClick={() => setShowDeleteConfirm(false)}
                         className='flex-1 py-4 bg-rose-50 text-rose-400 font-black rounded-full text-[10px] uppercase tracking-widest'
                       >
-                        Keep it
+                        {detailT("keepIt")}
                       </button>
                       <button
                         onClick={handleDelete}
                         className='flex-1 py-4 bg-rose-500 text-white font-black rounded-full text-[10px] uppercase tracking-widest'
                         disabled={deleting}
                       >
-                        {deleting ? "Processing..." : "Remove"}
+                        {deleting ? detailT("processing") : detailT("remove")}
                       </button>
                     </div>
                   </motion.div>
@@ -596,8 +606,7 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
               ) : (
                 <div className='space-y-6'>
                   <p className='text-rose-400 text-sm text-center font-medium'>
-                    Generate a public link to share this beautiful story with
-                    others.
+                    {detailT("generateLinkDesc")}
                   </p>
                   <button
                     onClick={handleCreateShare}
@@ -635,11 +644,10 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
               onClick={(e) => e.stopPropagation()}
             >
               <h3 className='text-3xl font-black text-rose-900 mb-4 tracking-tighter'>
-                Erase this story?
+                {detailT("eraseStory")}
               </h3>
               <p className='text-rose-400 text-sm mb-10 font-medium'>
-                This will permanently delete all memories in this album. Are you
-                sure?
+                {detailT("confirmEraseAlbum")}
               </p>
               <div className='flex flex-col gap-3'>
                 <button
@@ -647,13 +655,15 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
                   className='w-full py-5 bg-rose-500 text-white font-black rounded-full uppercase tracking-widest text-[10px]'
                   disabled={isDeletingAlbum}
                 >
-                  {isDeletingAlbum ? "Erasing..." : "Yes, Erase Forever"}
+                  {isDeletingAlbum
+                    ? detailT("erasing")
+                    : detailT("eraseForever")}
                 </button>
                 <button
                   onClick={() => setShowDeleteAlbumConfirm(false)}
                   className='w-full py-5 bg-rose-50 text-rose-400 font-black rounded-full uppercase tracking-widest text-[10px]'
                 >
-                  Keep it safe
+                  {detailT("keepSafe")}
                 </button>
               </div>
             </motion.div>

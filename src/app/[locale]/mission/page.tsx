@@ -99,10 +99,10 @@ export default function MissionPage() {
   if (loading) return null;
 
   return (
-    <div className='relative w-full h-screen text-slate-800 dark:text-white overflow-hidden font-sans selection:bg-rose-500/30'>
+    <div className='relative w-full min-h-screen text-slate-800 dark:text-white overflow-hidden font-sans selection:bg-rose-500/30 safe-area-inset-top safe-area-inset-bottom'>
       <ParticleBackground />
 
-      <main className='relative z-10 w-full h-full flex items-center justify-center p-6'>
+      <main className='relative z-10 w-full min-h-screen flex items-center justify-center p-4 sm:p-6'>
         <AnimatePresence mode='wait'>
           {gameState === "UPLOAD" && (
             <UploadMission
@@ -116,24 +116,24 @@ export default function MissionPage() {
           )}
 
           {gameState === "RESULT" && (
-            <div className='flex flex-col items-center w-full max-w-lg glass-panel p-12 rounded-[3rem] text-center'>
+            <div className='flex flex-col items-center w-full max-w-lg glass-panel p-8 sm:p-12 rounded-2xl sm:rounded-[3rem] text-center'>
               <Visualizer />
-              <h2 className='text-4xl font-black bg-clip-text text-transparent bg-gradient-to-br from-rose-400 to-purple-500 mb-6 mt-10'>
+              <h2 className='text-2xl sm:text-4xl font-black bg-clip-text text-transparent bg-gradient-to-br from-rose-400 to-purple-500 mb-4 sm:mb-6 mt-6 sm:mt-10'>
                 {t("dataSecured")}
               </h2>
-              <p className='text-rose-400 font-medium mb-10 leading-relaxed'>
+              <p className='text-rose-400 font-medium mb-6 sm:mb-10 leading-relaxed text-sm sm:text-base'>
                 {t("memoryIntegrated")}
               </p>
-              <div className='flex flex-col sm:flex-row gap-4 w-full'>
+              <div className='flex flex-col sm:flex-row gap-3 sm:gap-4 w-full'>
                 <button
                   onClick={() => router.push("/albums")}
-                  className='flex-1 px-10 py-4 bg-rose-500 text-white font-black rounded-full shadow-lg shadow-rose-200 hover:bg-rose-600 transition-all uppercase tracking-widest text-sm'
+                  className='flex-1 px-6 sm:px-10 py-3 sm:py-4 bg-rose-500 text-white font-black rounded-full shadow-lg shadow-rose-200 hover:bg-rose-600 transition-all uppercase tracking-wider sm:tracking-widest text-xs sm:text-sm touch-target'
                 >
                   {t("viewArchives")}
                 </button>
                 <button
                   onClick={() => setGameState("UPLOAD")}
-                  className='flex-1 px-10 py-4 bg-rose-50 text-rose-500 font-black rounded-full hover:bg-rose-100 transition-all uppercase tracking-widest text-sm'
+                  className='flex-1 px-6 sm:px-10 py-3 sm:py-4 bg-rose-50 text-rose-500 font-black rounded-full hover:bg-rose-100 transition-all uppercase tracking-wider sm:tracking-widest text-xs sm:text-sm touch-target'
                 >
                   {t("returnToRoot")}
                 </button>

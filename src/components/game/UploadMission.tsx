@@ -57,14 +57,14 @@ export function UploadMission({ onComplete, onBack }: UploadMissionProps) {
   };
 
   return (
-    <div className='w-full max-w-2xl mx-auto p-4 z-20'>
-      <div className='flex justify-between items-center mb-10 border-b border-rose-100/50 pb-4'>
-        <h2 className='text-2xl text-rose-500 font-black tracking-tight'>
+    <div className='w-full max-w-2xl mx-auto p-3 sm:p-4 z-20'>
+      <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-10 border-b border-rose-100/50 pb-3 sm:pb-4 gap-3'>
+        <h2 className='text-xl sm:text-2xl text-rose-500 font-black tracking-tight'>
           {t("uploadProtocol")}
         </h2>
         <button
           onClick={onBack}
-          className='text-rose-300 hover:text-rose-500 transition-colors text-sm font-bold uppercase tracking-widest'
+          className='text-rose-300 hover:text-rose-500 transition-colors text-[10px] sm:text-sm font-bold uppercase tracking-wider sm:tracking-widest touch-target'
         >
           {t("abort")}
         </button>
@@ -77,7 +77,7 @@ export function UploadMission({ onComplete, onBack }: UploadMissionProps) {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             className={`
-              relative h-96 border-4 border-dashed rounded-[3rem] flex flex-col items-center justify-center cursor-pointer transition-all duration-500
+              relative h-64 sm:h-96 border-4 border-dashed rounded-2xl sm:rounded-[3rem] flex flex-col items-center justify-center cursor-pointer transition-all duration-500
               ${isDragging ? "border-rose-400 bg-rose-50 shadow-2xl shadow-rose-100" : "border-rose-100 bg-white/40 hover:border-rose-300 hover:bg-white/60"}
             `}
             onDragOver={handleDragOver}
@@ -95,17 +95,17 @@ export function UploadMission({ onComplete, onBack }: UploadMissionProps) {
 
             <motion.div
               animate={{ y: isDragging ? -10 : 0 }}
-              className='mb-6 bg-rose-100/50 p-6 rounded-full'
+              className='mb-4 sm:mb-6 bg-rose-100/50 p-4 sm:p-6 rounded-full'
             >
               <Heart
-                className={`w-16 h-16 ${isDragging ? "text-rose-500 fill-rose-200" : "text-rose-300"}`}
+                className={`w-10 h-10 sm:w-16 sm:h-16 ${isDragging ? "text-rose-500 fill-rose-200" : "text-rose-300"}`}
               />
             </motion.div>
 
-            <p className='text-2xl text-rose-500 font-bold tracking-tight mb-2'>
+            <p className='text-lg sm:text-2xl text-rose-500 font-bold tracking-tight mb-1 sm:mb-2'>
               {t("dragData")}
             </p>
-            <p className='text-sm text-rose-300 font-medium'>
+            <p className='text-xs sm:text-sm text-rose-300 font-medium'>
               {t("clickToTransfer")}
             </p>
           </motion.div>
@@ -113,23 +113,23 @@ export function UploadMission({ onComplete, onBack }: UploadMissionProps) {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className='h-96 w-full flex flex-col items-center justify-center glass-panel border-rose-100 rounded-[3rem] relative overflow-hidden'
+            className='h-64 sm:h-96 w-full flex flex-col items-center justify-center glass-panel border-rose-100 rounded-2xl sm:rounded-[3rem] relative overflow-hidden'
           >
-            <div className='relative mb-8'>
+            <div className='relative mb-6 sm:mb-8'>
               <motion.div
                 animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
                 className='absolute inset-0 bg-rose-200 blur-2xl rounded-full'
               />
-              <Sparkles className='w-16 h-16 text-rose-500 relative z-10' />
+              <Sparkles className='w-10 h-10 sm:w-16 sm:h-16 text-rose-500 relative z-10' />
             </div>
 
-            <div className='w-64 space-y-4 text-center'>
-              <div className='flex justify-between text-xs text-rose-400 font-bold uppercase tracking-widest'>
+            <div className='w-48 sm:w-64 space-y-3 sm:space-y-4 text-center'>
+              <div className='flex justify-between text-[9px] sm:text-xs text-rose-400 font-bold uppercase tracking-wider sm:tracking-widest'>
                 <span>{t("encrypting")}</span>
                 <span>{Math.floor(progress)}%</span>
               </div>
-              <div className='h-3 bg-rose-50 w-full rounded-full overflow-hidden shadow-inner'>
+              <div className='h-2.5 sm:h-3 bg-rose-50 w-full rounded-full overflow-hidden shadow-inner'>
                 <motion.div
                   className='h-full bg-gradient-to-r from-rose-400 to-rose-500 rounded-full'
                   initial={{ width: 0 }}
@@ -138,7 +138,7 @@ export function UploadMission({ onComplete, onBack }: UploadMissionProps) {
               </div>
             </div>
 
-            <div className='mt-10 text-xs text-rose-400/80 font-bold text-center w-72 space-y-2 uppercase tracking-tight'>
+            <div className='mt-6 sm:mt-10 text-[9px] sm:text-xs text-rose-400/80 font-bold text-center w-56 sm:w-72 space-y-1.5 sm:space-y-2 uppercase tracking-tight'>
               <p className='flex items-center justify-center gap-2'>
                 <Heart className='w-3 h-3 fill-rose-200' />{" "}
                 {t("analyzingBitmap")}

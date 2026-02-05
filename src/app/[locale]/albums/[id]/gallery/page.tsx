@@ -102,7 +102,7 @@ export default function AlbumGalleryPage() {
   }
 
   return (
-    <div className='relative min-h-screen bg-black text-rose-100 font-sans overflow-hidden selection:bg-rose-500/30'>
+    <div className='relative min-h-screen bg-black text-rose-100 font-sans overflow-hidden selection:bg-rose-500/30 safe-area-inset-top safe-area-inset-bottom'>
       <ParticleBackground />
 
       {/* Header - Hidden in Immersive Mode if playing, or maybe just hidden in Immersive Mode? 
@@ -115,44 +115,44 @@ export default function AlbumGalleryPage() {
               initial={{ y: -100 }}
               animate={{ y: 0 }}
               exit={{ y: -100 }}
-              className='fixed top-0 left-0 right-0 z-40 p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent'
+              className='fixed top-0 left-0 right-0 z-40 px-3 py-3 sm:p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent'
             >
-              <div className='flex items-center gap-4'>
+              <div className='flex items-center gap-2 sm:gap-4'>
                 <button
                   onClick={() => router.push(`/albums/${albumId}`)}
-                  className='p-3 bg-white/10 hover:bg-rose-500/20 text-rose-300 rounded-full backdrop-blur-md transition-all group border border-white/5'
+                  className='p-2 sm:p-3 bg-white/10 hover:bg-rose-500/20 text-rose-300 rounded-full backdrop-blur-md transition-all group border border-white/5 touch-target flex items-center justify-center'
                 >
-                  <ArrowLeft className='w-5 h-5 group-hover:-translate-x-1 transition-transform' />
+                  <ArrowLeft className='w-4 h-4 sm:w-5 sm:h-5 group-hover:-translate-x-1 transition-transform' />
                 </button>
                 <div>
-                  <h1 className='text-2xl font-black text-white tracking-tight'>
+                  <h1 className='text-lg sm:text-2xl font-black text-white tracking-tight truncate max-w-[150px] sm:max-w-none'>
                     {album.title}
                   </h1>
-                  <p className='text-rose-400 text-xs font-bold tracking-widest uppercase'>
+                  <p className='text-rose-400 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase'>
                     {photos.length} Memories
                   </p>
                 </div>
               </div>
 
               {/* View Mode Toggle */}
-              <div className='flex bg-white/5 backdrop-blur-md rounded-full p-1 border border-white/10'>
+              <div className='flex bg-white/5 backdrop-blur-md rounded-full p-0.5 sm:p-1 border border-white/10'>
                 <button
                   onClick={() => setViewMode("grid")}
-                  className={`p-3 rounded-full transition-all ${
+                  className={`p-2 sm:p-3 rounded-full transition-all touch-target flex items-center justify-center ${
                     viewMode === "grid"
                       ? "bg-rose-500 text-white shadow-lg shadow-rose-900/50"
                       : "text-rose-400 hover:text-white"
                   }`}
                   title='Grid View'
                 >
-                  <Grid3X3 className='w-4 h-4' />
+                  <Grid3X3 className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
                 </button>
                 <button
                   onClick={() => setViewMode("christmas")}
-                  className='p-3 rounded-full transition-all text-rose-400 hover:text-white'
+                  className='p-2 sm:p-3 rounded-full transition-all text-rose-400 hover:text-white touch-target flex items-center justify-center'
                   title='Holiday Mode'
                 >
-                  <Trees className='w-4 h-4' />
+                  <Trees className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
                 </button>
                 <button
                   onClick={() => {
@@ -160,14 +160,14 @@ export default function AlbumGalleryPage() {
                     setCurrentIndex(0);
                     setIsPlaying(true);
                   }}
-                  className={`p-3 rounded-full transition-all ${
+                  className={`p-2 sm:p-3 rounded-full transition-all touch-target flex items-center justify-center ${
                     viewMode === "immersive"
                       ? "bg-blue-600 text-white shadow-lg shadow-blue-900/50"
                       : "text-rose-400 hover:text-white"
                   }`}
                   title='Immersive Mode'
                 >
-                  <Maximize2 className='w-4 h-4' />
+                  <Maximize2 className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
                 </button>
               </div>
             </motion.header>
@@ -236,7 +236,7 @@ export default function AlbumGalleryPage() {
               {viewMode === "immersive" && (
                 <button
                   onClick={() => setViewMode("grid")}
-                  className='absolute top-6 right-6 z-50 p-3 rounded-full border border-white/10 text-white/50 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all group'
+                  className='absolute top-6 right-6 z-50 p-3 rounded-full border border-white/10 text-white/50 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all group flex items-center justify-center'
                   aria-label='Exit Immersive View'
                 >
                   <X className='w-5 h-5' />

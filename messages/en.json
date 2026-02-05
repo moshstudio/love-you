@@ -4,6 +4,10 @@
     "login": "Login",
     "register": "Register"
   },
+  "Metadata": {
+    "title": "Love You - Share Your Memories",
+    "description": "A stunning platform to save and share your photos, trips, and stories."
+  },
   "Home": {
     "heroTitle": "Capture Your Memories",
     "heroDescription": "Save all your photos, trips, and stories in one beautiful place. Share with loved ones through magical links and stunning visual effects.",
@@ -99,6 +103,15 @@
         "description": "Write something special about this album...",
         "location": "Where did you go?"
       }
+    },
+    "ourBeautifulJourney": "Our Beautiful Journey Together",
+    "foreverAndAlways": "Forever & Always",
+    "revisitingMemories": "Revisiting Memories...",
+    "awaitingMemories": "Awaiting Memories",
+    "memoryStorage": "Memory Storage",
+    "errors": {
+      "load": "Failed to load albums",
+      "create": "Failed to create album"
     }
   },
   "AlbumDetail": {
@@ -153,7 +166,18 @@
       "errorPhoto": "Failed to delete photo",
       "errorStory": "Failed to delete story",
       "button": "Delete"
-    }
+    },
+    "processing": "Processing...",
+    "remove": "Remove",
+    "letMemoryFade": "Let this memory fade?",
+    "confirmRemove": "Are you sure you want to remove this beautiful moment?",
+    "keepIt": "Keep it",
+    "generateLinkDesc": "Generate a public link to share this beautiful story with others.",
+    "eraseStory": "Erase this story?",
+    "confirmEraseAlbum": "This will permanently delete all memories in this album. Are you sure?",
+    "erasing": "Erasing...",
+    "eraseForever": "Yes, Erase Forever",
+    "keepSafe": "Keep it safe"
   },
   "Game": {
     "UI": {
@@ -195,7 +219,10 @@
       "deletePhoto": "DELETE PHOTO",
       "deleteStory": "DELETE STORY",
       "incomingTransmission": "A new piece of sweetness is coming",
-      "viewArchives": "VIEW TIME ARCHIVES"
+      "viewArchives": "VIEW TIME ARCHIVES",
+      "ourStory": "OUR STORY",
+      "openingVault": "Opening Memory Vault...",
+      "loggedInAs": "Logged in as"
     },
     "HUD": {
       "gps": "GPS",

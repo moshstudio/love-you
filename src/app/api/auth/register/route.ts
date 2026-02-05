@@ -8,7 +8,11 @@ import { randomUUID } from "crypto";
 
 export async function POST(request: NextRequest) {
   try {
-    const { email, username, password } = await request.json();
+    const { email, username, password } = (await request.json()) as {
+      email?: string;
+      username?: string;
+      password?: string;
+    };
 
     if (!email || !username || !password) {
       return NextResponse.json(

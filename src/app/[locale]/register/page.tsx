@@ -50,31 +50,31 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className='relative min-h-screen flex items-center justify-center p-4 overflow-hidden font-sans selection:bg-rose-500/30'>
+    <div className='relative min-h-screen flex items-center justify-center p-4 sm:p-6 overflow-hidden font-sans selection:bg-rose-500/30 safe-area-inset-top safe-area-inset-bottom'>
       <ParticleBackground />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
-        className='relative z-10 w-full max-w-md glass-panel p-8 rounded-3xl shadow-xl'
+        className='relative z-10 w-full max-w-md glass-panel p-5 sm:p-8 rounded-2xl sm:rounded-3xl shadow-xl'
       >
-        <div className='flex justify-center mb-6'>
-          <div className='p-3 bg-rose-50 rounded-2xl'>
-            <HeartIcon className='w-8 h-8 text-rose-500 animate-pulse' />
+        <div className='flex justify-center mb-4 sm:mb-6'>
+          <div className='p-2.5 sm:p-3 bg-rose-50 rounded-xl sm:rounded-2xl'>
+            <HeartIcon className='w-6 h-6 sm:w-8 sm:h-8 text-rose-500 animate-pulse' />
           </div>
         </div>
 
-        <h1 className='text-3xl font-black text-center mb-2 tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-rose-400 via-rose-500 to-purple-500'>
+        <h1 className='text-2xl sm:text-3xl font-black text-center mb-1 sm:mb-2 tracking-tighter bg-clip-text text-transparent bg-gradient-to-br from-rose-400 via-rose-500 to-purple-500'>
           {t("title")}
         </h1>
-        <p className='text-center text-rose-400/80 mb-8 text-xs tracking-[0.2em] uppercase font-bold'>
+        <p className='text-center text-rose-400/80 mb-5 sm:mb-8 text-[10px] sm:text-xs tracking-[0.15em] sm:tracking-[0.2em] uppercase font-bold'>
           {t("subtitle")}
         </p>
 
         <form
           onSubmit={handleSubmit}
-          className='space-y-5'
+          className='space-y-3 sm:space-y-5'
         >
           <div className='space-y-2'>
             <label className='block text-xs font-bold tracking-widest text-rose-400 uppercase ml-1'>
@@ -85,7 +85,7 @@ export default function RegisterPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className='w-full bg-white/50 dark:bg-black/20 border border-rose-100 dark:border-rose-900/30 text-foreground px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition-all placeholder:text-rose-300'
+              className='w-full bg-white/50 dark:bg-black/20 border border-rose-100 dark:border-rose-900/30 text-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition-all placeholder:text-rose-300 text-sm sm:text-base'
               placeholder={t("placeholders.email")}
             />
           </div>
@@ -99,7 +99,7 @@ export default function RegisterPage() {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
-              className='w-full bg-white/50 dark:bg-black/20 border border-rose-100 dark:border-rose-900/30 text-foreground px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition-all placeholder:text-rose-300'
+              className='w-full bg-white/50 dark:bg-black/20 border border-rose-100 dark:border-rose-900/30 text-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition-all placeholder:text-rose-300 text-sm sm:text-base'
               placeholder={t("placeholders.username")}
             />
           </div>
@@ -113,7 +113,7 @@ export default function RegisterPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className='w-full bg-white/50 dark:bg-black/20 border border-rose-100 dark:border-rose-900/30 text-foreground px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition-all placeholder:text-rose-300'
+              className='w-full bg-white/50 dark:bg-black/20 border border-rose-100 dark:border-rose-900/30 text-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition-all placeholder:text-rose-300 text-sm sm:text-base'
               placeholder={t("placeholders.password")}
             />
           </div>
@@ -127,7 +127,7 @@ export default function RegisterPage() {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
-              className='w-full bg-white/50 dark:bg-black/20 border border-rose-100 dark:border-rose-900/30 text-foreground px-4 py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition-all placeholder:text-rose-300'
+              className='w-full bg-white/50 dark:bg-black/20 border border-rose-100 dark:border-rose-900/30 text-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-400/20 transition-all placeholder:text-rose-300 text-sm sm:text-base'
               placeholder={t("placeholders.password")}
             />
           </div>
@@ -147,7 +147,7 @@ export default function RegisterPage() {
             }}
             whileTap={{ scale: 0.98 }}
             disabled={loading}
-            className='w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-4 rounded-xl uppercase tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden mt-4'
+            className='w-full bg-rose-500 hover:bg-rose-600 text-white font-bold py-3 sm:py-4 rounded-xl uppercase tracking-wider sm:tracking-widest transition-all disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden mt-3 sm:mt-4 text-sm sm:text-base touch-target'
           >
             <span className='relative z-10'>
               {loading ? t("submitting") : t("submit")}
@@ -155,11 +155,11 @@ export default function RegisterPage() {
           </motion.button>
         </form>
 
-        <div className='text-center mt-8 text-rose-400/60 text-xs tracking-wider'>
+        <div className='text-center mt-5 sm:mt-8 text-rose-400/60 text-[10px] sm:text-xs tracking-wider'>
           {t("hasAccount")}{" "}
           <Link
             href='/login'
-            className='text-rose-500 hover:text-rose-600 font-bold ml-2 transition-colors'
+            className='text-rose-500 hover:text-rose-600 font-bold ml-1 sm:ml-2 transition-colors'
           >
             {t("login")}
           </Link>

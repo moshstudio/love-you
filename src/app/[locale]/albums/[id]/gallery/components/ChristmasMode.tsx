@@ -1,6 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useMemo, Suspense } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  Suspense,
+  useCallback,
+} from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
   OrbitControls,
@@ -8,6 +15,7 @@ import {
   Environment,
   useTexture,
 } from "@react-three/drei";
+import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import { motion, AnimatePresence } from "framer-motion";
@@ -47,6 +55,101 @@ const EFFECTS: Record<EffectType, EffectLogic> = {
   HEART: HeartLogic,
   GALAXY: GalaxyEffect,
   TREE: ChristmasTreeEffectLogic, // Use dummy logic for map, but we won't render ParticleSystem
+};
+
+// --- Gesture Orbit Controls Component ---
+interface GestureOrbitControlsProps {
+  focusedIndex: number | null;
+  gestureDrag: { deltaX: number; deltaY: number; isDragging: boolean };
+}
+
+const GestureOrbitControls = ({
+  focusedIndex,
+  gestureDrag,
+}: GestureOrbitControlsProps) => {
+  const controlsRef = useRef<OrbitControlsImpl>(null);
+  const { camera } = useThree();
+
+  // Accumulator for smooth gesture rotation
+  const targetAzimuth = useRef(0);
+  const targetPolar = useRef(Math.PI / 2); // Start at horizontal
+  const isGestureDragging = useRef(false);
+
+  useFrame((state, delta) => {
+    if (!controlsRef.current) return;
+
+    // When gesture dragging starts, capture current angles
+    if (gestureDrag.isDragging && !isGestureDragging.current) {
+      targetAzimuth.current = controlsRef.current.getAzimuthalAngle();
+      targetPolar.current = controlsRef.current.getPolarAngle();
+      isGestureDragging.current = true;
+      // Disable auto-rotate during gesture drag
+      controlsRef.current.autoRotate = false;
+    }
+
+    // When gesture dragging ends
+    if (!gestureDrag.isDragging && isGestureDragging.current) {
+      isGestureDragging.current = false;
+      // Re-enable auto-rotate if not focused
+      if (focusedIndex === null) {
+        controlsRef.current.autoRotate = true;
+      }
+    }
+
+    // Apply gesture rotation
+    if (gestureDrag.isDragging && isGestureDragging.current) {
+      // Update target angles based on gesture delta
+      // deltaX controls horizontal rotation (azimuthal)
+      // deltaY controls vertical rotation (polar)
+      targetAzimuth.current += gestureDrag.deltaX * 0.5;
+      targetPolar.current += gestureDrag.deltaY * 0.3;
+
+      // Clamp polar angle to prevent flipping
+      targetPolar.current = Math.max(
+        0.1,
+        Math.min(Math.PI - 0.1, targetPolar.current),
+      );
+
+      // Get current camera position in spherical coordinates
+      const spherical = new THREE.Spherical();
+      const offset = new THREE.Vector3();
+      offset.copy(camera.position).sub(controlsRef.current.target);
+      spherical.setFromVector3(offset);
+
+      // Smoothly interpolate to target angles
+      spherical.theta = THREE.MathUtils.lerp(
+        spherical.theta,
+        targetAzimuth.current,
+        delta * 8,
+      );
+      spherical.phi = THREE.MathUtils.lerp(
+        spherical.phi,
+        targetPolar.current,
+        delta * 8,
+      );
+
+      // Apply new position
+      offset.setFromSpherical(spherical);
+      camera.position.copy(controlsRef.current.target).add(offset);
+      camera.lookAt(controlsRef.current.target);
+
+      // Update controls
+      controlsRef.current.update();
+    }
+  });
+
+  return (
+    <OrbitControls
+      ref={controlsRef}
+      enableZoom={true}
+      autoRotate={focusedIndex === null && !gestureDrag.isDragging}
+      autoRotateSpeed={0.5}
+      enableDamping
+      dampingFactor={0.05}
+      maxDistance={100}
+      minDistance={5}
+    />
+  );
 };
 
 // --- Particle System Component ---
@@ -479,6 +582,46 @@ export const ChristmasMode = ({
   const [isGestureEnabled, setIsGestureEnabled] = useState(false);
   const [gestureFeedback, setGestureFeedback] = useState<string | null>(null);
 
+  // 记住切换页面前的手势识别状态，用于恢复
+  const gestureEnabledBeforeHiddenRef = useRef(false);
+
+  // 监听页面可见性变化，当页面隐藏时自动关闭手势识别，返回时恢复
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // 页面隐藏：记住当前状态并关闭手势识别
+        gestureEnabledBeforeHiddenRef.current = isGestureEnabled;
+        if (isGestureEnabled) {
+          setIsGestureEnabled(false);
+        }
+      } else {
+        // 页面可见：如果之前开启了手势识别，则恢复
+        if (gestureEnabledBeforeHiddenRef.current) {
+          setIsGestureEnabled(true);
+        }
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [isGestureEnabled]);
+  const [gestureDrag, setGestureDrag] = useState({
+    deltaX: 0,
+    deltaY: 0,
+    isDragging: false,
+  });
+
+  // Callback for gesture palm drag
+  const handlePalmDrag = useCallback(
+    (deltaX: number, deltaY: number, isDragging: boolean) => {
+      setGestureDrag({ deltaX, deltaY, isDragging });
+    },
+    [],
+  );
+
   // 使用惰性初始化从 localStorage 读取
   const [displayText, setDisplayText] = useState(() => {
     if (typeof window !== "undefined") {
@@ -624,7 +767,7 @@ export const ChristmasMode = ({
             onFocus={setFocusedIndex}
             onScatter={() => setIsScattered(true)}
           />
-          <Environment preset='city' />
+          <Environment files='https://cdn.jsdelivr.net/gh/pmndrs/drei-assets@master/hdri/potsdamer_platz_1k.hdr' />
           <EffectComposer>
             <Vignette
               eskil={false}
@@ -634,14 +777,9 @@ export const ChristmasMode = ({
           </EffectComposer>
         </Suspense>
 
-        <OrbitControls
-          enableZoom={true}
-          autoRotate={focusedIndex === null} // Disable rotation when locked
-          autoRotateSpeed={0.5}
-          enableDamping
-          dampingFactor={0.05}
-          maxDistance={100}
-          minDistance={5}
+        <GestureOrbitControls
+          focusedIndex={focusedIndex}
+          gestureDrag={gestureDrag}
         />
       </Canvas>
 
@@ -946,6 +1084,8 @@ export const ChristmasMode = ({
             showFeedback("👈 Prev", 800);
           }
         }}
+        onPalmDrag={handlePalmDrag}
+        onError={(msg) => showFeedback(`⚠️ ${msg}`, 3000)}
       />
 
       {/* Gesture Feedback Toast */}
@@ -982,18 +1122,18 @@ export const ChristmasMode = ({
               <div className='flex items-center gap-3'>
                 <span className='text-xl'>✊</span>
                 <div>
-                  <p className='font-bold text-[#FFD700]/90'>Converge</p>
+                  <p className='font-bold text-[#FFD700]/90'>Converge + Drag</p>
                   <p className='text-[#FFD700]/50 text-[10px]'>
-                    Fist to gather
+                    Fist to gather, move to rotate
                   </p>
                 </div>
               </div>
               <div className='flex items-center gap-3'>
                 <span className='text-xl'>✋</span>
                 <div>
-                  <p className='font-bold text-[#FFD700]/90'>Scatter</p>
+                  <p className='font-bold text-[#FFD700]/90'>Scatter + Drag</p>
                   <p className='text-[#FFD700]/50 text-[10px]'>
-                    Open hand to see all
+                    Open hand to scatter, move to rotate
                   </p>
                 </div>
               </div>

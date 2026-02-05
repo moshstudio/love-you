@@ -30,7 +30,7 @@ export default function AlbumDetailPageStandalone() {
         <div className='flex flex-col items-center gap-4'>
           <div className='w-12 h-12 border-4 border-rose-100 border-t-rose-500 rounded-full animate-spin' />
           <div className='text-xs tracking-widest animate-pulse font-bold uppercase'>
-            Opening Memory Vault...
+            {gameT("openingVault")}
           </div>
         </div>
       </div>
@@ -40,26 +40,29 @@ export default function AlbumDetailPageStandalone() {
   if (!user) return null;
 
   return (
-    <div className='relative w-full h-screen text-foreground overflow-hidden font-sans selection:bg-rose-500/30'>
+    <div className='relative w-full min-h-screen text-foreground overflow-hidden font-sans selection:bg-rose-500/30 safe-area-inset-top safe-area-inset-bottom'>
       <ParticleBackground />
 
       <div className='relative z-10 w-full h-full flex flex-col'>
-        <header className='fixed top-0 w-full p-4 flex justify-between items-center border-b border-rose-100/20 bg-white/20 dark:bg-black/20 backdrop-blur-md z-50'>
-          <div className='flex items-center gap-2'>
-            <HeartIcon className='w-4 h-4 text-rose-500 animate-pulse' />
-            <span className='text-rose-500 text-xs tracking-[0.2em] font-bold uppercase'>
+        <header className='fixed top-0 w-full px-3 py-3 sm:p-4 flex justify-between items-center border-b border-rose-100/20 bg-white/20 dark:bg-black/20 backdrop-blur-md z-50'>
+          <div className='flex items-center gap-1.5 sm:gap-2'>
+            <HeartIcon className='w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 animate-pulse' />
+            <span className='text-rose-500 text-[10px] sm:text-xs tracking-[0.15em] sm:tracking-[0.2em] font-bold uppercase'>
               {gameT("systemOnline")}
             </span>
           </div>
-          <div className='flex items-center gap-4'>
-            <div className='text-xs text-rose-400 font-medium'>
+          <div className='flex items-center gap-2 sm:gap-4'>
+            <div className='hidden sm:block text-xs text-rose-400 font-medium'>
               {gameT("locUnknown")} • {gameT("time")}: <RealTimeClock />
+            </div>
+            <div className='sm:hidden text-[10px] text-rose-400 font-medium'>
+              <RealTimeClock />
             </div>
             <LanguageSwitcher />
           </div>
         </header>
 
-        <main className='flex-1 flex items-center justify-center p-6 pt-24 h-full'>
+        <main className='flex-1 flex items-center justify-center p-3 sm:p-6 pt-16 sm:pt-24 h-full'>
           <ArchivesView
             albumId={albumId}
             onBack={() => router.push("/albums")}

@@ -52,7 +52,10 @@ export async function PUT(
     }
     const userId = session.user.id;
 
-    const { title, content } = await request.json();
+    const { title, content } = (await request.json()) as {
+      title?: string;
+      content?: string;
+    };
 
     const { env } = await getCloudflareContext();
     const db = getDb(env.DB);

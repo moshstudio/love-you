@@ -394,6 +394,8 @@ interface HeartGestureHandlerProps {
   setIsScattered: (val: boolean) => void;
   setFocusedIndex: (cb: (prev: number | null) => number | null) => void;
   onNavigate: (direction: "next" | "prev") => void;
+  onPalmDrag?: (deltaX: number, deltaY: number, isDragging: boolean) => void;
+  onError?: (error: string) => void;
 }
 
 export const HeartGestureHandler = ({
@@ -402,10 +404,13 @@ export const HeartGestureHandler = ({
   setIsScattered,
   setFocusedIndex,
   onNavigate,
+  onPalmDrag,
+  onError,
 }: HeartGestureHandlerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const handLandmarkerRef = useRef<HandLandmarker | null>(null);
   const requestRef = useRef<number | null>(null);
   const lastVideoTimeRef = useRef<number>(-1);
@@ -414,12 +419,14 @@ export const HeartGestureHandler = ({
   const onNavigateRef = useRef(onNavigate);
   const setFocusedIndexRef = useRef(setFocusedIndex);
   const setIsScatteredRef = useRef(setIsScattered);
+  const onPalmDragRef = useRef(onPalmDrag);
 
   useEffect(() => {
     onNavigateRef.current = onNavigate;
     setFocusedIndexRef.current = setFocusedIndex;
     setIsScatteredRef.current = setIsScattered;
-  }, [onNavigate, setFocusedIndex, setIsScattered]);
+    onPalmDragRef.current = onPalmDrag;
+  }, [onNavigate, setFocusedIndex, setIsScattered, onPalmDrag]);
 
   // State for gesture debouncing
   const lastGestureTime = useRef<number>(0);
@@ -429,6 +436,11 @@ export const HeartGestureHandler = ({
 
   // Swipe detection
   const lastIndexX = useRef<number | null>(null);
+
+  // Palm drag detection (for open hand / fist drag)
+  const lastPalmPos = useRef<{ x: number; y: number } | null>(null);
+  const isDragging = useRef<boolean>(false);
+  const currentDragGesture = useRef<"fist" | "open" | null>(null);
   const gestureHistory = useRef<number[]>([]); // To smooth out detection jitter
 
   useEffect(() => {
@@ -474,11 +486,30 @@ export const HeartGestureHandler = ({
         videoRef.current.srcObject = null;
       }
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
+
+      // Reset drag state when gesture is disabled
+      if (isDragging.current && onPalmDragRef.current) {
+        onPalmDragRef.current(0, 0, false);
+      }
+      lastPalmPos.current = null;
+      isDragging.current = false;
+      currentDragGesture.current = null;
+      lastIndexX.current = null;
+
       return;
     }
 
     const startCamera = async () => {
       try {
+        setError(null);
+        // Check if mediaDevices is supported
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+          const msg = "浏览器不支持摄像头 (需使用 HTTPS)";
+          setError(msg);
+          if (onError) onError(msg);
+          return;
+        }
+
         const stream = await navigator.mediaDevices.getUserMedia({
           video: { width: 320, height: 240 },
         });
@@ -486,8 +517,16 @@ export const HeartGestureHandler = ({
           videoRef.current.srcObject = stream;
           videoRef.current.addEventListener("loadeddata", predictWebcam);
         }
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error accessing webcam:", err);
+        let msg = "无法访问摄像头";
+        if (err.name === "NotAllowedError") {
+          msg = "摄像头权限被拒绝";
+        } else if (err.name === "NotFoundError") {
+          msg = "未找到摄像头设备";
+        }
+        setError(msg);
+        if (onError) onError(msg);
       }
     };
 
@@ -531,7 +570,7 @@ export const HeartGestureHandler = ({
         );
 
         // Optional: Draw landmarks
-        if (results.landmarks) {
+        if (results.landmarks && results.landmarks.length > 0) {
           const drawingUtils = new DrawingUtils(canvasCtx);
           for (const landmarks of results.landmarks) {
             drawingUtils.drawConnectors(
@@ -547,6 +586,15 @@ export const HeartGestureHandler = ({
 
             detectGesture(landmarks);
           }
+        } else {
+          // No hand detected - reset drag state
+          if (isDragging.current && onPalmDragRef.current) {
+            onPalmDragRef.current(0, 0, false);
+          }
+          lastPalmPos.current = null;
+          isDragging.current = false;
+          currentDragGesture.current = null;
+          lastIndexX.current = null;
         }
         canvasCtx.restore();
       }
@@ -589,8 +637,58 @@ export const HeartGestureHandler = ({
       thumbExtended,
     ].filter(Boolean).length;
 
+    // Get palm center (wrist landmark 0)
+    const palmPos = {
+      x: landmarks[0].x,
+      y: landmarks[0].y,
+    };
+
+    // Determine current gesture type for drag
+    const isFist = extendedCount <= 1 && !indexExtended;
+    const isOpenHand = extendedCount === 5;
+    const isDragGesture = isFist || isOpenHand;
+
+    // Handle palm drag for fist or open hand gestures
+    if (isDragGesture && onPalmDragRef.current) {
+      const newGestureType = isFist ? "fist" : "open";
+
+      // If gesture type changed, reset drag state
+      if (currentDragGesture.current !== newGestureType) {
+        lastPalmPos.current = null;
+        isDragging.current = false;
+      }
+      currentDragGesture.current = newGestureType;
+
+      if (lastPalmPos.current !== null) {
+        const deltaX = (palmPos.x - lastPalmPos.current.x) * -1; // Invert X for natural feel (mirror effect)
+        const deltaY = (palmPos.y - lastPalmPos.current.y) * -1; // Invert Y for natural feel
+
+        // Apply sensitivity multiplier for smoother control
+        const sensitivity = 3.0;
+        const smoothDeltaX = deltaX * sensitivity;
+        const smoothDeltaY = deltaY * sensitivity;
+
+        // Only trigger drag if movement is significant
+        if (Math.abs(deltaX) > 0.001 || Math.abs(deltaY) > 0.001) {
+          isDragging.current = true;
+          onPalmDragRef.current(smoothDeltaX, smoothDeltaY, true);
+        }
+      }
+
+      lastPalmPos.current = palmPos;
+    } else {
+      // Not a drag gesture, reset drag state
+      if (isDragging.current && onPalmDragRef.current) {
+        onPalmDragRef.current(0, 0, false);
+      }
+      lastPalmPos.current = null;
+      isDragging.current = false;
+      currentDragGesture.current = null;
+    }
+
     // Logic 1: Fist (0 or 1 finger) -> Heart (Aggregate)
-    if (extendedCount <= 1 && !indexExtended) {
+    // Only trigger state change on gesture start, not during drag
+    if (isFist) {
       if (now - lastGestureTime.current > gestureCooldown) {
         setIsScatteredRef.current(false);
         lastGestureTime.current = now;
@@ -598,7 +696,8 @@ export const HeartGestureHandler = ({
     }
 
     // Logic 2: Open Hand (5 fingers) -> Scatter
-    if (extendedCount === 5) {
+    // Only trigger state change on gesture start, not during drag
+    if (isOpenHand) {
       if (now - lastGestureTime.current > gestureCooldown) {
         setIsScatteredRef.current(true);
         lastGestureTime.current = now;
@@ -670,8 +769,10 @@ export const HeartGestureHandler = ({
           className='absolute inset-0 w-full h-full transform -scale-x-100'
         />
       </div>
-      <div className='mt-2 text-[#FFD700] text-xs font-mono bg-black/50 px-2 py-1 rounded backdrop-blur-sm'>
-        Gesture Active
+      <div
+        className={`mt-2 text-xs font-mono bg-black/50 px-2 py-1 rounded backdrop-blur-sm ${error ? "text-red-400 border border-red-400/30" : "text-[#FFD700]"}`}
+      >
+        {error ? error : "Gesture Active"}
       </div>
     </div>
   );

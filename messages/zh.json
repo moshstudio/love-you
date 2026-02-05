@@ -4,6 +4,10 @@
     "login": "登录",
     "register": "注册"
   },
+  "Metadata": {
+    "title": "Love You - 分享你的回忆",
+    "description": "一个保存和分享照片、旅程和故事的绝佳平台。"
+  },
   "Home": {
     "heroTitle": "珍藏美好回忆",
     "heroDescription": "在一个精美的地方保存您的所有照片、旅程和故事。通过神奇的链接和炫酷的视觉效果与亲人分享。",
@@ -99,6 +103,15 @@
         "description": "写下关于这个相册的特别回忆...",
         "location": "您去了哪里？"
       }
+    },
+    "ourBeautifulJourney": "我们在一起的美好旅程",
+    "foreverAndAlways": "天长地久",
+    "revisitingMemories": "重温回忆中...",
+    "awaitingMemories": "等待美好回忆",
+    "memoryStorage": "记忆存储",
+    "errors": {
+      "load": "加载相册失败",
+      "create": "创建相册失败"
     }
   },
   "AlbumDetail": {
@@ -153,7 +166,18 @@
       "errorPhoto": "删除照片失败",
       "errorStory": "删除故事失败",
       "button": "删除"
-    }
+    },
+    "processing": "处理中...",
+    "remove": "移除",
+    "letMemoryFade": "让这段记忆褪色？",
+    "confirmRemove": "你确定要移除这个美好瞬间吗？",
+    "keepIt": "保留",
+    "generateLinkDesc": "生成公共链接，与他人分享这个美丽的故事。",
+    "eraseStory": "抹去这个故事？",
+    "confirmEraseAlbum": "这将永久删除此相册中的所有回忆。确定吗？",
+    "erasing": "抹去中...",
+    "eraseForever": "是的，永远抹去",
+    "keepSafe": "妥善保管"
   },
   "Game": {
     "UI": {
@@ -195,7 +219,10 @@
       "deletePhoto": "删除照片",
       "deleteStory": "删除故事",
       "incomingTransmission": "一份新的甜蜜正在传来",
-      "viewArchives": "查看时光档案"
+      "viewArchives": "查看时光档案",
+      "ourStory": "我们的故事",
+      "openingVault": "正在开启记忆宝库...",
+      "loggedInAs": "当前登录"
     },
     "HUD": {
       "gps": "GPS",

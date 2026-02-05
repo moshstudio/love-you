@@ -53,9 +53,16 @@ export async function PUT(
     const userId = session.user.id;
 
     const { title, description, location, startDate, endDate, coverPhotoUrl } =
-      await request.json();
+      (await request.json()) as {
+        title?: string;
+        description?: string;
+        location?: string;
+        startDate?: string;
+        endDate?: string;
+        coverPhotoUrl?: string;
+      };
 
-    const { env } = await getCloudflareContext({async: true});
+    const { env } = await getCloudflareContext({ async: true });
     const db = getDb(env.DB);
 
     // Verify ownership

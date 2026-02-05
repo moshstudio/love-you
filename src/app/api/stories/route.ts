@@ -64,7 +64,11 @@ export async function POST(request: NextRequest) {
     }
     const userId = session.user.id;
 
-    const { albumId, title, content } = await request.json();
+    const { albumId, title, content } = (await request.json()) as {
+      albumId: string;
+      title: string;
+      content: string;
+    };
 
     if (!albumId || !title || !content) {
       return NextResponse.json(
