@@ -199,6 +199,12 @@ export default function GameUI() {
                   >
                     {navT("register")}
                   </Link>
+                  <Link
+                    href='/privacy'
+                    className='text-rose-400 hover:text-rose-600 text-xs md:text-sm tracking-[0.2em] transition-colors px-4 py-2 rounded-lg hover:bg-rose-50/50'
+                  >
+                    {navT("privacy")}
+                  </Link>
                 </motion.div>
               </motion.div>
             )}

@@ -2,7 +2,8 @@
   "Navigation": {
     "brand": "Love You",
     "login": "登录",
-    "register": "注册"
+    "register": "注册",
+    "privacy": "隐私政策"
   },
   "Metadata": {
     "title": "Love You - 分享你的回忆",
@@ -150,7 +151,12 @@
       "generateLink": "生成分享链接",
       "close": "关闭",
       "copied": "链接已复制到剪贴板！",
-      "errorGeneric": "创建分享链接失败"
+      "errorGeneric": "创建分享链接失败",
+      "duration": "有效期",
+      "oneDay": "1天",
+      "sevenDays": "7天",
+      "thirtyDays": "30天",
+      "forever": "永久"
     },
     "tabs": {
       "photos": "照片 ({count})",
@@ -222,7 +228,17 @@
       "viewArchives": "查看时光档案",
       "ourStory": "我们的故事",
       "openingVault": "正在开启记忆宝库...",
-      "loggedInAs": "当前登录"
+      "loggedInAs": "当前登录",
+      "privacyNotice": "上传即表示您同意我们的隐私政策。您的照片将被安全地存储在我们的服务器上。",
+      "viewPrivacy": "查看隐私政策",
+      "siteIntro": "什么是 Love You？",
+      "siteDescription": "一个属于你回忆的避风港。不仅仅是相册，更是一种沉浸式的体验，旨在让你的珍贵瞬间永恒延续。",
+      "feature1Title": "珍藏与整理",
+      "feature1Desc": "为你的旅行、约会和日常生活创建精美的相册。",
+      "feature2Title": "沉浸式重温",
+      "feature2Desc": "通过惊艳的 3D 效果、粒子和交互式画廊重现你的照片。",
+      "feature3Title": "分享这份爱",
+      "feature3Desc": "生成独特的链接，与家人和朋友分享你的浪漫之旅。"
     },
     "HUD": {
       "gps": "GPS",
@@ -246,6 +262,30 @@
         "11": "珍藏中...",
         "12": "珍藏成功。"
       }
+    }
+  },
+  "Privacy": {
+    "title": "隐私政策",
+    "introduction": "我们非常重视您的隐私。本政策说明了我们如何处理您在 Love You 平台上上传的数据。",
+    "dataCollection": {
+      "title": "数据收集",
+      "content": "当您上传照片或编写故事时，这些数据（包括图片文件、文字描述、地点信息和日期）将被上传到我们的服务器并存储在云端。"
+    },
+    "dataUsage": {
+      "title": "数据用途",
+      "content": "您上传的数据仅用于在您的私有相册中展示，或者在您生成分享链接时向您指定的对象展示。我们不会将您的个人数据出售给第三方，也不会将其用于广告投放。"
+    },
+    "dataSecurity": {
+      "title": "数据安全",
+      "content": "我们使用行业标准的安全措施（如 SSL 加密和安全存储服务）来保护您的数据。虽然我们尽力保护您的隐私，但请注意，互联网上的任何传输或存储方法都不是 100% 安全的。"
+    },
+    "userRights": {
+      "title": "您的权利",
+      "content": "您可以随时在相册管理界面中删除您上传的照片和故事。一旦删除，这些数据将立即从我们的活跃数据库中移除。"
+    },
+    "contact": {
+      "title": "联系我们",
+      "content": "如果您对本隐私政策有任何疑问，请联系我们。"
     }
   }
 }

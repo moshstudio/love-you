@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTranslations } from "next-intl";
 import ParticleBackground from "@/components/game/ParticleBackground";
 import { ArchivesView } from "@/components/game/ArchivesView";
-import { HeartIcon } from "lucide-react";
+import { HeartIcon, ArrowLeft } from "lucide-react";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
 import { RealTimeClock } from "@/components/game/RealTimeClock";
 
@@ -46,7 +46,15 @@ export default function AlbumDetailPageStandalone() {
       <div className='relative z-10 w-full h-full flex flex-col'>
         <header className='fixed top-0 w-full px-3 py-3 sm:p-4 flex justify-between items-center border-b border-rose-100/20 bg-white/20 dark:bg-black/20 backdrop-blur-md z-50'>
           <div className='flex items-center gap-1.5 sm:gap-2'>
-            <HeartIcon className='w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 animate-pulse' />
+            <button
+              onClick={() => router.push("/albums")}
+              className='p-1.5 sm:p-2 hover:bg-rose-50 rounded-full transition-colors text-rose-400 touch-target'
+              title={gameT("returnToRoot")}
+            >
+              <ArrowLeft className='w-4 h-4 sm:w-5 sm:h-5' />
+            </button>
+            <div className='w-px h-4 bg-rose-100/50 mx-1 hidden xs:block' />
+            <HeartIcon className='hidden xs:block w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 animate-pulse' />
             <span className='text-rose-500 text-[10px] sm:text-xs tracking-[0.15em] sm:tracking-[0.2em] font-bold uppercase'>
               {gameT("systemOnline")}
             </span>

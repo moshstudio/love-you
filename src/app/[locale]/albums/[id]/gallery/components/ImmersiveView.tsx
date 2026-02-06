@@ -11,9 +11,12 @@ import { Canvas, useFrame, useThree, extend } from "@react-three/fiber";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import * as THREE from "three";
 import TWEEN from "@tweenjs/tween.js";
-import { Stars } from "@react-three/drei";
+import { Stars, useProgress } from "@react-three/drei";
 import { Photo } from "./types";
 import { ParticleGallery } from "./ParticleGallery";
+import { SHARED_TEXT_KEY, DEFAULT_GREETING_TEXT } from "./utils";
+import { LoadingOverlay } from "./LoadingOverlay";
+import { AnimatePresence } from "framer-motion";
 
 // 向 R3F 注册 TextGeometry - Removed as we use Canvas now
 // extend({ TextGeometry });
@@ -44,12 +47,14 @@ const FIREWORK_COLORS = [
 
 // --- 辅助函数 ---
 
-// 使用 Canvas 生成文字粒子位置（支持中文）
+// 使用 Canvas 生成文字粒子位置（支持中文，支持自动换行和缩放）
 const generateCanvasTextParticles = (
   text: string,
   particleCount: number = PARTICLE_COUNT,
   activeRatio: number = 0.95,
   scatterSpread: number = 60,
+  maxWidthUnits: number = 40,
+  maxHeightUnits: number = 40,
 ): Float32Array => {
   if (typeof document === "undefined")
     return new Float32Array(particleCount * 3);
@@ -64,20 +69,59 @@ const generateCanvasTextParticles = (
     '"Microsoft YaHei", "Heiti SC", "PingFang SC", "WenQuanYi Micro Hei", sans-serif';
   ctx.font = `bold ${fontSize}px ${fontFamily}`;
 
-  const measurements = ctx.measureText(text);
-  const textWidth = measurements.width;
-  const textHeight = fontSize;
+  // 1. 自动换行逻辑
+  // 计算基础参考宽度：在 0.2 缩放比例下，maxWidthUnits 对应的像素宽度
+  const baseScale = 0.2;
+  const maxCanvasWidth = (maxWidthUnits * 0.85) / baseScale;
+  const lines: string[] = [];
+
+  // 按照字符分割进行换行处理（支持中英文混合）
+  const chars = text.split("");
+  let currentLine = "";
+
+  for (let i = 0; i < chars.length; i++) {
+    const char = chars[i];
+    const testLine = currentLine + char;
+    const testWidth = ctx.measureText(testLine).width;
+
+    // 如果超过最大宽度且当前行不为空且总长度大于1，则换行
+    if (
+      testWidth > maxCanvasWidth &&
+      currentLine.length > 0 &&
+      text.length > 1
+    ) {
+      lines.push(currentLine);
+      currentLine = char;
+    } else {
+      currentLine = testLine;
+    }
+  }
+  lines.push(currentLine);
+
+  // 2. 根据行数计算总宽高
+  const lineHeight = fontSize * 1.2;
+  const textHeight = lines.length * lineHeight;
+  let textWidth = 0;
+  lines.forEach((line) => {
+    textWidth = Math.max(textWidth, ctx.measureText(line).width);
+  });
 
   // 增加一些 Padding
-  canvas.width = textWidth + 40;
-  canvas.height = textHeight + 40;
+  canvas.width = textWidth + 80;
+  canvas.height = textHeight + 80;
 
-  // 重新设置 Font (因为调整 Canvas 大小后 Context 会重置)
+  // 重新设置 Font
   ctx.font = `bold ${fontSize}px ${fontFamily}`;
   ctx.fillStyle = "#FFFFFF";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText(text, canvas.width / 2, canvas.height / 2);
+
+  // 逐行绘制
+  lines.forEach((line, index) => {
+    const y =
+      (canvas.height - textHeight) / 2 + index * lineHeight + fontSize / 2;
+    ctx.fillText(line, canvas.width / 2, y);
+  });
 
   const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
   const data = imgData.data;
@@ -95,26 +139,33 @@ const generateCanvasTextParticles = (
 
   const positions = new Float32Array(particleCount * 3);
   const activeCount = Math.floor(particleCount * activeRatio);
-  // Scale factor: Canvas pixel -> World Unit
-  const scale = 0.2;
+
+  // 3. 动态计算缩放 scale，确保在 3D 空间中不超出屏幕
+  let scale = baseScale;
+  const worldWidth = canvas.width * scale;
+  const worldHeight = canvas.height * scale;
+
+  if (worldWidth > maxWidthUnits * 0.9) {
+    scale = (maxWidthUnits * 0.9) / canvas.width;
+  }
+  if (canvas.height * scale > maxHeightUnits * 0.8) {
+    scale = Math.min(scale, (maxHeightUnits * 0.8) / canvas.height);
+  }
+
   const offsetX = canvas.width / 2;
   const offsetY = canvas.height / 2;
 
   for (let i = 0; i < particleCount; i++) {
     if (i < activeCount && validPixels.length > 0) {
-      // 随机采样有效的像素点
       const idx = Math.floor(Math.random() * (validPixels.length / 2)) * 2;
       const px = validPixels[idx];
       const py = validPixels[idx + 1];
 
-      // 映射到 3D 坐标，Y轴反转 (Canvas Y向下, 3D Y向上)
-      // 加入少量随机抖动，避免像素感太强
       positions[i * 3] = (px - offsetX) * scale + (Math.random() - 0.5) * 0.3;
       positions[i * 3 + 1] =
         -(py - offsetY) * scale + (Math.random() - 0.5) * 0.3;
       positions[i * 3 + 2] = (Math.random() - 0.5) * 2.0;
     } else {
-      // 散开的粒子
       positions[i * 3] = (Math.random() - 0.5) * scatterSpread;
       positions[i * 3 + 1] = (Math.random() - 0.5) * scatterSpread;
       positions[i * 3 + 2] = (Math.random() - 0.5) * scatterSpread;
@@ -145,7 +196,7 @@ const IntroScene = ({
   text: string;
 }) => {
   const pointsRef = useRef<THREE.Points>(null);
-  const { camera } = useThree();
+  const { camera, viewport } = useThree();
   // Removed font state as we use Canvas now
 
   const currentPositions = useRef<Float32Array>(generateRandomParticles(100));
@@ -173,16 +224,20 @@ const IntroScene = ({
         return;
       }
       setTimeout(() => {
-        // 使用 Canvas 生成粒子
+        // 使用 Canvas 生成粒子，传入 viewport 宽高以支持适配
         precomputedParticles.current[txt] = generateCanvasTextParticles(
           txt,
           PARTICLE_COUNT,
+          ACTIVE_PARTICLE_RATIO,
+          60,
+          viewport.width,
+          viewport.height,
         );
         generateNext(index + 1);
       }, 20);
     };
     generateNext(0);
-  }, [text]);
+  }, [text, viewport.width, viewport.height]);
 
   // Tweens group just for this component instance
   const tweens = useRef(new TWEEN.Group());
@@ -279,7 +334,14 @@ const IntroScene = ({
 
           let target = precomputedParticles.current[txt];
           if (!target) {
-            target = generateCanvasTextParticles(txt, PARTICLE_COUNT);
+            target = generateCanvasTextParticles(
+              txt,
+              PARTICLE_COUNT,
+              ACTIVE_PARTICLE_RATIO,
+              60,
+              viewport.width,
+              viewport.height,
+            );
             precomputedParticles.current[txt] = target;
           }
           morphTo(target, 800);
@@ -610,7 +672,7 @@ const FireworksScene = ({
         `}
         fragmentShader={`
             uniform sampler2D pointTexture; varying vec3 vColor;
-            void main() { gl_FragColor = vec4(vColor, 1.0) * texture2D(pointTexture, gl_PointCoord); }
+            void main() { gl_FragColor = vec4(vColor * 3.0, 1.0) * texture2D(pointTexture, gl_PointCoord); }
         `}
       />
     </points>
@@ -638,60 +700,64 @@ const SettingsModal = ({
   if (!isOpen) return null;
 
   return (
-    <div className='absolute inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm'>
-      <div className='w-96 bg-black/80 border border-[#FFD700]/30 rounded-xl p-6 shadow-[0_0_30px_rgba(255,215,0,0.1)]'>
-        <h3 className='text-[#FFD700] text-lg font-light tracking-widest mb-6 text-center'>
-          SETTINGS
-        </h3>
+    <div className='absolute inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md transition-all duration-300'>
+      <div
+        className='w-full max-w-sm bg-black/80 border border-white/10 rounded-2xl p-6 shadow-2xl overflow-hidden'
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className='flex items-center justify-between mb-8'>
+          <h3 className='text-white/90 text-sm font-medium tracking-[0.2em] uppercase'>
+            Gallery Settings
+          </h3>
+          <button
+            onClick={onClose}
+            className='text-white/40 hover:text-white transition-colors'
+          >
+            <svg
+              className='w-5 h-5'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={1.5}
+                d='M6 18L18 6M6 6l12 12'
+              />
+            </svg>
+          </button>
+        </div>
 
-        <div className='flex flex-col gap-4'>
-          <div>
-            <label className='block text-white/50 text-xs uppercase tracking-wider mb-2'>
-              Greeting Text
+        <div className='space-y-6'>
+          <div className='space-y-3'>
+            <label className='block text-white/40 text-[10px] uppercase tracking-[0.2em] ml-1'>
+              Intro Text
             </label>
             <input
               type='text'
               value={text}
               onChange={(e) => setText(e.target.value)}
-              className='w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-[#FFD700] focus:outline-none focus:border-[#FFD700]/50 transition-colors'
+              className='w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[#FFD700] text-sm focus:outline-none focus:border-[#FFD700]/50 focus:bg-white/10 transition-all placeholder:text-white/20'
               placeholder='Enter text...'
-              maxLength={10}
+              maxLength={12}
             />
           </div>
 
-          <div className='flex gap-3 mt-4'>
+          <div className='flex gap-3 pt-4'>
             <button
               onClick={onClose}
-              className='flex-1 px-4 py-2 rounded-lg border border-white/10 text-white/50 hover:bg-white/5 hover:text-white transition-all text-sm uppercase tracking-wider'
+              className='flex-1 px-4 py-2.5 rounded-xl border border-white/5 text-white/40 hover:bg-white/5 hover:text-white transition-all text-xs font-medium uppercase tracking-widest'
             >
               Cancel
             </button>
             <button
               onClick={() => onSave(text)}
-              className='flex-1 px-4 py-2 rounded-lg bg-[#FFD700]/10 border border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/20 hover:border-[#FFD700]/50 transition-all text-sm uppercase tracking-wider'
+              className='flex-1 px-4 py-2.5 rounded-xl bg-[#FFD700] text-black hover:bg-[#FFD700]/90 transition-all text-xs font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(255,215,0,0.2)]'
             >
-              Save
+              Save Changes
             </button>
           </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- UI Overlay ---
-const UIOverlay = () => {
-  return (
-    <div className='absolute inset-0 pointer-events-none z-10 flex flex-col justify-between p-8'>
-      <div />
-      <div className='absolute top-1/2 left-8 w-[1px] h-32 bg-gradient-to-b from-transparent via-[#FFD700]/50 to-transparent' />
-      <div className='absolute top-1/2 right-8 w-[1px] h-32 bg-gradient-to-b from-transparent via-[#FFD700]/50 to-transparent' />
-      <div className='w-full flex justify-center pb-8'>
-        <div className='relative px-8 py-3 overflow-hidden rounded-lg backdrop-blur-md bg-black/40 border border-[#FFD700]/10 group'>
-          <span className='text-[#FFD700] font-light tracking-[0.3em] text-sm group-hover:text-white transition-colors duration-500'>
-            IMMERSIVE EXPERIENCE
-          </span>
-          <div className='absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#FFD700] to-transparent opacity-50' />
         </div>
       </div>
     </div>
@@ -716,28 +782,54 @@ export function ImmersiveView({
   onClose: () => void;
   isActive: boolean;
 }) {
-  const [scenePhase, setScenePhase] = useState<"intro" | "fireworks" | "main">(
-    "intro",
-  );
-  const [targetText, setTargetText] = useState("2026");
+  const [scenePhase, setScenePhase] = useState<
+    "intro" | "fireworks" | "main" | null
+  >(null);
+  const [targetText, setTargetText] = useState(DEFAULT_GREETING_TEXT);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
+  const { progress, active } = useProgress();
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
-    const saved = localStorage.getItem("immersive_greeting_text");
+    if (isActive) {
+      // 只有在初始加载状态下判断加载是否完成
+      // 一旦 isInitializing 变为 false，就不再因为背景资源的加载（如播放时的照片切换）重新开启加载层
+      if (!active && isInitializing) {
+        const timer = setTimeout(() => setIsInitializing(false), 400);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      // 退出沉浸模式时重置状态
+      setIsInitializing(true);
+    }
+  }, [isActive, active, isInitializing]);
+
+  useEffect(() => {
+    const saved = localStorage.getItem(SHARED_TEXT_KEY);
     if (saved) setTargetText(saved);
   }, []);
 
   useEffect(() => {
-    if (isActive) {
-      setScenePhase("intro");
-      setResetKey((prev) => prev + 1);
+    if (isActive && !isInitializing) {
+      // 只有在初始化完成且处于激活状态时，才开始设置场景相位
+      if (scenePhase === null) {
+        if (!isPlaying) {
+          setScenePhase("main");
+        } else {
+          setScenePhase("intro");
+        }
+        setResetKey((prev) => prev + 1);
+      }
+    } else if (!isActive) {
+      // 退出激活状态时重置相位
+      setScenePhase(null);
     }
-  }, [isActive]);
+  }, [isActive, isInitializing, isPlaying, scenePhase]);
 
   const handleSaveSettings = (text: string) => {
     setTargetText(text);
-    localStorage.setItem("immersive_greeting_text", text);
+    localStorage.setItem(SHARED_TEXT_KEY, text);
     setIsSettingsOpen(false);
   };
 
@@ -757,7 +849,15 @@ export function ImmersiveView({
         pointerEvents: isActive ? "auto" : "none",
       }}
     >
-      {scenePhase !== "main" && <UIOverlay />}
+      <AnimatePresence>
+        {isInitializing && (
+          <LoadingOverlay
+            message='正在开启沉浸旅程...'
+            progress={progress}
+          />
+        )}
+      </AnimatePresence>
+
       <SettingsModal
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
@@ -767,76 +867,156 @@ export function ImmersiveView({
 
       {scenePhase === "main" && (
         <>
-          {/* 左侧导航按钮 - 上一张 */}
-          <button
-            onClick={() =>
-              onChangeIndex((currentIndex - 1 + photos.length) % photos.length)
-            }
-            className='absolute left-8 top-1/2 -translate-y-1/2 z-50 w-14 h-14 rounded-full border border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/20 hover:border-[#FFD700]/60 backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center'
-            aria-label='上一张'
+          {/* 导航按钮 - 优化后的全屏热区与精致按钮 */}
+          {/* 左侧热区 */}
+          <div
+            className='absolute left-0 top-0 bottom-24 w-[15%] min-w-[60px] md:w-[10%] z-40 group/nav-area cursor-pointer flex items-center justify-start pl-4 md:pl-8'
+            onClick={(e) => {
+              e.stopPropagation();
+              onChangeIndex((currentIndex - 1 + photos.length) % photos.length);
+            }}
           >
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              className='w-6 h-6'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                d='M15 19l-7-7 7-7'
-              />
-            </svg>
-          </button>
+            <div className='w-12 h-12 md:w-14 md:h-14 rounded-full border border-white/5 text-white/20 group-hover/nav-area:text-[#FFD700] group-hover/nav-area:border-[#FFD700]/30 group-hover/nav-area:bg-[#FFD700]/5 backdrop-blur-sm transition-all flex items-center justify-center group/btn'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='w-5 h-5 md:w-6 md:h-6 transition-transform group-hover/btn:-translate-x-1'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='M15 19l-7-7 7-7'
+                />
+              </svg>
+            </div>
+          </div>
 
-          {/* 右侧导航按钮 - 下一张 */}
-          <button
-            onClick={() => onChangeIndex((currentIndex + 1) % photos.length)}
-            className='absolute right-8 top-1/2 -translate-y-1/2 z-50 w-14 h-14 rounded-full border border-[#FFD700]/30 text-[#FFD700] hover:bg-[#FFD700]/20 hover:border-[#FFD700]/60 backdrop-blur-md transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center'
-            aria-label='下一张'
+          {/* 右侧热区 */}
+          <div
+            className='absolute right-0 top-0 bottom-24 w-[15%] min-w-[60px] md:w-[10%] z-40 group/nav-area cursor-pointer flex items-center justify-end pr-4 md:pr-8'
+            onClick={(e) => {
+              e.stopPropagation();
+              onChangeIndex((currentIndex + 1) % photos.length);
+            }}
           >
-            <svg
-              xmlns='http://www.w3.org/2000/svg'
-              className='w-6 h-6'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                d='M9 5l7 7-7 7'
-              />
-            </svg>
-          </button>
+            <div className='w-12 h-12 md:w-14 md:h-14 rounded-full border border-white/5 text-white/20 group-hover/nav-area:text-[#FFD700] group-hover/nav-area:border-[#FFD700]/30 group-hover/nav-area:bg-[#FFD700]/5 backdrop-blur-sm transition-all flex items-center justify-center group/btn'>
+              <svg
+                xmlns='http://www.w3.org/2000/svg'
+                className='w-5 h-5 md:w-6 md:h-6 transition-transform group-hover/btn:translate-x-1'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  d='M9 5l7 7-7 7'
+                />
+              </svg>
+            </div>
+          </div>
 
-          {/* 底部控制栏 */}
-          <div className='absolute bottom-12 left-1/2 -translate-x-1/2 z-50 flex gap-4 opacity-0 group-hover:opacity-100 transition-opacity duration-500'>
-            <button
-              onClick={onTogglePlay}
-              className='px-6 py-2 rounded-full border border-[#FFD700]/50 text-[#FFD700] hover:bg-[#FFD700]/20 backdrop-blur-md transition-all uppercase text-xs tracking-widest font-bold'
-            >
-              {isPlaying ? "Pause" : "Auto-Play"}
-            </button>
-            {/* 显示当前图片索引 */}
-            <span className='px-4 py-2 rounded-full border border-white/10 text-white/60 backdrop-blur-md text-xs tracking-widest flex items-center'>
-              {currentIndex + 1} / {photos.length}
-            </span>
-            <button
-              onClick={() => setIsSettingsOpen(true)}
-              className='px-6 py-2 rounded-full border border-white/20 text-white/50 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all uppercase text-xs tracking-widest'
-            >
-              Settings
-            </button>
-            <button
-              onClick={onClose}
-              className='px-6 py-2 rounded-full border border-white/20 text-white/50 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all uppercase text-xs tracking-widest'
-            >
-              Exit
-            </button>
+          {/* 底部浮动控制带 (Dock) */}
+          <div className='absolute bottom-8 left-1/2 -translate-x-1/2 z-50 flex items-center p-1.5 bg-black/40 border border-white/10 rounded-2xl backdrop-blur-xl shadow-2xl'>
+            <div className='flex items-center gap-1.5 px-2 py-1'>
+              <button
+                onClick={onTogglePlay}
+                className={`p-2.5 rounded-xl transition-all flex items-center justify-center ${
+                  isPlaying
+                    ? "bg-[#FFD700] text-black shadow-[0_0_15px_rgba(255,215,0,0.3)]"
+                    : "text-white/60 hover:bg-white/10 hover:text-white"
+                }`}
+                title={isPlaying ? "Pause" : "Auto-Play"}
+              >
+                {isPlaying ? (
+                  <svg
+                    className='w-4 h-4'
+                    fill='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <rect
+                      x='6'
+                      y='4'
+                      width='4'
+                      height='16'
+                    />
+                    <rect
+                      x='14'
+                      y='4'
+                      width='4'
+                      height='16'
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    className='w-4 h-4 ml-0.5'
+                    fill='currentColor'
+                    viewBox='0 0 24 24'
+                  >
+                    <path d='M8 5v14l11-7z' />
+                  </svg>
+                )}
+              </button>
+
+              <div className='h-4 w-px bg-white/10 mx-1' />
+
+              <span className='flex-shrink-0 px-3 text-[10px] font-medium tracking-[0.2em] text-white/40'>
+                {currentIndex + 1} <span className='text-white/20'>/</span>{" "}
+                {photos.length}
+              </span>
+
+              <div className='h-4 w-px bg-white/10 mx-1' />
+
+              <button
+                onClick={() => setIsSettingsOpen(true)}
+                className='p-2.5 rounded-xl text-white/40 hover:bg-white/10 hover:text-white transition-all'
+                title='Settings'
+              >
+                <svg
+                  className='w-4 h-4'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={1.5}
+                    d='M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z'
+                  />
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={1.5}
+                    d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
+                  />
+                </svg>
+              </button>
+
+              <button
+                onClick={onClose}
+                className='p-2.5 rounded-xl text-white/40 hover:bg-red-500/20 hover:text-red-400 transition-all flex'
+                title='Exit'
+              >
+                <svg
+                  className='w-4 h-4'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={1.5}
+                    d='M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1'
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
         </>
       )}
@@ -894,7 +1074,7 @@ export function ImmersiveView({
         )}
         <EffectComposer>
           <Bloom
-            luminanceThreshold={0.2}
+            luminanceThreshold={1.0}
             mipmapBlur
             intensity={1.0}
             radius={0.5}

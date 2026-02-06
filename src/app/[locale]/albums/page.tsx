@@ -9,6 +9,7 @@ import ParticleBackground from "@/components/game/ParticleBackground";
 import { AlbumList } from "@/components/game/AlbumList";
 import { LogOut, Home } from "lucide-react";
 import Link from "next/link";
+import { albumsApi } from "@/lib/api";
 
 export default function AlbumsPage() {
   const router = useRouter();
@@ -37,10 +38,21 @@ export default function AlbumsPage() {
     router.push(`/albums/${id}`);
   };
 
-  const handleStartUpload = () => {
-    // For now, redirect to the first album or a general upload page if it exists
-    // In GameUI it switches state, here we can redirect to a specific album detail
-    // or keep it simple as AlbumList handles creation too.
+  const handleStartUpload = async () => {
+    try {
+      // Fetch albums to find the first one
+      const albumsData = (await albumsApi.list()) as unknown as {
+        id: string;
+      }[];
+      if (albumsData && albumsData.length > 0) {
+        // Redirect with a query parameter to trigger the upload form
+        router.push(`/albums/${albumsData[0].id}?action=upload`);
+      } else {
+        // Fallback: focus or show create album form if no albums exist
+      }
+    } catch (error) {
+      console.error("Failed to start upload:", error);
+    }
   };
 
   if (authLoading) {

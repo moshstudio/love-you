@@ -17,8 +17,8 @@ export const ChristmasTreeEffectLogic = {
     const p = new THREE.Vector3();
 
     // Tree dimensions for photos
-    const height = 28;
-    const baseRadius = 10;
+    const height = 40; // Increased from 28
+    const baseRadius = 15; // Increased from 10
 
     if (isPhoto) {
       // Spiral up
@@ -33,7 +33,7 @@ export const ChristmasTreeEffectLogic = {
         // Scatter photos into a ring/halo layout (same as HeartEffect)
         // Photos form a horizontal ring around the center
         const angle = (index / total) * Math.PI * 2 + time * 0.1;
-        const radius = 18; // Ring radius - reduced to match HeartEffect
+        const radius = 28; // Ring radius - increased to match others
         const x = Math.cos(angle) * radius;
         const z = Math.sin(angle) * radius;
         const y = Math.sin(index * 0.5 + time) * 2; // Slight vertical wave
@@ -57,8 +57,8 @@ export const ChristmasTreeEffectLogic = {
 };
 
 const COUNT = 1500; // Number of instances per geometry type
-const TREE_HEIGHT = 30;
-const TREE_RADIUS = 12;
+const TREE_HEIGHT = 45; // Increased from 30
+const TREE_RADIUS = 18; // Increased from 12
 
 // Colors
 const COLORS = [
@@ -123,8 +123,8 @@ function TreeInstances({
 
       // Variable distance from center for cloud-like density
       // Use a mix of distances to create depth
-      const minRadius = 35;
-      const maxRadius = 80;
+      const minRadius = 60;
+      const maxRadius = 120;
       // Bias towards middle range for cloud effect
       const radiusFactor = Math.pow(Math.random(), 0.6);
       const scatterRadius = minRadius + radiusFactor * (maxRadius - minRadius);
@@ -275,7 +275,7 @@ export const ChristmasTreeScene = ({
 
       {/* Floating Text - Billboard to always face camera */}
       <Billboard
-        position={[0, 23, 0]}
+        position={[0, 33, 0]}
         follow={true}
         lockX={false}
         lockY={false}
@@ -287,7 +287,7 @@ export const ChristmasTreeScene = ({
           floatIntensity={1}
         >
           <Text
-            fontSize={3}
+            fontSize={3.4}
             color={themeColor}
             font='https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff'
             characters={displayText}
@@ -300,17 +300,18 @@ export const ChristmasTreeScene = ({
             {displayText}
             <meshPhysicalMaterial
               color={themeColor}
-              emissive={`#${darkerThemeColor.getHexString()}`}
-              emissiveIntensity={0.2 * intensity}
-              metalness={0.9}
-              roughness={0.1}
+              emissive={themeColor}
+              emissiveIntensity={1.5 * intensity}
+              metalness={1}
+              roughness={0}
               clearcoat={1}
-              clearcoatRoughness={0.1}
+              clearcoatRoughness={0}
+              envMapIntensity={2}
               toneMapped={false}
             />
           </Text>
           <Text
-            fontSize={3}
+            fontSize={3.4}
             color={themeColor}
             font='https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff'
             characters={displayText}

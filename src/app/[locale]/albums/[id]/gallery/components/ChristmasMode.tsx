@@ -14,6 +14,8 @@ import {
   PerspectiveCamera,
   Environment,
   useTexture,
+  Html,
+  useProgress,
 } from "@react-three/drei";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
@@ -34,16 +36,15 @@ import {
 } from "lucide-react";
 import { Photo } from "./types";
 import { EffectType, EffectLogic } from "./effects/types";
-import {
-  HeartLogic,
-  HeartScene,
-  HeartGestureHandler,
-} from "./effects/HeartEffect";
+import { HeartLogic, HeartScene } from "./effects/HeartEffect";
+import { GestureHandler } from "./effects/GestureHandler";
 import { GalaxyEffect, GalaxyScene } from "./effects/GalaxyEffect";
 import {
   ChristmasTreeScene,
   ChristmasTreeEffectLogic,
 } from "./effects/ChristmasTreeEffect"; // Updated import
+import { SHARED_TEXT_KEY, DEFAULT_GREETING_TEXT } from "./utils";
+import { LoadingOverlay } from "./LoadingOverlay";
 
 // --- Configuration ---
 const PARTICLE_COUNT = 25000;
@@ -419,13 +420,15 @@ const PhotoItem = ({
       const vHeight = 2 * Math.tan(THREE.MathUtils.degToRad(fov) / 2) * dist;
       const vWidth = vHeight * cam.aspect;
 
-      // Max 85% of view height, max 90% of view width
-      let scaleH = vHeight * 0.85;
+      // Max 85% of view height, max 90% of view width (88% / 90% on narrow)
+      const marginH = cam.aspect < 1 ? 0.88 : 0.85;
+      const marginW = cam.aspect < 1 ? 0.9 : 0.9;
+      let scaleH = vHeight * marginH;
       let scaleW = scaleH * aspectRatio;
 
       // Clamp width if exceeds viewport
-      if (scaleW > vWidth * 0.9) {
-        scaleW = vWidth * 0.9;
+      if (scaleW > vWidth * marginW) {
+        scaleW = vWidth * marginW;
         scaleH = scaleW / aspectRatio;
       }
 
@@ -435,6 +438,7 @@ const PhotoItem = ({
 
       // Make photo face the camera perfectly
       mesh.current.quaternion.copy(state.camera.quaternion);
+      mesh.current.renderOrder = 100;
 
       // Animate glow
       glowIntensity.current = 0.5 + Math.sin(time * 3) * 0.3;
@@ -451,6 +455,7 @@ const PhotoItem = ({
 
     // Smooth lerp to position
     mesh.current.position.lerp(targetPos.current, delta * 2);
+    mesh.current.renderOrder = 0;
 
     // Look at camera
     mesh.current.lookAt(state.camera.position);
@@ -521,7 +526,7 @@ const FocusOverlay = ({ visible }: { visible: boolean }) => {
     if (!mesh.current || !material.current) return;
 
     // Position behind the image (which is at dist=8)
-    const dist = 9.0;
+    const dist = 12.0;
 
     mesh.current.position.copy(state.camera.position);
     mesh.current.quaternion.copy(state.camera.quaternion);
@@ -545,6 +550,7 @@ const FocusOverlay = ({ visible }: { visible: boolean }) => {
       delta * 5,
     );
     mesh.current.visible = material.current.opacity > 0.01;
+    mesh.current.renderOrder = 50;
   });
 
   return (
@@ -584,8 +590,23 @@ export const ChristmasMode = ({
 
   // 记住切换页面前的手势识别状态，用于恢复
   const gestureEnabledBeforeHiddenRef = useRef(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // 监听页面可见性变化，当页面隐藏时自动关闭手势识别，返回时恢复
+  // Auto-scroll thumbnails when index changes
+  useEffect(() => {
+    if (focusedIndex !== null && scrollContainerRef.current) {
+      const activeElement = scrollContainerRef.current.children[
+        focusedIndex
+      ] as HTMLElement;
+      if (activeElement) {
+        activeElement.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }
+  }, [focusedIndex]);
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.hidden) {
@@ -608,6 +629,22 @@ export const ChristmasMode = ({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [isGestureEnabled]);
+
+  const { progress, active } = useProgress();
+  const [isInitializing, setIsInitializing] = useState(true);
+
+  // 当 R3F 所有的资源（纹理、模型等）加载完成，关闭加载层
+  useEffect(() => {
+    if (isActive) {
+      if (!active && isInitializing) {
+        // 500ms 缓冲，确保渲染稳定
+        const timer = setTimeout(() => setIsInitializing(false), 500);
+        return () => clearTimeout(timer);
+      }
+    } else {
+      setIsInitializing(true);
+    }
+  }, [isActive, active, isInitializing]);
   const [gestureDrag, setGestureDrag] = useState({
     deltaX: 0,
     deltaY: 0,
@@ -625,10 +662,10 @@ export const ChristmasMode = ({
   // 使用惰性初始化从 localStorage 读取
   const [displayText, setDisplayText] = useState(() => {
     if (typeof window !== "undefined") {
-      const savedText = localStorage.getItem("christmasMode_displayText");
-      return savedText !== null ? savedText : "2026 521";
+      const savedText = localStorage.getItem(SHARED_TEXT_KEY);
+      return savedText !== null ? savedText : DEFAULT_GREETING_TEXT;
     }
-    return "2026 521";
+    return DEFAULT_GREETING_TEXT;
   });
 
   // 跟踪是否已初始化，避免初始渲染时覆盖
@@ -637,7 +674,7 @@ export const ChristmasMode = ({
   // 持久化 displayText 到 localStorage（仅在用户修改后保存）
   useEffect(() => {
     if (isInitializedRef.current) {
-      localStorage.setItem("christmasMode_displayText", displayText);
+      localStorage.setItem(SHARED_TEXT_KEY, displayText);
     } else {
       isInitializedRef.current = true;
     }
@@ -646,14 +683,39 @@ export const ChristmasMode = ({
   // Debug logs removed
 
   // Double tap logic for touch devices
-  const lastTap = useRef(0);
+  const lastTapTime = useRef(0);
+  const touchStartPos = useRef({ x: 0, y: 0 });
+  const lastToggleTime = useRef(0);
 
-  const handleTouchStart = () => {
+  const handleToggleScattered = useCallback(() => {
     const now = Date.now();
-    if (now - lastTap.current < 300) {
-      setIsScattered((prev) => !prev);
+    if (now - lastToggleTime.current < 500) return;
+    setIsScattered((prev) => !prev);
+    lastToggleTime.current = now;
+  }, []);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length !== 1) return;
+    const touch = e.touches[0];
+    touchStartPos.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const now = Date.now();
+    const touch = e.changedTouches[0];
+    const distX = Math.abs(touch.clientX - touchStartPos.current.x);
+    const distY = Math.abs(touch.clientY - touchStartPos.current.y);
+
+    // If moved more than 10px, it's a drag/pan, not a tap
+    if (distX > 10 || distY > 10) return;
+
+    if (now - lastTapTime.current < 300) {
+      handleToggleScattered();
+      lastTapTime.current = 0; // Reset to avoid triple tap
+      if (e.cancelable) e.preventDefault(); // Stop browser dblclick
+    } else {
+      lastTapTime.current = now;
     }
-    lastTap.current = now;
   };
 
   const handleNext = () => {
@@ -690,14 +752,24 @@ export const ChristmasMode = ({
 
   return (
     <div
-      className='fixed inset-0 z-50 bg-black text-white font-sans select-none'
+      className='fixed inset-0 z-50 bg-black text-white font-sans select-none overflow-hidden touch-manipulation'
       style={{
         visibility: isActive ? "visible" : "hidden",
         pointerEvents: isActive ? "auto" : "none",
+        touchAction: "manipulation",
       }}
-      onDoubleClick={() => setIsScattered((prev) => !prev)}
+      onDoubleClick={handleToggleScattered}
       onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
     >
+      <AnimatePresence>
+        {isInitializing && (
+          <LoadingOverlay
+            message='正在加载节日场景...'
+            progress={progress}
+          />
+        )}
+      </AnimatePresence>
       {/* 3D Canvas */}
       <Canvas
         frameloop={isActive ? "always" : "never"}
@@ -711,7 +783,11 @@ export const ChristmasMode = ({
       >
         <PerspectiveCamera
           makeDefault
-          position={[0, -10, 65]}
+          position={[
+            0,
+            -10,
+            mode === "GALAXY" ? 90 : mode === "TREE" ? 75 : 65,
+          ]}
         />
         <ambientLight intensity={0.5} />
         <pointLight
@@ -719,7 +795,13 @@ export const ChristmasMode = ({
           intensity={1}
         />
 
-        <Suspense fallback={null}>
+        <Suspense
+          fallback={
+            <Html center>
+              <LoadingOverlay message='正在初始化场景...' />
+            </Html>
+          }
+        >
           {mode === "HEART" ? (
             <HeartScene
               isScattered={isScattered}
@@ -765,7 +847,10 @@ export const ChristmasMode = ({
             isScattered={isScattered}
             focusedIndex={focusedIndex}
             onFocus={setFocusedIndex}
-            onScatter={() => setIsScattered(true)}
+            onScatter={() => {
+              setIsScattered(true);
+              lastToggleTime.current = Date.now();
+            }}
           />
           <Environment files='https://cdn.jsdelivr.net/gh/pmndrs/drei-assets@master/hdri/potsdamer_platz_1k.hdr' />
           <EffectComposer>
@@ -783,88 +868,101 @@ export const ChristmasMode = ({
         />
       </Canvas>
 
-      {/* Modern Minimal Interface */}
-      <div className='absolute top-6 right-6 flex flex-col gap-4 items-end z-50 pointer-events-none'>
-        {/* Main Toggle & Controls Container */}
-        <div
-          className='flex items-start gap-4 pointer-events-auto'
-          onDoubleClick={(e) => e.stopPropagation()}
-        >
-          {/* Settings Panel (Collapsible) */}
+      {/* Main UI Controls */}
+      <div className='absolute inset-0 pointer-events-none z-50 p-6 flex flex-col justify-between'>
+        {/* Top Bar */}
+        <div className='flex justify-end items-start pointer-events-auto gap-3'>
+          <button
+            onClick={() => {
+              if (document.fullscreenElement) document.exitFullscreen();
+              else document.documentElement.requestFullscreen();
+            }}
+            className='p-3 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 text-white/70 hover:text-white transition-colors shadow-xl'
+          >
+            <Maximize2 size={20} />
+          </button>
+
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={() => onClose?.()}
+            className='p-3 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 text-white/70 hover:text-white transition-colors shadow-xl'
+          >
+            <X size={20} />
+          </motion.button>
+        </div>
+
+        {/* Bottom Control Area */}
+        <div className='flex flex-col items-center gap-6 pointer-events-auto'>
+          {/* Settings Panel */}
           <AnimatePresence>
             {isMenuOpen && (
               <motion.div
-                initial={{ opacity: 0, x: 20, scale: 0.95 }}
-                animate={{ opacity: 1, x: 0, scale: 1 }}
-                exit={{ opacity: 0, x: 20, scale: 0.95 }}
-                className='bg-black/80 backdrop-blur-xl border border-[#FFD700]/30 p-4 rounded-2xl w-64 shadow-[0_0_30px_rgba(255,215,0,0.15)] origin-top-right'
+                initial={{ opacity: 0, y: 20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 20, scale: 0.95 }}
+                className='w-full max-w-[min(400px,90vw)] bg-black/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-6 shadow-2xl overflow-hidden'
               >
-                <div className='space-y-5'>
-                  {/* Shape Selector */}
-                  <div>
-                    <label className='text-[10px] text-[#FFD700]/60 uppercase tracking-widest font-bold mb-3 block border-b border-[#FFD700]/20 pb-1'>
-                      Effect Mode
+                <div className='flex items-center justify-between mb-6'>
+                  <h3 className='text-xs font-bold uppercase tracking-[0.2em] text-[#FFD700]'>
+                    Settings
+                  </h3>
+                  <button
+                    onClick={() => setIsMenuOpen(false)}
+                    className='text-white/40 hover:text-white transition-colors'
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+
+                <div className='space-y-6'>
+                  {/* Mode Selector */}
+                  <div className='space-y-3'>
+                    <label className='text-[10px] text-white/30 uppercase tracking-widest font-bold'>
+                      Visual Mode
                     </label>
-                    <div className='grid grid-cols-3 gap-2'>
+                    <div className='grid grid-cols-3 gap-3'>
                       {effectOptions.map((opt) => (
                         <button
                           key={opt.id}
                           onClick={() => setMode(opt.id)}
-                          className={`flex flex-col items-center justify-center p-2 rounded-lg transition-all border ${
+                          className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
                             mode === opt.id
-                              ? "bg-[#FFD700]/20 text-[#FFD700] border-[#FFD700] shadow-[0_0_10px_rgba(255,215,0,0.2)]"
-                              : "bg-transparent text-[#FFD700]/40 border-transparent hover:bg-[#FFD700]/10 hover:text-[#FFD700]"
+                              ? "bg-[#FFD700]/20 border-[#FFD700]/50 text-[#FFD700]"
+                              : "bg-white/5 border-transparent text-white/40 hover:bg-white/10"
                           }`}
                         >
                           {opt.icon}
-                          <span className='text-[9px] mt-1'>{opt.label}</span>
+                          <span className='text-[10px] font-medium'>
+                            {opt.label}
+                          </span>
                         </button>
                       ))}
                     </div>
                   </div>
 
-                  {/* Display Text Input */}
-                  <div>
-                    <label className='text-[10px] text-[#FFD700]/60 uppercase tracking-widest font-bold mb-3 block border-b border-[#FFD700]/20 pb-1'>
-                      Display Text
+                  {/* Input Field */}
+                  <div className='space-y-2'>
+                    <label className='text-[10px] text-white/30 uppercase tracking-widest font-bold'>
+                      Custom Text
                     </label>
                     <input
                       type='text'
                       value={displayText}
                       onChange={(e) => setDisplayText(e.target.value)}
-                      placeholder='Enter custom text...'
-                      className='w-full px-3 py-2 bg-black/50 border border-[#FFD700]/30 rounded-lg text-[#FFD700] text-sm placeholder:text-[#FFD700]/30 focus:outline-none focus:border-[#FFD700] focus:shadow-[0_0_10px_rgba(255,215,0,0.2)] transition-all'
+                      className='w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#FFD700]/30 transition-colors'
+                      placeholder='Type message...'
+                      maxLength={12}
                     />
                   </div>
 
-                  {/* Sliders & Colors */}
-                  <div className='space-y-4'>
-                    <div className='flex items-center justify-between'>
-                      <span className='text-[10px] text-[#FFD700]/60 uppercase tracking-widest font-bold'>
-                        Theme Color
-                      </span>
-                      <div className='relative'>
-                        <div className='w-6 h-6 rounded-full border border-[#FFD700]/40 overflow-hidden relative shadow-[0_0_10px_rgba(255,215,0,0.2)]'>
-                          <input
-                            type='color'
-                            value={color}
-                            onChange={(e) => setColor(e.target.value)}
-                            className='absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[150%] h-[150%] p-0 m-0 cursor-pointer opacity-0'
-                          />
-                          <div
-                            className='w-full h-full'
-                            style={{ backgroundColor: color }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className='flex justify-between text-[10px] text-[#FFD700]/60 mb-1'>
-                        <span className='uppercase tracking-widest font-bold'>
+                  {/* Performance / Appearance */}
+                  <div className='grid grid-cols-2 gap-4'>
+                    <div className='space-y-2'>
+                      <div className='flex justify-between'>
+                        <label className='text-[10px] text-white/30 uppercase tracking-widest font-bold'>
                           Intensity
-                        </span>
-                        <span className='font-mono'>
+                        </label>
+                        <span className='text-[10px] font-mono text-[#FFD700]'>
                           {Math.round(intensity * 100)}%
                         </span>
                       </div>
@@ -877,8 +975,27 @@ export const ChristmasMode = ({
                         onChange={(e) =>
                           setIntensity(parseFloat(e.target.value))
                         }
-                        className='w-full h-1 bg-[#FFD700]/20 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:bg-[#FFD700] [&::-webkit-slider-thumb]:rounded-full hover:[&::-webkit-slider-thumb]:scale-125 hover:[&::-webkit-slider-thumb]:shadow-[0_0_10px_#FFD700] transition-all'
+                        className='w-full accent-[#FFD700] h-1.5'
                       />
+                    </div>
+                    <div className='space-y-2'>
+                      <label className='text-[10px] text-white/30 uppercase tracking-widest font-bold block'>
+                        Theme
+                      </label>
+                      <div
+                        className='relative h-10 rounded-xl border border-white/10 overflow-hidden flex items-center justify-center'
+                        style={{ backgroundColor: color }}
+                      >
+                        <span className='text-[10px] mix-blend-difference text-white font-mono'>
+                          {color.toUpperCase()}
+                        </span>
+                        <input
+                          type='color'
+                          value={color}
+                          onChange={(e) => setColor(e.target.value)}
+                          className='absolute inset-0 opacity-0 cursor-pointer w-full h-full'
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -886,63 +1003,30 @@ export const ChristmasMode = ({
             )}
           </AnimatePresence>
 
-          {/* Floating Actions Strip */}
-          {/* Floating Actions Strip - Gold Theme */}
-          <div className='flex flex-col gap-2 pointer-events-auto'>
-            <button
-              onClick={() => onClose && onClose()}
-              className='w-10 h-10 rounded-full border border-[#FFD700]/30 bg-black/40 hover:bg-[#FFD700]/20 text-[#FFD700] flex items-center justify-center backdrop-blur-md transition-all shadow-[0_0_15px_rgba(255,215,0,0.1)]'
-              title='Close'
-            >
-              <X size={20} />
-            </button>
-
-            <button
-              onClick={() => {
-                if (document.fullscreenElement) document.exitFullscreen();
-                else document.documentElement.requestFullscreen();
-              }}
-              className='w-10 h-10 rounded-full border border-[#FFD700]/30 bg-black/40 hover:bg-[#FFD700]/20 text-[#FFD700] flex items-center justify-center backdrop-blur-md transition-all shadow-[0_0_15px_rgba(255,215,0,0.1)]'
-              title='Fullscreen'
-            >
-              <Maximize2 size={18} />
-            </button>
-
-            <button
+          {/* Control Dock */}
+          <div className='flex items-center gap-1.5 p-1.5 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-2xl'>
+            <DockButton
+              active={isScattered}
               onClick={() => setIsScattered(!isScattered)}
-              className={`w-10 h-10 rounded-full border flex items-center justify-center backdrop-blur-md transition-all shadow-xl ${
-                isScattered
-                  ? "bg-[#FFD700] text-black border-[#FFD700]"
-                  : "bg-black/40 text-[#FFD700] border-[#FFD700]/30 hover:bg-[#FFD700]/20"
-              }`}
-              title={isScattered ? "Converge" : "Diverge"}
-            >
-              {isScattered ? <Minimize2 size={20} /> : <Shuffle size={20} />}
-            </button>
-
-            <button
+              icon={
+                isScattered ? <Minimize2 size={18} /> : <Shuffle size={18} />
+              }
+              label={isScattered ? "Gather" : "Scattered"}
+            />
+            <div className='w-px h-5 bg-white/10' />
+            <DockButton
+              active={isGestureEnabled}
               onClick={() => setIsGestureEnabled(!isGestureEnabled)}
-              className={`w-10 h-10 rounded-full border flex items-center justify-center backdrop-blur-md transition-all shadow-xl ${
-                isGestureEnabled
-                  ? "bg-[#FFD700] text-black border-[#FFD700]"
-                  : "bg-black/40 text-[#FFD700] border-[#FFD700]/30 hover:bg-[#FFD700]/20"
-              }`}
-              title='Gestures'
-            >
-              <Hand size={20} />
-            </button>
-
-            <button
+              icon={<Hand size={18} />}
+              label='Gestures'
+            />
+            <div className='w-px h-5 bg-white/10' />
+            <DockButton
+              active={isMenuOpen}
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`w-10 h-10 rounded-full border flex items-center justify-center backdrop-blur-md transition-all shadow-xl ${
-                isMenuOpen
-                  ? "bg-[#FFD700] text-black border-[#FFD700]"
-                  : "bg-black/40 text-[#FFD700] border-[#FFD700]/30 hover:bg-[#FFD700]/20"
-              }`}
-              title='Settings'
-            >
-              <Settings2 size={20} />
-            </button>
+              icon={<Settings2 size={18} />}
+              label='Settings'
+            />
           </div>
         </div>
       </div>
@@ -955,117 +1039,141 @@ export const ChristmasMode = ({
       </div>
 
       {/* Navigation Controls (When Focused) */}
+      {/* Navigation Controls (When Focused) */}
       <AnimatePresence>
         {focusedIndex !== null && (
-          <>
-            {/* Backdrop to close (Invisible touch layer) */}
+          <div className='absolute inset-0 z-50 overflow-hidden pointer-events-none'>
+            {/* Backdrop to close - Making it visually empty but keeping click detection */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setFocusedIndex(null)}
-              className='absolute inset-0 z-40 pointer-events-auto cursor-pointer'
+              className='absolute inset-0 z-0 pointer-events-auto'
             />
 
-            {/* Left Arrow */}
-            <motion.button
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              onDoubleClick={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                handlePrev();
-              }}
-              className='absolute left-4 top-1/2 -translate-y-1/2 z-50 text-[#FFD700] hover:text-white hover:scale-110 transition-all p-3 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md border border-[#FFD700]/40 shadow-[0_0_20px_rgba(255,215,0,0.3)]'
-            >
-              <ChevronLeft size={36} />
-            </motion.button>
-
-            {/* Right Arrow */}
-            <motion.button
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 20 }}
-              onDoubleClick={(e) => e.stopPropagation()}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleNext();
-              }}
-              className='absolute right-4 top-1/2 -translate-y-1/2 z-50 text-[#FFD700] hover:text-white hover:scale-110 transition-all p-3 rounded-full bg-black/40 hover:bg-black/70 backdrop-blur-md border border-[#FFD700]/40 shadow-[0_0_20px_rgba(255,215,0,0.3)]'
-            >
-              <ChevronRight size={36} />
-            </motion.button>
-
-            {/* Bottom Thumbnail Strip */}
+            {/* Top Close Button for Focused View */}
             <motion.div
-              initial={{ opacity: 0, y: 50 }}
+              initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 50 }}
-              onDoubleClick={(e) => e.stopPropagation()}
+              exit={{ opacity: 0, y: -20 }}
+              className='absolute top-6 left-1/2 -translate-x-1/2 z-[60] pointer-events-auto shadow-2xl'
+            >
+              <button
+                onClick={() => setFocusedIndex(null)}
+                className='flex items-center gap-2 px-6 py-2 rounded-full bg-black/60 border border-white/20 text-white/80 hover:text-white backdrop-blur-xl transition-all'
+              >
+                <Minimize2 size={18} />
+                <span className='text-xs font-bold uppercase tracking-widest'>
+                  Close View
+                </span>
+              </button>
+            </motion.div>
+
+            {/* Left/Right Navigation Area - 全屏热区支持 PC 和 移动端 */}
+            <div className='absolute inset-x-0 top-0 bottom-[180px] pointer-events-none flex items-center justify-between px-2 md:px-8'>
+              {/* Left Area */}
+              <div
+                className='w-[20%] md:w-[15%] h-full pointer-events-auto cursor-pointer group/nav flex items-center justify-start pl-2 md:pl-0'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handlePrev();
+                }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className='p-3 md:p-4 rounded-full bg-black/20 hover:bg-black/40 border border-white/5 group-hover/nav:border-[#FFD700]/30 text-white/30 group-hover/nav:text-[#FFD700] backdrop-blur-md transition-all'
+                >
+                  <ChevronLeft className='w-6 h-6 md:w-8 md:h-8' />
+                </motion.div>
+              </div>
+
+              {/* Right Area */}
+              <div
+                className='w-[20%] md:w-[15%] h-full pointer-events-auto cursor-pointer group/nav flex items-center justify-end pr-2 md:pr-0'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNext();
+                }}
+              >
+                <motion.div
+                  initial={{ opacity: 0, x: 10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  className='p-3 md:p-4 rounded-full bg-black/20 hover:bg-black/40 border border-white/5 group-hover/nav:border-[#FFD700]/30 text-white/30 group-hover/nav:text-[#FFD700] backdrop-blur-md transition-all'
+                >
+                  <ChevronRight className='w-6 h-6 md:w-8 md:h-8' />
+                </motion.div>
+              </div>
+            </div>
+
+            {/* Improved Thumbnail Strip (Bottom) */}
+            <motion.div
+              initial={{ opacity: 0, y: 100 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 100 }}
               className='absolute bottom-0 left-0 right-0 z-50 pointer-events-auto'
             >
-              {/* Gradient background */}
-              <div className='bg-gradient-to-t from-black/90 via-black/60 to-transparent pt-8 pb-4'>
-                {/* Current Index Indicator */}
-                <div className='text-center mb-3'>
-                  <span className='text-[#FFD700] text-sm tracking-widest font-light px-4 py-1 bg-black/40 rounded-full border border-[#FFD700]/30'>
-                    {focusedIndex + 1} / {photos.length}
-                  </span>
-                </div>
+              <div className='bg-gradient-to-t from-black/95 via-black/70 to-transparent pt-20 pb-8 px-4'>
+                <div className='max-w-4xl mx-auto space-y-4'>
+                  <div className='flex justify-center'>
+                    <span className='px-4 py-1 rounded-full bg-[#FFD700]/10 border border-[#FFD700]/30 text-[#FFD700] text-[10px] font-bold tracking-widest'>
+                      {focusedIndex + 1} / {photos.length}
+                    </span>
+                  </div>
 
-                {/* Thumbnail Scroll Container */}
-                <div className='flex justify-center px-4'>
-                  <div className='flex gap-2 overflow-x-auto max-w-[90vw] py-2 px-2 scrollbar-thin scrollbar-thumb-[#FFD700]/40 scrollbar-track-transparent'>
-                    {photos.slice(0, 50).map((photo, index) => {
-                      const proxiedUrl = photo.url.startsWith("http")
-                        ? `/api/image-proxy?url=${encodeURIComponent(photo.url)}`
-                        : photo.url;
-                      const isActive = focusedIndex === index;
-
-                      return (
-                        <motion.button
-                          key={photo.id}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setFocusedIndex(index);
-                          }}
-                          whileHover={{ scale: 1.1 }}
-                          whileTap={{ scale: 0.95 }}
-                          className={`relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden transition-all duration-300 ${
-                            isActive
-                              ? "ring-2 ring-[#FFD700] shadow-[0_0_15px_rgba(255,215,0,0.5)] scale-110"
-                              : "ring-1 ring-white/20 hover:ring-[#FFD700]/60 opacity-60 hover:opacity-100"
-                          }`}
-                        >
-                          <img
-                            src={proxiedUrl}
-                            alt={`Photo ${index + 1}`}
-                            className='w-full h-full object-cover'
-                            loading='lazy'
-                          />
-                          {isActive && (
-                            <div className='absolute inset-0 bg-[#FFD700]/10' />
-                          )}
-                        </motion.button>
-                      );
-                    })}
+                  <div
+                    ref={scrollContainerRef}
+                    className='flex gap-3 overflow-x-auto pt-4 pb-4 px-4 no-scrollbar scroll-smooth justify-start md:justify-center'
+                  >
+                    {photos.slice(0, 50).map((photo, index) => (
+                      <button
+                        key={photo.id}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setFocusedIndex(index);
+                        }}
+                        className={`relative flex-shrink-0 w-14 h-14 md:w-16 md:h-16 rounded-xl overflow-hidden transition-all duration-300 ${
+                          focusedIndex === index
+                            ? "ring-2 ring-[#FFD700] shadow-[0_0_20px_rgba(255,215,0,0.4)] scale-110 -translate-y-1"
+                            : "opacity-40 hover:opacity-100 ring-1 ring-white/10"
+                        }`}
+                      >
+                        <img
+                          src={
+                            photo.url.startsWith("http")
+                              ? `/api/image-proxy?url=${encodeURIComponent(photo.url)}`
+                              : photo.url
+                          }
+                          className='w-full h-full object-cover'
+                          alt=''
+                          loading='lazy'
+                        />
+                        {focusedIndex === index && (
+                          <div className='absolute inset-0 bg-[#FFD700]/10 border border-white/20 rounded-xl' />
+                        )}
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
             </motion.div>
-          </>
+          </div>
         )}
       </AnimatePresence>
 
-      <HeartGestureHandler
+      <GestureHandler
         enabled={isGestureEnabled}
-        setIsScattered={(val) => {
+        setIsScattered={(val: boolean) => {
           // Visual change is obvious enough, no need for text feedback
           setIsScattered(val);
           if (!val) setFocusedIndex(null);
         }}
-        setFocusedIndex={(val) => {
+        setFocusedIndex={(val: (prev: number | null) => number | null) => {
           // Assuming val is updater function from HeartGestureHandler
           // Only show feedback if we are NOT currently focused (focusedIndex === null)
           // If we ARE focused, pinch probably just refreshes or does nothing visible,
@@ -1075,7 +1183,7 @@ export const ChristmasMode = ({
           }
           setFocusedIndex(val);
         }}
-        onNavigate={(dir) => {
+        onNavigate={(dir: "next" | "prev") => {
           if (dir === "next") {
             handleNext();
             showFeedback("👉 Next", 800);
@@ -1085,7 +1193,7 @@ export const ChristmasMode = ({
           }
         }}
         onPalmDrag={handlePalmDrag}
-        onError={(msg) => showFeedback(`⚠️ ${msg}`, 3000)}
+        onError={(msg: string) => showFeedback(`⚠️ ${msg}`, 3000)}
       />
 
       {/* Gesture Feedback Toast */}
@@ -1110,49 +1218,41 @@ export const ChristmasMode = ({
       <AnimatePresence>
         {isGestureEnabled && (
           <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 50 }}
-            className='fixed bottom-36 right-6 z-40 bg-black/60 backdrop-blur-md border border-[#FFD700]/30 rounded-xl p-4 text-[#FFD700] w-64 shadow-[0_0_20px_rgba(255,215,0,0.15)] pointer-events-none'
+            initial={{ opacity: 0, x: 20, scale: 0.95 }}
+            animate={{ opacity: 1, x: 0, scale: 1 }}
+            exit={{ opacity: 0, x: 20, scale: 0.95 }}
+            className='fixed top-24 right-6 w-64 z-40 bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-5 text-white/70 shadow-2xl pointer-events-none hidden md:block'
           >
-            <h3 className='text-xs font-bold uppercase tracking-widest border-b border-[#FFD700]/20 pb-2 mb-3 flex items-center gap-2'>
+            <h3 className='text-xs font-bold uppercase tracking-widest border-b border-white/10 pb-2 mb-4 flex items-center gap-2 text-[#FFD700]'>
               <Hand size={14} /> Gesture Guide
             </h3>
-            <div className='space-y-3 text-xs font-light'>
-              <div className='flex items-center gap-3'>
-                <span className='text-xl'>✊</span>
+            <div className='space-y-4 text-[11px] font-light leading-relaxed'>
+              <div className='flex items-center gap-4'>
+                <span className='text-xl w-6'>✊</span>
                 <div>
-                  <p className='font-bold text-[#FFD700]/90'>Converge + Drag</p>
-                  <p className='text-[#FFD700]/50 text-[10px]'>
-                    Fist to gather, move to rotate
-                  </p>
+                  <p className='font-bold text-white/90'>Converge</p>
+                  <p className='text-white/40'>Fist to gather particles</p>
                 </div>
               </div>
-              <div className='flex items-center gap-3'>
-                <span className='text-xl'>✋</span>
+              <div className='flex items-center gap-4'>
+                <span className='text-xl w-6'>✋</span>
                 <div>
-                  <p className='font-bold text-[#FFD700]/90'>Scatter + Drag</p>
-                  <p className='text-[#FFD700]/50 text-[10px]'>
-                    Open hand to scatter, move to rotate
-                  </p>
+                  <p className='font-bold text-white/90'>Scatter</p>
+                  <p className='text-white/40'>Open hand to scatter</p>
                 </div>
               </div>
-              <div className='flex items-center gap-3'>
-                <span className='text-xl'>👉 / 👈</span>
+              <div className='flex items-center gap-4'>
+                <span className='text-xl w-6'>👉</span>
                 <div>
-                  <p className='font-bold text-[#FFD700]/90'>Navigate</p>
-                  <p className='text-[#FFD700]/50 text-[10px]'>
-                    Point Left/Right to switch
-                  </p>
+                  <p className='font-bold text-white/90'>Navigate</p>
+                  <p className='text-white/40'>Point to skip images</p>
                 </div>
               </div>
-              <div className='flex items-center gap-3'>
-                <span className='text-xl'>👌</span>
+              <div className='flex items-center gap-4'>
+                <span className='text-xl w-6'>👌</span>
                 <div>
-                  <p className='font-bold text-[#FFD700]/90'>Select</p>
-                  <p className='text-[#FFD700]/50 text-[10px]'>
-                    Pinch/OK to focus
-                  </p>
+                  <p className='font-bold text-white/90'>Select</p>
+                  <p className='text-white/40'>Pinch to focus photo</p>
                 </div>
               </div>
             </div>
@@ -1162,3 +1262,47 @@ export const ChristmasMode = ({
     </div>
   );
 };
+
+// --- Sub-components for better organization ---
+const DockButton = ({
+  active,
+  onClick,
+  icon,
+  label,
+}: {
+  active: boolean;
+  onClick: () => void;
+  icon: React.ReactNode;
+  label: string;
+}) => (
+  <button
+    onClick={onClick}
+    className={`relative group flex items-center gap-2 px-4 py-2 rounded-2xl transition-all duration-300 ${
+      active
+        ? "bg-[#FFD700]/20 text-[#FFD700] ring-1 ring-[#FFD700]/50"
+        : "text-white/40 hover:text-white hover:bg-white/5 active:scale-95"
+    }`}
+  >
+    <div
+      className={`transition-transform duration-300 ${active ? "scale-110" : ""}`}
+    >
+      {icon}
+    </div>
+    <span
+      className={`text-[10px] font-bold uppercase tracking-[0.1em] overflow-hidden transition-all duration-300 ${
+        active
+          ? "max-w-[80px] opacity-100"
+          : "max-w-0 opacity-0 md:group-hover:max-w-[80px] md:group-hover:opacity-100 hidden md:block"
+      }`}
+    >
+      {label}
+    </span>
+    {active && (
+      <motion.div
+        layoutId='dock-indicator'
+        className='absolute inset-0 bg-[#FFD700]/5 rounded-2xl -z-10'
+        transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+      />
+    )}
+  </button>
+);

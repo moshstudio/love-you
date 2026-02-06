@@ -13,8 +13,14 @@ import {
   Sparkles,
   X,
   ArrowLeft,
+  Grid3X3,
+  Trees,
+  Maximize2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { GalleryGrid } from "../../albums/[id]/gallery/components/GalleryGrid";
+import { ChristmasMode } from "../../albums/[id]/gallery/components/ChristmasMode";
+import { ImmersiveView } from "../../albums/[id]/gallery/components/ImmersiveView";
 
 interface Album {
   id: string;
@@ -53,6 +59,35 @@ export default function SharedAlbumPage() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"photos" | "stories">("photos");
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
+
+  const [viewMode, setViewMode] = useState<"grid" | "christmas" | "immersive">(
+    "immersive",
+  );
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(true);
+  const [visitedModes, setVisitedModes] = useState<Set<string>>(
+    new Set(["immersive"]),
+  );
+
+  useEffect(() => {
+    if (viewMode !== "grid") {
+      setVisitedModes((prev) => {
+        const newSet = new Set(prev);
+        newSet.add(viewMode);
+        return newSet;
+      });
+    }
+  }, [viewMode]);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isPlaying && viewMode === "immersive" && photos.length > 0) {
+      interval = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % photos.length);
+      }, 3000);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying, viewMode, photos.length]);
 
   useEffect(() => {
     loadSharedAlbum();
@@ -132,8 +167,57 @@ export default function SharedAlbumPage() {
               {album.title}
             </h1>
           </div>
-          <div className='hidden sm:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-rose-300 bg-white/40 px-4 py-2 rounded-full border border-rose-100/50'>
-            Shared with Love
+
+          <div className='flex items-center gap-2'>
+            <div className='flex bg-white/40 backdrop-blur-md rounded-full p-0.5 sm:p-1 border border-rose-100/50 shadow-sm'>
+              <button
+                onClick={() => {
+                  setActiveTab("photos");
+                  setViewMode("grid");
+                }}
+                className={`p-1.5 sm:p-2 rounded-full transition-all touch-target flex items-center justify-center ${
+                  viewMode === "grid" && activeTab === "photos"
+                    ? "bg-rose-500 text-white shadow-md"
+                    : "text-rose-400 hover:bg-rose-50"
+                }`}
+                title='Grid View'
+              >
+                <Grid3X3 className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("photos");
+                  setViewMode("christmas");
+                }}
+                className={`p-1.5 sm:p-2 rounded-full transition-all touch-target flex items-center justify-center ${
+                  viewMode === "christmas" && activeTab === "photos"
+                    ? "bg-rose-500 text-white shadow-md"
+                    : "text-rose-400 hover:bg-rose-50"
+                }`}
+                title='Holiday Mode'
+              >
+                <Trees className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab("photos");
+                  setViewMode("immersive");
+                  setIsPlaying(true);
+                }}
+                className={`p-1.5 sm:p-2 rounded-full transition-all touch-target flex items-center justify-center ${
+                  viewMode === "immersive" && activeTab === "photos"
+                    ? "bg-rose-500 text-white shadow-md"
+                    : "text-rose-400 hover:bg-rose-50"
+                }`}
+                title='Immersive Mode'
+              >
+                <Maximize2 className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
+              </button>
+            </div>
+
+            <div className='hidden sm:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-rose-300 bg-white/40 px-4 py-2 rounded-full border border-rose-100/50'>
+              Shared with Love
+            </div>
           </div>
         </div>
       </header>
@@ -174,7 +258,7 @@ export default function SharedAlbumPage() {
               <span className='hidden sm:inline'>Glimpses</span>
               <span className='sm:hidden'>Photos</span> ({photos.length})
             </button>
-            <button
+            {/* <button
               onClick={() => setActiveTab("stories")}
               className={`px-4 sm:px-8 py-2 sm:py-3 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider transition-all touch-target ${
                 activeTab === "stories"
@@ -184,45 +268,13 @@ export default function SharedAlbumPage() {
             >
               <span className='hidden sm:inline'>Tales</span>
               <span className='sm:hidden'>Stories</span> ({stories.length})
-            </button>
+            </button> */}
           </div>
         </div>
 
         {/* Content */}
         <AnimatePresence mode='wait'>
-          {activeTab === "photos" ? (
-            <motion.div
-              key='photos'
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-8'
-            >
-              {photos.map((photo, index) => (
-                <motion.div
-                  key={photo.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: index * 0.05 }}
-                  onClick={() => setSelectedPhoto(photo)}
-                  className='group relative bg-white rounded-xl sm:rounded-[2.5rem] p-2 sm:p-3 border-2 sm:border-4 border-white shadow-md hover:shadow-2xl hover:shadow-rose-100 transition-all cursor-pointer'
-                >
-                  <div className='aspect-square rounded-[2rem] overflow-hidden bg-rose-50'>
-                    <img
-                      src={photo.url}
-                      alt={photo.caption || "Memory"}
-                      className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-700'
-                    />
-                  </div>
-                  <div className='absolute inset-4 rounded-[2rem] bg-rose-950/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center'>
-                    <div className='p-3 bg-white/90 rounded-full shadow-lg'>
-                      <Sparkles className='w-6 h-6 text-rose-500' />
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          ) : (
+          {activeTab === "stories" ? (
             <motion.div
               key='stories'
               initial={{ opacity: 0, y: 10 }}
@@ -246,6 +298,95 @@ export default function SharedAlbumPage() {
                   </p>
                 </div>
               ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              key='photos-view'
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className='relative w-full'
+              style={{ minHeight: "60vh" }}
+            >
+              <div
+                style={{
+                  visibility: viewMode === "grid" ? "visible" : "hidden",
+                  opacity: viewMode === "grid" ? 1 : 0,
+                  transition: "opacity 0.5s ease",
+                  position: viewMode === "grid" ? "relative" : "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  zIndex: 10,
+                }}
+              >
+                <GalleryGrid
+                  photos={photos}
+                  onPhotoClick={(index) => {
+                    setCurrentIndex(index);
+                    setViewMode("immersive");
+                    setIsPlaying(false);
+                  }}
+                />
+              </div>
+
+              {(viewMode === "christmas" || visitedModes.has("christmas")) && (
+                <div
+                  style={{
+                    visibility: viewMode === "christmas" ? "visible" : "hidden",
+                    opacity: viewMode === "christmas" ? 1 : 0,
+                    transition: "opacity 0.5s ease",
+                    position:
+                      viewMode === "christmas" ? "relative" : "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "80vh",
+                    zIndex: 20,
+                  }}
+                >
+                  <ChristmasMode
+                    photos={photos}
+                    onClose={() => setViewMode("grid")}
+                    isActive={viewMode === "christmas"}
+                  />
+                </div>
+              )}
+
+              {(viewMode === "immersive" || visitedModes.has("immersive")) && (
+                <div
+                  style={{
+                    visibility: viewMode === "immersive" ? "visible" : "hidden",
+                    opacity: viewMode === "immersive" ? 1 : 0,
+                    transition: "opacity 0.5s ease",
+                    position: viewMode === "immersive" ? "fixed" : "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    zIndex: 100,
+                  }}
+                >
+                  {viewMode === "immersive" && (
+                    <button
+                      onClick={() => setViewMode("grid")}
+                      className='absolute top-24 right-6 sm:top-28 sm:right-10 z-[110] p-3 rounded-full border border-rose-100/20 text-white/50 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all group flex items-center justify-center'
+                      aria-label='Exit Immersive View'
+                    >
+                      <X className='w-5 h-5' />
+                    </button>
+                  )}
+                  <ImmersiveView
+                    photos={photos}
+                    currentIndex={currentIndex}
+                    onChangeIndex={setCurrentIndex}
+                    isPlaying={isPlaying}
+                    onTogglePlay={() => setIsPlaying(!isPlaying)}
+                    onClose={() => setViewMode("grid")}
+                    isActive={viewMode === "immersive"}
+                  />
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -286,19 +427,6 @@ export default function SharedAlbumPage() {
           </div>
         )}
       </AnimatePresence>
-
-      {/* Footer */}
-      <footer className='relative z-10 py-12 text-center'>
-        <p className='text-rose-300 text-[10px] font-black uppercase tracking-widest'>
-          Keep your own memories safe with Love You.
-        </p>
-        <a
-          href='/register'
-          className='mt-4 inline-block px-8 py-3 bg-rose-50 text-rose-500 rounded-full font-bold text-xs uppercase tracking-widest hover:bg-rose-100 transition-all'
-        >
-          Create Your story
-        </a>
-      </footer>
     </div>
   );
 }

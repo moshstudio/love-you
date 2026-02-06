@@ -97,11 +97,11 @@ export const ParticleGallery: React.FC<ParticleGalleryProps> = ({
     const initialColors = new Float32Array(GALLERY_PARTICLE_COUNT * 3);
     const initialSizes = new Float32Array(GALLERY_PARTICLE_COUNT).fill(1.0);
 
-    // Gold/starry colors for galaxy
+    // Gold/starry colors for galaxy (Boosted for Bloom with threshold 1.0)
     for (let i = 0; i < GALLERY_PARTICLE_COUNT; i++) {
-      initialColors[i * 3] = 1.0;
-      initialColors[i * 3 + 1] = 0.8 + Math.random() * 0.2;
-      initialColors[i * 3 + 2] = 0.5 + Math.random() * 0.5;
+      initialColors[i * 3] = 2.0;
+      initialColors[i * 3 + 1] = 1.6 + Math.random() * 0.4;
+      initialColors[i * 3 + 2] = 1.0 + Math.random() * 1.0;
     }
 
     geo.setAttribute("position", new THREE.BufferAttribute(initialPos, 3));
@@ -319,8 +319,9 @@ export const ParticleGallery: React.FC<ParticleGalleryProps> = ({
       let s = 1;
       if (!state.isGalaxyMode && state.currentRatio) {
         // Maximize size within viewport considering margins (90% of screen)
-        const maxWidth = viewport.width * 0.9;
-        const maxHeight = viewport.height * 0.9;
+        const margin = 0.9;
+        const maxWidth = viewport.width * margin;
+        const maxHeight = viewport.height * margin;
 
         // Base size at scale 1 (defined by WORLD_SCALE in utils)
         const baseW = WORLD_SCALE;

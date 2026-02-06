@@ -2,7 +2,8 @@
   "Navigation": {
     "brand": "Love You",
     "login": "Login",
-    "register": "Register"
+    "register": "Register",
+    "privacy": "Privacy Policy"
   },
   "Metadata": {
     "title": "Love You - Share Your Memories",
@@ -150,7 +151,12 @@
       "generateLink": "Generate Share Link",
       "close": "Close",
       "copied": "Link copied to clipboard!",
-      "errorGeneric": "Failed to create share link"
+      "errorGeneric": "Failed to create share link",
+      "duration": "Duration",
+      "oneDay": "1 Day",
+      "sevenDays": "7 Days",
+      "thirtyDays": "30 Days",
+      "forever": "Forever"
     },
     "tabs": {
       "photos": "Photos ({count})",
@@ -222,7 +228,17 @@
       "viewArchives": "VIEW TIME ARCHIVES",
       "ourStory": "OUR STORY",
       "openingVault": "Opening Memory Vault...",
-      "loggedInAs": "Logged in as"
+      "loggedInAs": "Logged in as",
+      "privacyNotice": "By uploading, you agree to our Privacy Policy. Your photos will be securely stored on our servers.",
+      "viewPrivacy": "View Privacy Policy",
+      "siteIntro": "What is Love You?",
+      "siteDescription": "A sanctuary for your memories. More than just an album, it's an immersive experience designed to keep your most precious moments alive.",
+      "feature1Title": "Capture & Organize",
+      "feature1Desc": "Create beautiful albums for your trips, dates, and everyday moments.",
+      "feature2Title": "Relive Immersively",
+      "feature2Desc": "Experience your photos with stunning 3D effects, particles, and interactive galleries.",
+      "feature3Title": "Share the Love",
+      "feature3Desc": "Generate unique links to share your romantic journey with family and friends."
     },
     "HUD": {
       "gps": "GPS",
@@ -246,6 +262,30 @@
         "11": "TREASURING...",
         "12": "COMPLETED."
       }
+    }
+  },
+  "Privacy": {
+    "title": "Privacy Policy",
+    "introduction": "We value your privacy. This policy explains how we handle the data you upload to the Love You platform.",
+    "dataCollection": {
+      "title": "Data Collection",
+      "content": "When you upload photos or write stories, this data (including image files, text captions, location info, and dates) is uploaded to our servers and stored in the cloud."
+    },
+    "dataUsage": {
+      "title": "Data Usage",
+      "content": "Your uploaded data is used solely to display it within your private albums, or to show it to specified individuals when you generate a share link. We do not sell your personal data to third parties, nor do we use it for advertising."
+    },
+    "dataSecurity": {
+      "title": "Data Security",
+      "content": "We use industry-standard security measures (such as SSL encryption and secure storage services) to protect your data. While we strive to protect your privacy, please be aware that no method of transmission or storage over the internet is 100% secure."
+    },
+    "userRights": {
+      "title": "Your Rights",
+      "content": "You can delete your uploaded photos and stories at any time through the album management interface. Once deleted, this data is immediately removed from our active database."
+    },
+    "contact": {
+      "title": "Contact Us",
+      "content": "If you have any questions about this Privacy Policy, please contact us."
     }
   }
 }

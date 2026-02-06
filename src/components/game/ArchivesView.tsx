@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -20,7 +21,7 @@ import {
   GalleryHorizontal,
 } from "lucide-react";
 import { albumsApi, photosApi, storiesApi, shareApi } from "@/lib/api";
-import { useRouter } from "@/i18n/routing";
+import { useRouter, Link } from "@/i18n/routing";
 import { compressImage } from "@/lib/imageCompression";
 
 interface Photo {
@@ -54,6 +55,7 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
   const t = useTranslations("Game.UI");
   const detailT = useTranslations("AlbumDetail");
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [stories, setStories] = useState<Story[]>([]);
@@ -71,6 +73,16 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
   const [showShareModal, setShowShareModal] = useState(false);
   const [shareUrl, setShareUrl] = useState("");
   const [copied, setCopied] = useState(false);
+  const [expireDuration, setExpireDuration] = useState<number | undefined>(
+    30 * 24 * 60 * 60,
+  );
+
+  const durationOptions = [
+    { label: detailT("share.oneDay"), value: 24 * 60 * 60 },
+    { label: detailT("share.sevenDays"), value: 7 * 24 * 60 * 60 },
+    { label: detailT("share.thirtyDays"), value: 30 * 24 * 60 * 60 },
+    { label: detailT("share.forever"), value: undefined },
+  ];
 
   const [showStoryForm, setShowStoryForm] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
@@ -105,6 +117,12 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
   useEffect(() => {
     fetchData();
   }, [fetchData, albumId]);
+
+  useEffect(() => {
+    if (searchParams.get("action") === "upload") {
+      setShowUploadForm(true);
+    }
+  }, [searchParams]);
 
   const handleDelete = async () => {
     if (!selectedPhoto) return;
@@ -141,7 +159,7 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
 
   const handleCreateShare = async () => {
     try {
-      const response = (await shareApi.create(albumId, 30 * 24 * 60 * 60)) as {
+      const response = (await shareApi.create(albumId, expireDuration)) as {
         shareUrl: string;
       };
       setShareUrl(response.shareUrl);
@@ -230,31 +248,32 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
         <div className='flex items-center gap-2 sm:gap-3 flex-wrap'>
           <button
             onClick={() => router.push(`/albums/${albumId}/gallery`)}
-            className='p-2 sm:p-3 bg-rose-50 text-rose-400 hover:bg-rose-100 rounded-full transition-all touch-target'
+            className='flex items-center justify-center p-2 sm:p-3 bg-rose-50 text-rose-400 hover:bg-rose-100 rounded-full transition-all touch-target'
             title={detailT("viewGallery")}
           >
             <GalleryHorizontal className='w-4 h-4 sm:w-5 sm:h-5' />
           </button>
           <button
             onClick={() => setShowShareModal(true)}
-            className='p-2 sm:p-3 bg-rose-50 text-rose-400 hover:bg-rose-100 rounded-full transition-all touch-target'
+            className='flex items-center justify-center p-2 sm:p-3 bg-rose-50 text-rose-400 hover:bg-rose-100 rounded-full transition-all touch-target'
             title={detailT("shareAlbum")}
           >
             <Share2 className='w-4 h-4 sm:w-5 sm:h-5' />
           </button>
           <button
             onClick={() => setShowDeleteAlbumConfirm(true)}
-            className='p-2 sm:p-3 bg-rose-50 text-rose-300 hover:text-rose-500 rounded-full transition-all touch-target'
+            className='flex items-center justify-center p-2 sm:p-3 bg-rose-50 text-rose-300 hover:text-rose-500 rounded-full transition-all touch-target'
             title={t("delete")}
           >
             <Trash2 className='w-4 h-4 sm:w-5 sm:h-5' />
           </button>
           <button
             onClick={onBack}
-            className='hidden sm:flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-2.5 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-rose-200 font-bold group text-xs sm:text-sm'
+            className='flex items-center justify-center gap-2 px-3 sm:px-6 py-2 sm:py-2.5 bg-rose-500 text-white rounded-full hover:bg-rose-600 transition-all shadow-lg shadow-rose-200 font-bold group text-xs sm:text-sm touch-target'
+            title={t("returnToRoot")}
           >
-            <ArrowLeft className='w-3 h-3 sm:w-4 sm:h-4 group-hover:-translate-x-1 transition-transform' />
-            {t("returnToRoot")}
+            <ArrowLeft className='w-4 h-4 sm:w-4 sm:h-4 group-hover:-translate-x-1 transition-transform' />
+            <span className='hidden sm:inline'>{t("returnToRoot")}</span>
           </button>
         </div>
       </div>
@@ -281,7 +300,7 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
           >
             {detailT("tabs.photos", { count: photos.length })}
           </button>
-          <button
+          {/* <button
             onClick={() => setActiveTab("stories")}
             className={`px-4 sm:px-6 py-2 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-[0.05em] sm:tracking-[0.1em] transition-all whitespace-nowrap touch-target ${
               activeTab === "stories"
@@ -290,7 +309,7 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
             }`}
           >
             {detailT("tabs.stories", { count: stories.length })}
-          </button>
+          </button> */}
         </div>
 
         <div className='flex-1' />
@@ -306,7 +325,7 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
             </span>
             <span className='xs:hidden'>{detailT("upload.submit")}</span>
           </button>
-          <button
+          {/* <button
             onClick={() => setShowStoryForm(!showStoryForm)}
             className='flex-1 sm:flex-none flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2 bg-white border border-rose-100 text-rose-400 hover:bg-rose-50 rounded-full text-[9px] sm:text-[10px] font-black uppercase tracking-wider sm:tracking-widest transition-all touch-target'
           >
@@ -315,7 +334,7 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
               {showStoryForm ? detailT("cancel") : detailT("addStory")}
             </span>
             <span className='xs:hidden'>{detailT("story.submit")}</span>
-          </button>
+          </button> */}
         </div>
       </div>
 
@@ -357,6 +376,16 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
                     ? detailT("processing")
                     : detailT("upload.submit")}
                 </button>
+                <p className='mt-4 text-[10px] text-rose-300 font-bold uppercase tracking-widest leading-relaxed text-center'>
+                  {t("privacyNotice")}{" "}
+                  <Link
+                    href='/privacy'
+                    target='_blank'
+                    className='text-rose-500 hover:text-rose-600 underline underline-offset-4 decoration-rose-200'
+                  >
+                    {t("viewPrivacy")}
+                  </Link>
+                </p>
               </form>
             </motion.div>
           )}
@@ -460,7 +489,7 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
                   </h3>
                   <button
                     onClick={() => handleDeleteStory(story.id)}
-                    className='p-2 text-rose-200 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all'
+                    className='flex items-center justify-center p-2 text-rose-200 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all'
                   >
                     <Trash2 className='w-4 h-4' />
                   </button>
@@ -485,43 +514,43 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
       {selectedPhoto &&
         createPortal(
           <div
-            className='fixed inset-0 z-[100] flex items-center justify-center bg-rose-950/40 backdrop-blur-md p-6'
+            className='fixed inset-0 z-[100] flex items-center justify-center bg-rose-950/40 backdrop-blur-md p-2 sm:p-6'
             onClick={() => setSelectedPhoto(null)}
           >
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              className='max-w-5xl w-full max-h-[90vh] flex flex-col bg-white rounded-[3rem] shadow-2xl overflow-hidden relative border border-rose-100'
+              className='max-w-5xl w-full max-h-[92vh] flex flex-col bg-white rounded-2xl sm:rounded-[3rem] shadow-2xl overflow-hidden relative border border-rose-100 flex-shrink'
               onClick={(e) => e.stopPropagation()}
             >
-              <div className='relative flex-1 bg-rose-50/10 overflow-hidden'>
+              <div className='relative flex-1 min-h-0 bg-rose-50/10 overflow-hidden flex items-center justify-center'>
                 <img
                   src={selectedPhoto.url}
                   alt={selectedPhoto.caption}
-                  className='w-full h-full object-contain'
+                  className='max-w-full max-h-full w-auto h-auto object-contain'
                 />
                 <button
                   onClick={() => setSelectedPhoto(null)}
-                  className='absolute top-6 right-6 p-3 bg-white/80 hover:bg-white rounded-full shadow-lg transition-all text-rose-500'
+                  className='absolute top-4 right-4 sm:top-6 sm:right-6 flex items-center justify-center p-2 sm:p-3 bg-white/80 hover:bg-white rounded-full shadow-lg transition-all text-rose-500 z-10'
                 >
-                  <X className='w-6 h-6' />
+                  <X className='w-5 h-5 sm:w-6 sm:h-6' />
                 </button>
               </div>
-              <div className='p-8 bg-white border-t border-rose-100'>
-                <div className='flex justify-between items-start'>
-                  <div>
-                    <h3 className='text-2xl font-black text-rose-900 mb-2'>
+              <div className='p-4 sm:p-8 bg-white border-t border-rose-100'>
+                <div className='flex justify-between items-center sm:items-start gap-4'>
+                  <div className='min-w-0 flex-1'>
+                    <h3 className='text-lg sm:text-2xl font-black text-rose-900 mb-0.5 sm:mb-2 line-clamp-2'>
                       {selectedPhoto.caption}
                     </h3>
-                    <div className='flex items-center gap-4 text-[10px] text-rose-300 font-black uppercase tracking-widest'>
+                    <div className='flex items-center gap-4 text-[9px] sm:text-[10px] text-rose-300 font-black uppercase tracking-widest'>
                       <span>MOMENT_ID: {selectedPhoto.id.substring(0, 8)}</span>
                     </div>
                   </div>
                   <button
                     onClick={() => setShowDeleteConfirm(true)}
-                    className='p-4 bg-rose-50 text-rose-300 hover:text-rose-500 rounded-full transition-all'
+                    className='flex items-center justify-center p-2.5 sm:p-4 bg-rose-50 text-rose-300 hover:text-rose-500 rounded-full transition-all shrink-0'
                   >
-                    <Trash2 className='w-6 h-6' />
+                    <Trash2 className='w-5 h-5 sm:w-6 sm:h-6' />
                   </button>
                 </div>
               </div>
@@ -608,6 +637,28 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
                   <p className='text-rose-400 text-sm text-center font-medium'>
                     {detailT("generateLinkDesc")}
                   </p>
+
+                  <div className='flex flex-col gap-3'>
+                    <label className='text-[10px] font-black text-rose-300 uppercase tracking-widest text-center'>
+                      {detailT("share.duration")}
+                    </label>
+                    <div className='grid grid-cols-2 gap-2'>
+                      {durationOptions.map((option) => (
+                        <button
+                          key={option.label}
+                          onClick={() => setExpireDuration(option.value)}
+                          className={`py-2.5 rounded-xl border-2 transition-all text-[10px] font-bold uppercase tracking-wider ${
+                            expireDuration === option.value
+                              ? "bg-rose-500 border-rose-500 text-white shadow-md shadow-rose-100"
+                              : "bg-white border-rose-50 text-rose-300 hover:border-rose-100 hover:text-rose-400"
+                          }`}
+                        >
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   <button
                     onClick={handleCreateShare}
                     className='w-full py-4 bg-rose-500 text-white font-black rounded-full uppercase tracking-widest text-[10px] shadow-lg shadow-rose-100'

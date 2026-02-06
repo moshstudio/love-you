@@ -32,7 +32,7 @@ export const GalaxyEffect: EffectLogic = {
       if (isPhoto) {
         // Photos form a clean viewing ring similar to Heart effect
         const angle = (index / total) * Math.PI * 2 + time * 0.05;
-        const radius = 22; // Reduced to match HeartEffect size
+        const radius = 32; // Increased to match HeartEffect size
         const x = Math.cos(angle) * radius;
         const z = Math.sin(angle) * radius;
         const y = Math.sin(index * 0.5 + time) * 2; // Slight vertical wave
@@ -43,7 +43,7 @@ export const GalaxyEffect: EffectLogic = {
         const theta = seededRandom(index + 1) * Math.PI * 2 + time * 0.02;
         const phi = Math.acos(2 * seededRandom(index + 2) - 1); // Uniform sphere
 
-        const radius = 40 + rRand * 25; // Reduced radius (40-65) to match HeartEffect
+        const radius = 80 + rRand * 40; // Increased radius (80-120) for larger scale
 
         const x = radius * Math.sin(phi) * Math.cos(theta);
         const y = radius * Math.sin(phi) * Math.sin(theta);
@@ -63,8 +63,8 @@ export const GalaxyEffect: EffectLogic = {
 
     if (isRing) {
       // --- RINGS ---
-      const innerRadius = 16;
-      const outerRadius = 32;
+      const innerRadius = 24; // Increased from 16
+      const outerRadius = 48; // Increased from 32
 
       // Distribution: concentrated more towards inner/middle for solid look
       // Power of 2 pushes points towards inner radius, Power of 0.5 pushes to outer
@@ -81,7 +81,7 @@ export const GalaxyEffect: EffectLogic = {
       const ringSpeed = 0.1 + (1.0 / radius) * 3.0;
       const theta = angleOffset * (isPhoto ? 0.5 : 1.0) + index * 0.001; // Slower spread
 
-      const tilt = Math.PI / 24;
+      const tilt = 0;
 
       // Thinner disc for sharper look
       let y = (seededRandom(index + 2) - 0.5) * 0.05; // Extremely thin
@@ -90,9 +90,9 @@ export const GalaxyEffect: EffectLogic = {
 
       if (isPhoto) {
         // Uniform distribution logic for photos
-        // Radius: Uniform random between inner (16) and outer (32) minus padding
-        const minR = 18;
-        const maxR = 30;
+        // Radius: Uniform random between inner and outer
+        const minR = 26; // Increased from 18
+        const maxR = 44; // Increased from 30
 
         const rRandom = seededRandom(index + 100);
         const photoRadius = minR + rRandom * (maxR - minR);
@@ -113,7 +113,7 @@ export const GalaxyEffect: EffectLogic = {
       return new THREE.Vector3(x, yTitl, zTilt);
     } else {
       // --- PLANET BODY (JUPITER) ---
-      const planetRadius = 12;
+      const planetRadius = 18; // Increased from 12
 
       // Volumetric filling with SHARP EDGE:
       // Mix: 50% Surface (Shell), 50% Volume
@@ -139,7 +139,7 @@ export const GalaxyEffect: EffectLogic = {
       const x = radiusAtY * Math.sin(theta);
       const z = radiusAtY * Math.cos(theta);
 
-      const tilt = Math.PI / 16;
+      const tilt = 0;
 
       const yTitl = y * Math.cos(tilt) - z * Math.sin(tilt);
       const zTilt = y * Math.sin(tilt) + z * Math.cos(tilt);
@@ -224,7 +224,7 @@ export const GalaxyScene = ({
 
       {/* Floating Text - Billboard to always face camera */}
       <Billboard
-        position={[0, 18, 0]}
+        position={[0, 32, 0]}
         follow={true}
         lockX={false}
         lockY={false}
@@ -236,7 +236,7 @@ export const GalaxyScene = ({
           floatIntensity={1}
         >
           <Text
-            fontSize={3}
+            fontSize={4}
             color={themeColor}
             font='https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff'
             characters={displayText}
@@ -249,18 +249,19 @@ export const GalaxyScene = ({
             {displayText}
             <meshPhysicalMaterial
               color={themeColor}
-              emissive={`#${darkerThemeColor.getHexString()}`}
-              emissiveIntensity={0.2 * intensity}
-              metalness={0.9}
-              roughness={0.1}
+              emissive={themeColor}
+              emissiveIntensity={1.5 * intensity}
+              metalness={1}
+              roughness={0}
               clearcoat={1}
-              clearcoatRoughness={0.1}
+              clearcoatRoughness={0}
+              envMapIntensity={2}
               toneMapped={false}
             />
           </Text>
           {/* Glow shadow layer */}
           <Text
-            fontSize={3}
+            fontSize={4}
             color={themeColor}
             font='https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff'
             characters={displayText}

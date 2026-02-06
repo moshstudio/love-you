@@ -4,6 +4,8 @@ import * as THREE from "three";
 export const GALLERY_PARTICLE_COUNT = 25000; // Increased for higher density
 export const CANVAS_WIDTH = 400; // Increased resolution
 export const WORLD_SCALE = 90.0;
+export const SHARED_TEXT_KEY = "immersive_shared_greeting_text";
+export const DEFAULT_GREETING_TEXT = "2026 521";
 
 // Helper to get brightness from color
 const getBrightness = (r: number, g: number, b: number) => {

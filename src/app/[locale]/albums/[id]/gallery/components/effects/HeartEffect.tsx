@@ -12,7 +12,7 @@ export const HeartLogic: EffectLogic = {
     // 1. Scattered Mode: Photos form a Halo / Ring
     if (isScattered) {
       const angle = (index / total) * Math.PI * 2 + time * 0.1;
-      const radius = 22; // Reduced halo radius to keep in view
+      const radius = 32; // Increased halo radius to keep in view
       const x = Math.cos(angle) * radius;
       const z = Math.sin(angle) * radius;
       const y = Math.sin(index * 0.5 + time) * 2; // Slight vertical wave
@@ -64,7 +64,7 @@ export const HeartLogic: EffectLogic = {
     // Wait, original logic X was 16. 16 * 1.0 = 16 units.
     // HeartScene used scale 10 on range [-1.5, 1.5] -> [-15, 15].
     // So scale 0.8 should be close to particles.
-    const finalScale = 0.55;
+    const finalScale = 0.8; // Increased from 0.55
 
     return new THREE.Vector3(x * finalScale, y * finalScale, z * finalScale);
   },
@@ -160,7 +160,7 @@ export const HeartScene = ({
       {/* Floating Text */}
       {/* Floating Text - Billboard to always face camera */}
       <Billboard
-        position={[0, 18, 0]}
+        position={[0, 23, 0]}
         follow={true}
         lockX={false}
         lockY={false}
@@ -185,12 +185,13 @@ export const HeartScene = ({
             {displayText}
             <meshPhysicalMaterial
               color={themeColor}
-              emissive={`#${darkerThemeColor.getHexString()}`}
-              emissiveIntensity={0.2 * intensity}
-              metalness={0.9}
-              roughness={0.1}
+              emissive={themeColor}
+              emissiveIntensity={1.5 * intensity}
+              metalness={1}
+              roughness={0}
               clearcoat={1}
-              clearcoatRoughness={0.1}
+              clearcoatRoughness={0}
+              envMapIntensity={2}
               toneMapped={false}
             />
           </Text>
@@ -280,8 +281,8 @@ const InstancedHeartShape = ({
         attempts++;
       } while (val > 0 && attempts < 5000);
 
-      // Scale up to world size (e.g. 15 units wide)
-      const scale = 7;
+      // Scale up to world size
+      const scale = 10; // Increased from 7
 
       // Random scatter position - Irregular Cloud
       // Use spherical coordinates with randomized radius to avoid box corners
@@ -378,402 +379,5 @@ const InstancedHeartShape = ({
         emissiveIntensity={0.2 * intensity}
       />
     </instancedMesh>
-  );
-};
-
-// --- Gesture Control Component ---
-import {
-  HandLandmarker,
-  FilesetResolver,
-  DrawingUtils,
-} from "@mediapipe/tasks-vision";
-
-interface HeartGestureHandlerProps {
-  enabled: boolean;
-  onClientReady?: () => void;
-  setIsScattered: (val: boolean) => void;
-  setFocusedIndex: (cb: (prev: number | null) => number | null) => void;
-  onNavigate: (direction: "next" | "prev") => void;
-  onPalmDrag?: (deltaX: number, deltaY: number, isDragging: boolean) => void;
-  onError?: (error: string) => void;
-}
-
-export const HeartGestureHandler = ({
-  enabled,
-  onClientReady,
-  setIsScattered,
-  setFocusedIndex,
-  onNavigate,
-  onPalmDrag,
-  onError,
-}: HeartGestureHandlerProps) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const handLandmarkerRef = useRef<HandLandmarker | null>(null);
-  const requestRef = useRef<number | null>(null);
-  const lastVideoTimeRef = useRef<number>(-1);
-
-  // Keep latest callbacks in refs to avoid stale closures in the animation loop
-  const onNavigateRef = useRef(onNavigate);
-  const setFocusedIndexRef = useRef(setFocusedIndex);
-  const setIsScatteredRef = useRef(setIsScattered);
-  const onPalmDragRef = useRef(onPalmDrag);
-
-  useEffect(() => {
-    onNavigateRef.current = onNavigate;
-    setFocusedIndexRef.current = setFocusedIndex;
-    setIsScatteredRef.current = setIsScattered;
-    onPalmDragRef.current = onPalmDrag;
-  }, [onNavigate, setFocusedIndex, setIsScattered, onPalmDrag]);
-
-  // State for gesture debouncing
-  const lastGestureTime = useRef<number>(0);
-  const gestureCooldown = 500; // ms
-  const swipeCooldown = 800;
-  const lastSwipeTime = useRef<number>(0);
-
-  // Swipe detection
-  const lastIndexX = useRef<number | null>(null);
-
-  // Palm drag detection (for open hand / fist drag)
-  const lastPalmPos = useRef<{ x: number; y: number } | null>(null);
-  const isDragging = useRef<boolean>(false);
-  const currentDragGesture = useRef<"fist" | "open" | null>(null);
-  const gestureHistory = useRef<number[]>([]); // To smooth out detection jitter
-
-  useEffect(() => {
-    const initMediaPipe = async () => {
-      try {
-        const vision = await FilesetResolver.forVisionTasks(
-          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm",
-        );
-        handLandmarkerRef.current = await HandLandmarker.createFromOptions(
-          vision,
-          {
-            baseOptions: {
-              modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
-              delegate: "GPU",
-            },
-            runningMode: "VIDEO",
-            numHands: 1,
-          },
-        );
-
-        setIsLoaded(true);
-        if (onClientReady) onClientReady();
-      } catch (error) {
-        console.error("Error initializing MediaPipe:", error);
-      }
-    };
-
-    if (enabled && !handLandmarkerRef.current) {
-      initMediaPipe();
-    }
-
-    return () => {
-      // Cleanup if needed
-    };
-  }, [enabled, onClientReady]);
-
-  // Camera stream
-  useEffect(() => {
-    if (!enabled || !isLoaded) {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach((t) => t.stop());
-        videoRef.current.srcObject = null;
-      }
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-
-      // Reset drag state when gesture is disabled
-      if (isDragging.current && onPalmDragRef.current) {
-        onPalmDragRef.current(0, 0, false);
-      }
-      lastPalmPos.current = null;
-      isDragging.current = false;
-      currentDragGesture.current = null;
-      lastIndexX.current = null;
-
-      return;
-    }
-
-    const startCamera = async () => {
-      try {
-        setError(null);
-        // Check if mediaDevices is supported
-        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          const msg = "浏览器不支持摄像头 (需使用 HTTPS)";
-          setError(msg);
-          if (onError) onError(msg);
-          return;
-        }
-
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 320, height: 240 },
-        });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.addEventListener("loadeddata", predictWebcam);
-        }
-      } catch (err: any) {
-        console.error("Error accessing webcam:", err);
-        let msg = "无法访问摄像头";
-        if (err.name === "NotAllowedError") {
-          msg = "摄像头权限被拒绝";
-        } else if (err.name === "NotFoundError") {
-          msg = "未找到摄像头设备";
-        }
-        setError(msg);
-        if (onError) onError(msg);
-      }
-    };
-
-    startCamera();
-
-    // Cleanup function to stop tracks when component unmounts or disabled
-    return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
-        tracks.forEach((track) => track.stop());
-      }
-    };
-  }, [enabled, isLoaded]);
-
-  const predictWebcam = async () => {
-    if (!handLandmarkerRef.current || !videoRef.current || !canvasRef.current)
-      return;
-
-    // Resize canvas to match video
-    if (canvasRef.current.width !== videoRef.current.videoWidth) {
-      canvasRef.current.width = videoRef.current.videoWidth;
-      canvasRef.current.height = videoRef.current.videoHeight;
-    }
-
-    const startTimeMs = performance.now();
-    if (lastVideoTimeRef.current !== videoRef.current.currentTime) {
-      lastVideoTimeRef.current = videoRef.current.currentTime;
-      const results = handLandmarkerRef.current.detectForVideo(
-        videoRef.current,
-        startTimeMs,
-      );
-
-      const canvasCtx = canvasRef.current.getContext("2d");
-      if (canvasCtx) {
-        canvasCtx.save();
-        canvasCtx.clearRect(
-          0,
-          0,
-          canvasRef.current.width,
-          canvasRef.current.height,
-        );
-
-        // Optional: Draw landmarks
-        if (results.landmarks && results.landmarks.length > 0) {
-          const drawingUtils = new DrawingUtils(canvasCtx);
-          for (const landmarks of results.landmarks) {
-            drawingUtils.drawConnectors(
-              landmarks,
-              HandLandmarker.HAND_CONNECTIONS,
-              { color: "#FFD700", lineWidth: 2 },
-            );
-            drawingUtils.drawLandmarks(landmarks, {
-              color: "#FFFFFF",
-              lineWidth: 1,
-              radius: 2,
-            });
-
-            detectGesture(landmarks);
-          }
-        } else {
-          // No hand detected - reset drag state
-          if (isDragging.current && onPalmDragRef.current) {
-            onPalmDragRef.current(0, 0, false);
-          }
-          lastPalmPos.current = null;
-          isDragging.current = false;
-          currentDragGesture.current = null;
-          lastIndexX.current = null;
-        }
-        canvasCtx.restore();
-      }
-    }
-
-    if (enabled) {
-      requestRef.current = requestAnimationFrame(predictWebcam);
-    }
-  };
-
-  const detectGesture = (landmarks: any[]) => {
-    const now = Date.now();
-
-    // Helper to check if finger is extended
-    const isFingerExtended = (tipIdx: number, pipIdx: number) => {
-      return landmarks[tipIdx].y < landmarks[pipIdx].y;
-    };
-
-    const isThumbExtended = () => {
-      const thumbTip = landmarks[4];
-      const indexMCP = landmarks[5];
-      const distance = Math.sqrt(
-        Math.pow(thumbTip.x - indexMCP.x, 2) +
-          Math.pow(thumbTip.y - indexMCP.y, 2),
-      );
-      return distance > 0.05;
-    };
-
-    const indexExtended = isFingerExtended(8, 6);
-    const middleExtended = isFingerExtended(12, 10);
-    const ringExtended = isFingerExtended(16, 14);
-    const pinkyExtended = isFingerExtended(20, 18);
-    const thumbExtended = isThumbExtended();
-
-    const extendedCount = [
-      indexExtended,
-      middleExtended,
-      ringExtended,
-      pinkyExtended,
-      thumbExtended,
-    ].filter(Boolean).length;
-
-    // Get palm center (wrist landmark 0)
-    const palmPos = {
-      x: landmarks[0].x,
-      y: landmarks[0].y,
-    };
-
-    // Determine current gesture type for drag
-    const isFist = extendedCount <= 1 && !indexExtended;
-    const isOpenHand = extendedCount === 5;
-    const isDragGesture = isFist || isOpenHand;
-
-    // Handle palm drag for fist or open hand gestures
-    if (isDragGesture && onPalmDragRef.current) {
-      const newGestureType = isFist ? "fist" : "open";
-
-      // If gesture type changed, reset drag state
-      if (currentDragGesture.current !== newGestureType) {
-        lastPalmPos.current = null;
-        isDragging.current = false;
-      }
-      currentDragGesture.current = newGestureType;
-
-      if (lastPalmPos.current !== null) {
-        const deltaX = (palmPos.x - lastPalmPos.current.x) * -1; // Invert X for natural feel (mirror effect)
-        const deltaY = (palmPos.y - lastPalmPos.current.y) * -1; // Invert Y for natural feel
-
-        // Apply sensitivity multiplier for smoother control
-        const sensitivity = 3.0;
-        const smoothDeltaX = deltaX * sensitivity;
-        const smoothDeltaY = deltaY * sensitivity;
-
-        // Only trigger drag if movement is significant
-        if (Math.abs(deltaX) > 0.001 || Math.abs(deltaY) > 0.001) {
-          isDragging.current = true;
-          onPalmDragRef.current(smoothDeltaX, smoothDeltaY, true);
-        }
-      }
-
-      lastPalmPos.current = palmPos;
-    } else {
-      // Not a drag gesture, reset drag state
-      if (isDragging.current && onPalmDragRef.current) {
-        onPalmDragRef.current(0, 0, false);
-      }
-      lastPalmPos.current = null;
-      isDragging.current = false;
-      currentDragGesture.current = null;
-    }
-
-    // Logic 1: Fist (0 or 1 finger) -> Heart (Aggregate)
-    // Only trigger state change on gesture start, not during drag
-    if (isFist) {
-      if (now - lastGestureTime.current > gestureCooldown) {
-        setIsScatteredRef.current(false);
-        lastGestureTime.current = now;
-      }
-    }
-
-    // Logic 2: Open Hand (5 fingers) -> Scatter
-    // Only trigger state change on gesture start, not during drag
-    if (isOpenHand) {
-      if (now - lastGestureTime.current > gestureCooldown) {
-        setIsScatteredRef.current(true);
-        lastGestureTime.current = now;
-      }
-    }
-
-    // Logic 3: Index Finger Only -> Select / Navigate
-    if (indexExtended && !middleExtended && !ringExtended && !pinkyExtended) {
-      // Action A: Select (Focus) - Only if not swiping
-      // We'll prioritize swiping. If movement is minimal, then select.
-
-      const currentX = landmarks[8].x;
-
-      if (lastIndexX.current !== null) {
-        const diff = currentX - lastIndexX.current;
-        // Increase threshold slightly to avoid accidental swipes during "select"
-        const swipeThreshold = 0.03;
-
-        if (now - lastSwipeTime.current > swipeCooldown) {
-          // Invert logic:
-          // Raw Diff > 0 means x increased (moved to Camera's RIGHT, which is USER'S LEFT).
-          // User: "Move Left 👈: Switches to the Next photo." -> So Diff > 0 -> Next.
-
-          if (diff > swipeThreshold) {
-            onNavigateRef.current("next");
-            lastSwipeTime.current = now;
-            // Also update gesture time to prevent selection triggering immediately after
-            lastGestureTime.current = now;
-          } else if (diff < -swipeThreshold) {
-            onNavigateRef.current("prev");
-            lastSwipeTime.current = now;
-            lastGestureTime.current = now;
-          }
-        }
-      }
-
-      // Select only if stable
-      if (
-        now - lastGestureTime.current > gestureCooldown &&
-        now - lastSwipeTime.current > 500
-      ) {
-        // Wait after swipe
-        setFocusedIndexRef.current((prev: number | null) =>
-          prev !== null ? prev : 0,
-        );
-        lastGestureTime.current = now;
-      }
-
-      lastIndexX.current = currentX;
-    } else {
-      lastIndexX.current = null;
-    }
-  };
-
-  if (!enabled) return null;
-
-  return (
-    <div className='fixed bottom-4 right-4 z-50 flex flex-col items-center pointer-events-none'>
-      <div className='relative rounded-lg overflow-hidden border-2 border-[#FFD700] shadow-[0_0_20px_rgba(255,215,0,0.3)] bg-black'>
-        <video
-          ref={videoRef}
-          autoPlay
-          playsInline
-          muted
-          className='w-32 h-24 object-cover rotate-y-180 transform -scale-x-100'
-        />
-        <canvas
-          ref={canvasRef}
-          className='absolute inset-0 w-full h-full transform -scale-x-100'
-        />
-      </div>
-      <div
-        className={`mt-2 text-xs font-mono bg-black/50 px-2 py-1 rounded backdrop-blur-sm ${error ? "text-red-400 border border-red-400/30" : "text-[#FFD700]"}`}
-      >
-        {error ? error : "Gesture Active"}
-      </div>
-    </div>
   );
 };

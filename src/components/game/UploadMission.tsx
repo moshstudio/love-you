@@ -4,6 +4,7 @@ import { useState, useRef, DragEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Heart, Sparkles } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 
 interface UploadMissionProps {
   onComplete: (file: File) => void;
@@ -177,6 +178,24 @@ export function UploadMission({ onComplete, onBack }: UploadMissionProps) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 1 }}
+        className='mt-8 text-center px-4'
+      >
+        <p className='text-[10px] sm:text-xs text-rose-300 font-bold uppercase tracking-widest leading-relaxed'>
+          {t("privacyNotice")}{" "}
+          <Link
+            href='/privacy'
+            target='_blank'
+            className='text-rose-500 hover:text-rose-600 underline underline-offset-4 decoration-rose-200'
+          >
+            {t("viewPrivacy")}
+          </Link>
+        </p>
+      </motion.div>
     </div>
   );
 }

@@ -174,8 +174,6 @@ export const fragmentShader = `
 
     // 3. Final Color
     // Combine base alpha, distance alpha (vAlpha), shape alpha, and global particle opacity
-    gl_FragColor = vec4(vColor * 1.5, vAlpha * alpha * glow * uParticleOpacity);
-    
-    // HDR Tone mapping simulated simply by clamping (optional, ThreeJS tone mapping handles final pass)
+    gl_FragColor = vec4(vColor, vAlpha * alpha * glow * uParticleOpacity);
   }
 `;
