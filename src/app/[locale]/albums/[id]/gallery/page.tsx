@@ -239,7 +239,7 @@ export default function AlbumGalleryPage() {
               {viewMode === "immersive" && (
                 <button
                   onClick={() => setViewMode("grid")}
-                  className='absolute top-6 right-6 z-50 p-3 rounded-full border border-white/10 text-white/50 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all group flex items-center justify-center'
+                  className='absolute top-6 right-6 z-50 p-3 rounded-full border border-white/10 text-white/50 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all group hidden md:flex items-center justify-center'
                   aria-label='Exit Immersive View'
                 >
                   <X className='w-5 h-5' />

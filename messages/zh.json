@@ -310,7 +310,9 @@
     "play": "自动播放",
     "pause": "停止播放",
     "exit": "退出",
+    "fullscreen": "全屏",
     "introText": "开场文字",
+    "loadingGestures": "正在初始化手势识别...",
     "gestures": {
       "active": "手势已开启",
       "noSupport": "浏览器不支持摄像头 (需使用 HTTPS)",

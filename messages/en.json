@@ -310,7 +310,9 @@
     "play": "Auto-Play",
     "pause": "Pause",
     "exit": "Exit",
+    "fullscreen": "Fullscreen",
     "introText": "Intro Text",
+    "loadingGestures": "Initializing AI gestures...",
     "gestures": {
       "active": "Gesture Active",
       "noSupport": "Browser doesn't support camera (HTTPS required)",

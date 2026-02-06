@@ -162,45 +162,45 @@ export default function SharedAlbumPage() {
 
       {/* Header */}
       <header className='fixed top-0 left-0 right-0 z-40 bg-white/20 dark:bg-black/20 backdrop-blur-md border-b border-rose-100/20'>
-        <div className='max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between'>
-          <div className='flex items-center gap-2 sm:gap-4'>
-            <div className='p-1.5 sm:p-2 bg-rose-50 rounded-full'>
-              <Heart className='w-3.5 h-3.5 sm:w-4 sm:h-4 text-rose-500 fill-rose-500 animate-pulse' />
+        <div className='max-w-7xl mx-auto px-3 sm:px-4 h-12 sm:h-14 flex items-center justify-between'>
+          <div className='flex items-center gap-1.5 sm:gap-2'>
+            <div className='p-1 sm:p-1.5 bg-rose-50 rounded-full'>
+              <Heart className='w-3 h-3 sm:w-3.5 sm:h-3.5 text-rose-500 fill-rose-500 animate-pulse' />
             </div>
-            <h1 className='text-lg sm:text-xl md:text-3xl font-black text-rose-900 dark:text-rose-100 truncate max-w-[150px] sm:max-w-[200px] md:max-w-md tracking-tighter'>
+            <h1 className='text-base sm:text-lg md:text-xl font-black text-rose-900 dark:text-rose-100 truncate max-w-[120px] sm:max-w-[180px] md:max-w-sm tracking-tighter'>
               {album.title}
             </h1>
           </div>
 
-          <div className='flex items-center gap-2'>
-            <div className='flex bg-white/40 backdrop-blur-md rounded-full p-0.5 sm:p-1 border border-rose-100/50 shadow-sm'>
+          <div className='flex items-center gap-1.5'>
+            <div className='flex bg-white/40 backdrop-blur-md rounded-full p-0.5 border border-rose-100/50 shadow-sm'>
               <button
                 onClick={() => {
                   setActiveTab("photos");
                   setViewMode("grid");
                 }}
-                className={`p-1.5 sm:p-2 rounded-full transition-all touch-target flex items-center justify-center ${
+                className={`p-1 sm:p-1.5 rounded-full transition-all touch-target flex items-center justify-center ${
                   viewMode === "grid" && activeTab === "photos"
                     ? "bg-rose-500 text-white shadow-md"
                     : "text-rose-400 hover:bg-rose-50"
                 }`}
                 title='Grid View'
               >
-                <Grid3X3 className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
+                <Grid3X3 className='w-3 h-3 sm:w-3.5 sm:h-3.5' />
               </button>
               <button
                 onClick={() => {
                   setActiveTab("photos");
                   setViewMode("christmas");
                 }}
-                className={`p-1.5 sm:p-2 rounded-full transition-all touch-target flex items-center justify-center ${
+                className={`p-1 sm:p-1.5 rounded-full transition-all touch-target flex items-center justify-center ${
                   viewMode === "christmas" && activeTab === "photos"
                     ? "bg-rose-500 text-white shadow-md"
                     : "text-rose-400 hover:bg-rose-50"
                 }`}
                 title='Holiday Mode'
               >
-                <Trees className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
+                <Trees className='w-3 h-3 sm:w-3.5 sm:h-3.5' />
               </button>
               <button
                 onClick={() => {
@@ -208,18 +208,18 @@ export default function SharedAlbumPage() {
                   setViewMode("immersive");
                   setIsPlaying(true);
                 }}
-                className={`p-1.5 sm:p-2 rounded-full transition-all touch-target flex items-center justify-center ${
+                className={`p-1 sm:p-1.5 rounded-full transition-all touch-target flex items-center justify-center ${
                   viewMode === "immersive" && activeTab === "photos"
                     ? "bg-rose-500 text-white shadow-md"
                     : "text-rose-400 hover:bg-rose-50"
                 }`}
                 title='Immersive Mode'
               >
-                <Maximize2 className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
+                <Maximize2 className='w-3 h-3 sm:w-3.5 sm:h-3.5' />
               </button>
             </div>
 
-            <div className='hidden sm:flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-rose-300 bg-white/40 px-4 py-2 rounded-full border border-rose-100/50'>
+            <div className='hidden sm:flex items-center gap-1 text-[9px] font-bold uppercase tracking-widest text-rose-300 bg-white/40 px-3 py-1.5 rounded-full border border-rose-100/50'>
               Shared with Love
             </div>
           </div>
@@ -227,7 +227,7 @@ export default function SharedAlbumPage() {
       </header>
 
       {/* Main Content */}
-      <main className='relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-24 sm:pt-32 pb-10 sm:pb-20'>
+      <main className='relative z-10 max-w-7xl mx-auto px-4 sm:px-6 pt-16 sm:pt-20 pb-10 sm:pb-20'>
         <div className='flex flex-col items-center mb-8 sm:mb-12 text-center'>
           {album.description && (
             <p className='text-rose-800/60 dark:text-rose-100/60 text-sm sm:text-lg font-medium italic mb-4 sm:mb-6 max-w-3xl leading-relaxed px-2'>
@@ -375,7 +375,7 @@ export default function SharedAlbumPage() {
                   {viewMode === "immersive" && (
                     <button
                       onClick={() => setViewMode("grid")}
-                      className='absolute top-24 right-6 sm:top-28 sm:right-10 z-[110] p-3 rounded-full border border-rose-100/20 text-white/50 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all group flex items-center justify-center'
+                      className='absolute top-16 right-6 sm:top-20 sm:right-10 z-[110] p-3 rounded-full border border-rose-100/20 text-white/50 hover:bg-white/10 hover:text-white backdrop-blur-md transition-all group flex items-center justify-center'
                       aria-label='Exit Immersive View'
                     >
                       <X className='w-5 h-5' />

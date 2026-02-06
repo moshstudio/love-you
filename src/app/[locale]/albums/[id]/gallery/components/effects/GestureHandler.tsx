@@ -14,6 +14,7 @@ export interface GestureHandlerProps {
   setFocusedIndex: (cb: (prev: number | null) => number | null) => void;
   onNavigate: (direction: "next" | "prev") => void;
   onPalmDrag?: (deltaX: number, deltaY: number, isDragging: boolean) => void;
+  onLoading?: (loading: boolean) => void;
   onError?: (error: string) => void;
   labels?: {
     noSupport: string;
@@ -31,6 +32,7 @@ export const GestureHandler = ({
   setFocusedIndex,
   onNavigate,
   onPalmDrag,
+  onLoading,
   onError,
   labels,
 }: GestureHandlerProps) => {
@@ -72,33 +74,66 @@ export const GestureHandler = ({
 
   useEffect(() => {
     const initMediaPipe = async () => {
+      if (onLoading) onLoading(true);
       try {
-        console.log("Initializing MediaPipe Hand Landmarker...");
+        console.log("[Gesture] Initializing MediaPipe Hand Landmarker...");
         const vision = await FilesetResolver.forVisionTasks(
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm",
         );
-        handLandmarkerRef.current = await HandLandmarker.createFromOptions(
-          vision,
-          {
-            baseOptions: {
-              modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
-              delegate: "GPU",
-            },
-            runningMode: "VIDEO",
-            numHands: 1,
-            minHandDetectionConfidence: 0.4,
-            minHandPresenceConfidence: 0.4,
-            minTrackingConfidence: 0.4,
-          },
-        );
 
-        console.log("MediaPipe Hand Landmarker loaded successfully.");
+        // 尝试使用 GPU，如果失败则回退到 CPU
+        let delegate: "GPU" | "CPU" = "GPU";
+        try {
+          handLandmarkerRef.current = await HandLandmarker.createFromOptions(
+            vision,
+            {
+              baseOptions: {
+                modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+                delegate: "GPU",
+              },
+              runningMode: "VIDEO",
+              numHands: 1,
+              minHandDetectionConfidence: 0.3,
+              minHandPresenceConfidence: 0.3,
+              minTrackingConfidence: 0.3,
+            },
+          );
+          console.log("[Gesture] Using GPU delegate");
+        } catch (gpuError) {
+          console.warn(
+            "[Gesture] GPU delegate failed, falling back to CPU:",
+            gpuError,
+          );
+          delegate = "CPU";
+          handLandmarkerRef.current = await HandLandmarker.createFromOptions(
+            vision,
+            {
+              baseOptions: {
+                modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+                delegate: "CPU",
+              },
+              runningMode: "VIDEO",
+              numHands: 1,
+              minHandDetectionConfidence: 0.3,
+              minHandPresenceConfidence: 0.3,
+              minTrackingConfidence: 0.3,
+            },
+          );
+          console.log("[Gesture] Using CPU delegate");
+        }
+
+        console.log(
+          "[Gesture] MediaPipe Hand Landmarker loaded successfully with",
+          delegate,
+        );
         setIsLoaded(true);
         if (onClientReady) onClientReady();
       } catch (error) {
-        console.error("Error initializing MediaPipe:", error);
+        console.error("[Gesture] Error initializing MediaPipe:", error);
         setError("Failed to load AI models. Please check your connection.");
         if (onError) onError("Failed to load AI models.");
+      } finally {
+        if (onLoading) onLoading(false);
       }
     };
 
@@ -146,17 +181,26 @@ export const GestureHandler = ({
             facingMode: "user",
           },
         });
+        console.log("[Gesture] Camera stream obtained successfully");
+
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           videoRef.current.onloadedmetadata = () => {
+            console.log("[Gesture] Video metadata loaded, starting playback");
             videoRef.current
               ?.play()
-              .catch((e) => console.error("Video play error:", e));
+              .then(() => console.log("[Gesture] Video playback started"))
+              .catch((e) => console.error("[Gesture] Video play error:", e));
           };
-          videoRef.current.addEventListener("loadeddata", predictWebcam);
+          videoRef.current.addEventListener("loadeddata", () => {
+            console.log(
+              "[Gesture] Video data loaded, starting prediction loop",
+            );
+            predictWebcam();
+          });
         }
       } catch (err: any) {
-        console.error("Error accessing webcam:", err);
+        console.error("[Gesture] Error accessing webcam:", err);
         let msg = labels?.noAccess || "Cannot access camera";
         if (err.name === "NotAllowedError") {
           msg = labels?.denied || "Camera permission denied";
@@ -178,15 +222,23 @@ export const GestureHandler = ({
     };
   }, [enabled, isLoaded]);
 
+  // 帧率限制（避免过度检测）
+  const lastDetectionTime = useRef<number>(0);
+  const minDetectionInterval = 50; // 最多每 50ms 检测一次 (约 20fps)
+  const frameCount = useRef<number>(0);
+
   const predictWebcam = async () => {
-    if (!handLandmarkerRef.current || !videoRef.current || !canvasRef.current)
+    if (!handLandmarkerRef.current || !videoRef.current || !canvasRef.current) {
+      console.log("[Gesture] Missing refs, skipping frame");
       return;
+    }
 
     if (
       !videoRef.current ||
       !videoRef.current.videoWidth ||
       !videoRef.current.videoHeight
     ) {
+      // 视频尚未准备好，继续等待
       if (enabled) {
         requestRef.current = requestAnimationFrame(predictWebcam);
       }
@@ -196,56 +248,91 @@ export const GestureHandler = ({
     if (canvasRef.current.width !== videoRef.current.videoWidth) {
       canvasRef.current.width = videoRef.current.videoWidth;
       canvasRef.current.height = videoRef.current.videoHeight;
+      console.log(
+        "[Gesture] Canvas size set to:",
+        videoRef.current.videoWidth,
+        "x",
+        videoRef.current.videoHeight,
+      );
     }
 
-    const startTimeMs = performance.now();
-    if (lastVideoTimeRef.current !== videoRef.current.currentTime) {
-      lastVideoTimeRef.current = videoRef.current.currentTime;
-      const results = handLandmarkerRef.current.detectForVideo(
-        videoRef.current,
-        startTimeMs,
+    const now = performance.now();
+
+    // 帧率限制：避免过于频繁地检测
+    if (now - lastDetectionTime.current < minDetectionInterval) {
+      if (enabled) {
+        requestRef.current = requestAnimationFrame(predictWebcam);
+      }
+      return;
+    }
+    lastDetectionTime.current = now;
+    frameCount.current++;
+
+    // 每 60 帧输出一次调试信息
+    const shouldLog = frameCount.current % 60 === 0;
+
+    let results;
+    try {
+      results = handLandmarkerRef.current.detectForVideo(videoRef.current, now);
+
+      if (shouldLog) {
+        console.log(
+          "[Gesture] Frame",
+          frameCount.current,
+          "- Detection ran, landmarks:",
+          results.landmarks?.length || 0,
+        );
+      }
+    } catch (detectError) {
+      console.error("[Gesture] Detection error:", detectError);
+      if (enabled) {
+        requestRef.current = requestAnimationFrame(predictWebcam);
+      }
+      return;
+    }
+
+    const canvasCtx = canvasRef.current.getContext("2d");
+    if (canvasCtx) {
+      canvasCtx.save();
+      canvasCtx.clearRect(
+        0,
+        0,
+        canvasRef.current.width,
+        canvasRef.current.height,
       );
 
-      const canvasCtx = canvasRef.current.getContext("2d");
-      if (canvasCtx) {
-        canvasCtx.save();
-        canvasCtx.clearRect(
-          0,
-          0,
-          canvasRef.current.width,
-          canvasRef.current.height,
-        );
+      const handDetected = results.landmarks && results.landmarks.length > 0;
+      setHasHand(handDetected);
 
-        const handDetected = results.landmarks && results.landmarks.length > 0;
-        setHasHand(handDetected);
-
-        if (handDetected) {
-          const drawingUtils = new DrawingUtils(canvasCtx);
-          for (const landmarks of results.landmarks) {
-            drawingUtils.drawConnectors(
-              landmarks,
-              HandLandmarker.HAND_CONNECTIONS,
-              { color: "#FFD700", lineWidth: 2 },
-            );
-            drawingUtils.drawLandmarks(landmarks, {
-              color: "#FFFFFF",
-              lineWidth: 1,
-              radius: 2,
-            });
-
-            detectGesture(landmarks);
-          }
-        } else {
-          if (isDragging.current && onPalmDragRef.current) {
-            onPalmDragRef.current(0, 0, false);
-          }
-          lastPalmPos.current = null;
-          isDragging.current = false;
-          currentDragGesture.current = null;
-          lastIndexX.current = null;
+      if (handDetected) {
+        if (shouldLog) {
+          console.log("[Gesture] Hand detected!");
         }
-        canvasCtx.restore();
+        const drawingUtils = new DrawingUtils(canvasCtx);
+        for (const landmarks of results.landmarks) {
+          drawingUtils.drawConnectors(
+            landmarks,
+            HandLandmarker.HAND_CONNECTIONS,
+            { color: "#FFD700", lineWidth: 2 },
+          );
+          drawingUtils.drawLandmarks(landmarks, {
+            color: "#FFFFFF",
+            lineWidth: 1,
+            radius: 2,
+          });
+
+          detectGesture(landmarks);
+        }
+      } else {
+        if (isDragging.current && onPalmDragRef.current) {
+          onPalmDragRef.current(0, 0, false);
+        }
+        lastPalmPos.current = null;
+        isDragging.current = false;
+        currentDragGesture.current = null;
+        lastIndexX.current = null;
       }
+      canvasCtx.restore();
     }
 
     if (enabled) {
@@ -256,24 +343,56 @@ export const GestureHandler = ({
   const detectGesture = (landmarks: any[]) => {
     const now = Date.now();
 
-    const isFingerExtended = (tipIdx: number, pipIdx: number) => {
-      return landmarks[tipIdx].y < landmarks[pipIdx].y;
+    // 计算两点之间的距离
+    const getDistance = (p1: any, p2: any) => {
+      return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+    };
+
+    // 改进的手指伸展检测：使用指尖到掌根的距离比例
+    // 这种方法不依赖手的方向，适用于任何角度
+    const wrist = landmarks[0]; // 掌根
+
+    const isFingerExtended = (
+      tipIdx: number,
+      mcpIdx: number,
+      pipIdx: number,
+    ) => {
+      const tip = landmarks[tipIdx];
+      const mcp = landmarks[mcpIdx];
+      const pip = landmarks[pipIdx];
+
+      // 计算指尖到MCP（掌指关节）的距离
+      const tipToMcp = getDistance(tip, mcp);
+      // 计算PIP（近节指关节）到MCP的距离
+      const pipToMcp = getDistance(pip, mcp);
+
+      // 如果指尖到MCP的距离大于PIP到MCP距离的1.5倍，则认为手指伸展
+      // 这个方法不依赖于手的角度
+      return tipToMcp > pipToMcp * 1.5;
     };
 
     const isThumbExtended = () => {
       const thumbTip = landmarks[4];
-      const indexMCP = landmarks[5];
-      const distance = Math.sqrt(
-        Math.pow(thumbTip.x - indexMCP.x, 2) +
-          Math.pow(thumbTip.y - indexMCP.y, 2),
-      );
-      return distance > 0.05;
+      const thumbMcp = landmarks[2];
+      const indexMcp = landmarks[5];
+
+      // 拇指伸展：拇指尖到食指MCP的距离大于阈值
+      const thumbSpread = getDistance(thumbTip, indexMcp);
+      // 拇指尖到拇指MCP的距离
+      const thumbLength = getDistance(thumbTip, thumbMcp);
+
+      return thumbSpread > 0.08 || thumbLength > 0.1;
     };
 
-    const indexExtended = isFingerExtended(8, 6);
-    const middleExtended = isFingerExtended(12, 10);
-    const ringExtended = isFingerExtended(16, 14);
-    const pinkyExtended = isFingerExtended(20, 18);
+    // 使用正确的 landmark 索引:
+    // 食指: tip=8, pip=6, mcp=5
+    // 中指: tip=12, pip=10, mcp=9
+    // 无名指: tip=16, pip=14, mcp=13
+    // 小指: tip=20, pip=18, mcp=17
+    const indexExtended = isFingerExtended(8, 5, 6);
+    const middleExtended = isFingerExtended(12, 9, 10);
+    const ringExtended = isFingerExtended(16, 13, 14);
+    const pinkyExtended = isFingerExtended(20, 17, 18);
     const thumbExtended = isThumbExtended();
 
     const extendedCount = [
@@ -284,13 +403,28 @@ export const GestureHandler = ({
       thumbExtended,
     ].filter(Boolean).length;
 
+    // 调试日志（每秒最多输出一次）
+    if (now - (detectGesture as any).lastLogTime > 1000) {
+      console.log("[Gesture] Fingers extended:", {
+        index: indexExtended,
+        middle: middleExtended,
+        ring: ringExtended,
+        pinky: pinkyExtended,
+        thumb: thumbExtended,
+        total: extendedCount,
+      });
+      (detectGesture as any).lastLogTime = now;
+    }
+
     const palmPos = {
       x: landmarks[0].x,
       y: landmarks[0].y,
     };
 
-    const isFist = extendedCount <= 1 && !indexExtended;
-    const isOpenHand = extendedCount === 5;
+    // 放宽握拳检测条件：最多2根手指伸展且食指未伸展
+    const isFist = extendedCount <= 2 && !indexExtended && !middleExtended;
+    // 放宽张开手检测条件：至少4根手指伸展
+    const isOpenHand = extendedCount >= 4;
     const isDragGesture = isFist || isOpenHand;
 
     if (isDragGesture && onPalmDragRef.current) {

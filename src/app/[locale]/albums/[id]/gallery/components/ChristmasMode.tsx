@@ -35,6 +35,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Hand,
+  LogOut,
 } from "lucide-react";
 import { Photo } from "./types";
 import { EffectType, EffectLogic } from "./effects/types";
@@ -593,6 +594,7 @@ export const ChristmasMode = ({
   const [isScattered, setIsScattered] = useState(false);
   const [focusedIndex, setFocusedIndex] = useState<number | null>(null);
   const [isGestureEnabled, setIsGestureEnabled] = useState(false);
+  const [isGestureLoading, setIsGestureLoading] = useState(false);
   const [gestureFeedback, setGestureFeedback] = useState<string | null>(null);
 
   // 记住切换页面前的手势识别状态，用于恢复
@@ -806,10 +808,12 @@ export const ChristmasMode = ({
       onTouchEnd={handleTouchEnd}
     >
       <AnimatePresence>
-        {isInitializing && (
+        {(isInitializing || isGestureLoading) && (
           <LoadingOverlay
-            message={t("loadingFestive")}
-            progress={progress}
+            message={
+              isGestureLoading ? t("loadingGestures") : t("loadingFestive")
+            }
+            progress={isGestureLoading ? undefined : progress}
           />
         )}
       </AnimatePresence>
@@ -828,7 +832,7 @@ export const ChristmasMode = ({
           makeDefault
           position={[
             0,
-            -10,
+            mode === "GALAXY" ? 20 : 10,
             mode === "GALAXY" ? 90 : mode === "TREE" ? 75 : 65,
           ]}
         />
@@ -933,188 +937,253 @@ export const ChristmasMode = ({
       </Canvas>
 
       {/* Main UI Controls */}
-      <div className='absolute inset-0 pointer-events-none z-50 p-2 md:p-6 flex flex-col justify-between'>
-        {/* Top Bar */}
-        <div className='flex justify-end items-start pointer-events-auto gap-3'>
-          <button
-            onClick={() => {
-              if (document.fullscreenElement) document.exitFullscreen();
-              else document.documentElement.requestFullscreen();
-            }}
-            className='p-3 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 text-white/70 hover:text-white transition-colors shadow-xl'
+      <AnimatePresence>
+        {focusedIndex === null && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className='absolute inset-0 pointer-events-none z-50 py-4 md:p-8 flex flex-col justify-end'
           >
-            <Maximize2 size={20} />
-          </button>
+            {/* Bottom Control Area */}
+            <div className='flex flex-col items-center gap-6 pointer-events-auto'>
+              {/* Settings Panel */}
+              <AnimatePresence>
+                {isMenuOpen && (
+                  <>
+                    {/* Backdrop */}
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      onClick={() => setIsMenuOpen(false)}
+                      className='fixed inset-0 bg-black/20 backdrop-blur-sm z-[45] pointer-events-auto'
+                    />
+                    <motion.div
+                      initial={{ opacity: 0, y: 100, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 100, scale: 0.95 }}
+                      className='w-[92vw] md:w-full md:max-w-xl bg-black/60 backdrop-blur-3xl border border-white/10 rounded-t-[2.5rem] md:rounded-[2.5rem] p-8 md:p-10 shadow-2xl overflow-hidden z-50 mb-0 md:mb-4'
+                    >
+                      {/* Mobile Drag Handle */}
+                      <div className='w-12 h-1.5 bg-white/10 rounded-full mx-auto mb-6 md:hidden' />
 
-          <motion.button
-            whileTap={{ scale: 0.9 }}
-            onClick={() => onClose?.()}
-            className='p-3 rounded-2xl bg-black/40 backdrop-blur-xl border border-white/10 text-white/70 hover:text-white transition-colors shadow-xl'
-          >
-            <X size={20} />
-          </motion.button>
-        </div>
-
-        {/* Bottom Control Area */}
-        <div className='flex flex-col items-center gap-6 pointer-events-auto'>
-          {/* Settings Panel */}
-          <AnimatePresence>
-            {isMenuOpen && (
-              <motion.div
-                initial={{ opacity: 0, y: 20, scale: 0.95 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                className='w-full max-w-[min(400px,90vw)] bg-black/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-6 shadow-2xl overflow-hidden'
-              >
-                <div className='flex items-center justify-between mb-6'>
-                  <h3 className='text-xs font-bold uppercase tracking-[0.2em] text-[#FFD700] text-shadow-glow'>
-                    {t("settings")}
-                  </h3>
-                  <button
-                    onClick={() => setIsMenuOpen(false)}
-                    className='text-white/40 hover:text-white transition-colors'
-                  >
-                    <X size={16} />
-                  </button>
-                </div>
-
-                <div className='space-y-6'>
-                  {/* Mode Selector */}
-                  <div className='space-y-3'>
-                    <label className='text-[10px] text-white/30 uppercase tracking-widest font-bold'>
-                      {t("visualMode")}
-                    </label>
-                    <div className='grid grid-cols-3 gap-3'>
-                      {effectOptions.map((opt) => (
-                        <button
-                          key={opt.id}
-                          onClick={() => setMode(opt.id)}
-                          className={`flex flex-col items-center gap-2 p-3 rounded-2xl border transition-all ${
-                            mode === opt.id
-                              ? "bg-[#FFD700]/20 border-[#FFD700]/50 text-[#FFD700]"
-                              : "bg-white/5 border-transparent text-white/40 hover:bg-white/10"
-                          }`}
-                        >
-                          {opt.icon}
-                          <span className='text-[10px] font-medium'>
-                            {opt.label}
+                      <div className='flex items-center justify-between mb-8'>
+                        <div className='flex flex-col'>
+                          <h3 className='text-sm font-black uppercase tracking-[0.2em] text-[#FFD700] text-shadow-glow'>
+                            {t("settings")}
+                          </h3>
+                          <span className='text-[10px] text-white/20 uppercase tracking-widest mt-1'>
+                            Personalize your experience
                           </span>
+                        </div>
+                        <button
+                          onClick={() => setIsMenuOpen(false)}
+                          className='p-2 rounded-full bg-white/5 text-white/40 hover:text-white hover:bg-white/10 transition-all'
+                        >
+                          <X size={18} />
                         </button>
-                      ))}
-                    </div>
-                  </div>
+                      </div>
 
-                  {/* Input Field */}
-                  <div className='space-y-2'>
-                    <label className='text-[10px] text-white/30 uppercase tracking-widest font-bold'>
-                      {t("customText")}
-                    </label>
-                    <input
-                      type='text'
-                      value={displayText}
-                      onChange={(e) => setDisplayText(e.target.value)}
-                      className='w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#FFD700]/30 transition-colors'
-                      placeholder={t("enterText")}
-                      maxLength={12}
+                      <div className='space-y-8'>
+                        {/* Mode Selector - Enhanced with Layout Animation */}
+                        <div className='space-y-4'>
+                          <label className='text-[10px] text-white/30 uppercase tracking-[0.3em] font-black ml-1'>
+                            {t("visualMode")}
+                          </label>
+                          <div className='grid grid-cols-3 gap-3 p-1 bg-white/5 rounded-[1.5rem] border border-white/5'>
+                            {effectOptions.map((opt) => {
+                              const isSelected = mode === opt.id;
+                              return (
+                                <button
+                                  key={opt.id}
+                                  onClick={() => setMode(opt.id)}
+                                  className={`relative flex flex-col items-center gap-2 py-4 rounded-[1.2rem] transition-all duration-500 ${
+                                    isSelected
+                                      ? "text-[#FFD700]"
+                                      : "text-white/40 hover:text-white"
+                                  }`}
+                                >
+                                  {isSelected && (
+                                    <motion.div
+                                      layoutId='mode-pill'
+                                      className='absolute inset-0 bg-gradient-to-br from-[#FFD700]/20 to-[#FFD700]/5 border border-[#FFD700]/30 rounded-[1.2rem] shadow-lg'
+                                      transition={{
+                                        type: "spring",
+                                        bounce: 0.2,
+                                        duration: 0.6,
+                                      }}
+                                    />
+                                  )}
+                                  <div
+                                    className={`relative z-10 transition-transform duration-500 ${isSelected ? "scale-110" : ""}`}
+                                  >
+                                    {opt.icon}
+                                  </div>
+                                  <span className='relative z-10 text-[10px] font-bold uppercase tracking-widest'>
+                                    {opt.label}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+
+                        {/* Input Field - Refined */}
+                        <div className='space-y-3'>
+                          <label className='text-[10px] text-white/30 uppercase tracking-[0.3em] font-black ml-1'>
+                            {t("customText")}
+                          </label>
+                          <div className='relative group'>
+                            <input
+                              type='text'
+                              value={displayText}
+                              onChange={(e) => setDisplayText(e.target.value)}
+                              className='w-full px-5 py-4 bg-white/5 border border-white/10 rounded-2xl text-white text-sm focus:outline-none focus:border-[#FFD700]/40 focus:bg-white/10 transition-all placeholder:text-white/10'
+                              placeholder={t("enterText")}
+                              maxLength={12}
+                            />
+                            <div className='absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-mono text-white/10'>
+                              {displayText.length}/12
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Performance / Appearance */}
+                        <div className='grid grid-cols-1 md:grid-cols-2 gap-8'>
+                          <div className='space-y-3'>
+                            <div className='flex justify-between items-end px-1'>
+                              <label className='text-[10px] text-white/30 uppercase tracking-[0.3em] font-black'>
+                                {t("intensity")}
+                              </label>
+                              <span className='text-[10px] font-mono text-[#FFD700] font-bold'>
+                                {Math.round(intensity * 100)}%
+                              </span>
+                            </div>
+                            <div className='relative h-6 flex items-center'>
+                              <input
+                                type='range'
+                                min='0'
+                                max='1'
+                                step='0.01'
+                                value={intensity}
+                                onChange={(e) =>
+                                  setIntensity(parseFloat(e.target.value))
+                                }
+                                className='w-full accent-[#FFD700] h-1 bg-white/10 rounded-full appearance-none cursor-pointer hover:bg-white/20 transition-all'
+                              />
+                            </div>
+                          </div>
+
+                          <div className='space-y-3'>
+                            <label className='text-[10px] text-white/30 uppercase tracking-[0.3em] font-black ml-1 block'>
+                              {t("theme")}
+                            </label>
+                            <div
+                              className='relative h-12 rounded-2xl border border-white/10 overflow-hidden flex items-center justify-between px-4 group'
+                              style={{
+                                background: `linear-gradient(135deg, ${color}22, ${color}11)`,
+                              }}
+                            >
+                              <div className='flex items-center gap-3'>
+                                <div
+                                  className='w-6 h-6 rounded-full shadow-inner border border-white/20'
+                                  style={{ backgroundColor: color }}
+                                />
+                                <span className='text-[11px] text-white/60 font-mono font-bold tracking-widest'>
+                                  {color.toUpperCase()}
+                                </span>
+                              </div>
+
+                              <div className='relative'>
+                                <div className='p-1.5 rounded-lg bg-white/5 text-white/40 group-hover:text-white group-hover:bg-white/10 transition-all'>
+                                  <Settings2 size={14} />
+                                </div>
+                                <input
+                                  type='color'
+                                  value={color}
+                                  onChange={(e) => setColor(e.target.value)}
+                                  className='absolute inset-0 opacity-0 cursor-pointer w-full h-full'
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  </>
+                )}
+              </AnimatePresence>
+
+              {/* Control Dock */}
+              <div className='w-full max-w-full flex justify-center px-1 md:px-4'>
+                <div className='flex items-center gap-1 md:gap-1.5 p-1 md:p-1.5 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-2xl overflow-x-auto no-scrollbar max-w-full'>
+                  <div className='flex items-center gap-1 md:gap-1.5 flex-shrink-0'>
+                    <DockButton
+                      active={isScattered}
+                      onClick={() => setIsScattered(!isScattered)}
+                      icon={
+                        isScattered ? (
+                          <Minimize2 size={18} />
+                        ) : (
+                          <Shuffle size={18} />
+                        )
+                      }
+                      label={isScattered ? t("converge") : t("scatter")}
+                    />
+                    <div className='w-px h-5 bg-white/10 mx-0.5 sm:mx-1 flex-shrink-0' />
+
+                    {/* 核心特效快捷切换 */}
+                    {effectOptions.map((opt) => (
+                      <DockButton
+                        key={opt.id}
+                        active={mode === opt.id}
+                        onClick={() => setMode(opt.id)}
+                        icon={opt.icon}
+                        label={opt.label}
+                      />
+                    ))}
+
+                    <div className='w-px h-5 bg-white/10 mx-0.5 sm:mx-1 flex-shrink-0' />
+                    <DockButton
+                      active={isGestureEnabled}
+                      onClick={() => setIsGestureEnabled(!isGestureEnabled)}
+                      icon={<Hand size={18} />}
+                      label={t("gesture")}
+                    />
+                    <div className='w-px h-5 bg-white/10 mx-0.5 sm:mx-1 flex-shrink-0' />
+                    <DockButton
+                      active={isMenuOpen}
+                      onClick={() => setIsMenuOpen(!isMenuOpen)}
+                      icon={<Settings2 size={18} />}
+                      label={t("settings")}
+                    />
+                    <div className='w-px h-5 bg-white/10 mx-0.5 sm:mx-1 flex-shrink-0' />
+                    <DockButton
+                      active={false}
+                      onClick={() => {
+                        if (document.fullscreenElement)
+                          document.exitFullscreen();
+                        else document.documentElement.requestFullscreen();
+                      }}
+                      icon={<Maximize2 size={18} />}
+                      label={t("fullscreen")}
+                    />
+                    <div className='w-px h-5 bg-white/10 mx-0.5 sm:mx-1 flex-shrink-0' />
+                    <DockButton
+                      active={false}
+                      onClick={() => onClose?.()}
+                      icon={<LogOut size={18} />}
+                      label={t("exit")}
+                      className='text-red-400/60 hover:text-red-400'
                     />
                   </div>
-
-                  {/* Performance / Appearance */}
-                  <div className='grid grid-cols-2 gap-4'>
-                    <div className='space-y-2'>
-                      <div className='flex justify-between'>
-                        <label className='text-[10px] text-white/30 uppercase tracking-widest font-bold'>
-                          {t("intensity")}
-                        </label>
-                        <span className='text-[10px] font-mono text-[#FFD700]'>
-                          {Math.round(intensity * 100)}%
-                        </span>
-                      </div>
-                      <input
-                        type='range'
-                        min='0'
-                        max='1'
-                        step='0.01'
-                        value={intensity}
-                        onChange={(e) =>
-                          setIntensity(parseFloat(e.target.value))
-                        }
-                        className='w-full accent-[#FFD700] h-1.5'
-                      />
-                    </div>
-                    <div className='space-y-2'>
-                      <label className='text-[10px] text-white/30 uppercase tracking-widest font-bold block'>
-                        {t("theme")}
-                      </label>
-                      <div
-                        className='relative h-10 rounded-xl border border-white/10 overflow-hidden flex items-center justify-center'
-                        style={{ backgroundColor: color }}
-                      >
-                        <span className='text-[10px] mix-blend-difference text-white font-mono'>
-                          {color.toUpperCase()}
-                        </span>
-                        <input
-                          type='color'
-                          value={color}
-                          onChange={(e) => setColor(e.target.value)}
-                          className='absolute inset-0 opacity-0 cursor-pointer w-full h-full'
-                        />
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {/* Control Dock */}
-          <div className='w-full max-w-full flex justify-center px-1 md:px-4'>
-            <div className='flex items-center gap-1 md:gap-1.5 p-1 md:p-1.5 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-2xl overflow-x-auto no-scrollbar max-w-full'>
-              <div className='flex items-center gap-1 md:gap-1.5 flex-shrink-0'>
-                <DockButton
-                  active={isScattered}
-                  onClick={() => setIsScattered(!isScattered)}
-                  icon={
-                    isScattered ? (
-                      <Minimize2 size={18} />
-                    ) : (
-                      <Shuffle size={18} />
-                    )
-                  }
-                  label={isScattered ? t("converge") : t("scatter")}
-                />
-                <div className='w-px h-5 bg-white/10 mx-0.5 flex-shrink-0' />
-
-                {/* 核心特效快捷切换 */}
-                {effectOptions.map((opt) => (
-                  <DockButton
-                    key={opt.id}
-                    active={mode === opt.id}
-                    onClick={() => setMode(opt.id)}
-                    icon={opt.icon}
-                    label={opt.label}
-                  />
-                ))}
-
-                <div className='w-px h-5 bg-white/10 mx-0.5 flex-shrink-0' />
-                <DockButton
-                  active={isGestureEnabled}
-                  onClick={() => setIsGestureEnabled(!isGestureEnabled)}
-                  icon={<Hand size={18} />}
-                  label={t("gesture")}
-                />
-                <div className='w-px h-5 bg-white/10 mx-0.5 flex-shrink-0' />
-                <DockButton
-                  active={isMenuOpen}
-                  onClick={() => setIsMenuOpen(!isMenuOpen)}
-                  icon={<Settings2 size={18} />}
-                  label={t("settings")}
-                />
               </div>
             </div>
-          </div>
-        </div>
-      </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Footer Info (Auto-fades) */}
       <div className='absolute bottom-6 left-0 right-0 text-center pointer-events-none'>
@@ -1138,19 +1207,19 @@ export const ChristmasMode = ({
               className='absolute inset-0 z-0 pointer-events-auto'
             />
 
-            {/* Top Close Button for Focused View */}
+            {/* Bottom Close Button for Focused View (Mobile Optimized) */}
             <motion.div
-              initial={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className='absolute top-6 left-1/2 -translate-x-1/2 z-[60] pointer-events-auto shadow-2xl'
+              exit={{ opacity: 0, y: 20 }}
+              className='absolute bottom-[180px] left-1/2 -translate-x-1/2 z-[60] pointer-events-auto shadow-2xl'
             >
               <button
                 onClick={() => setFocusedIndex(null)}
-                className='flex items-center gap-2 px-6 py-2 rounded-full bg-black/60 border border-white/20 text-white/80 hover:text-white backdrop-blur-xl transition-all'
+                className='flex items-center gap-2 px-6 py-2.5 rounded-full bg-black/60 border border-white/20 text-white hover:text-[#FFD700] hover:border-[#FFD700]/50 backdrop-blur-xl transition-all shadow-[0_4px_20px_rgba(0,0,0,0.4)]'
               >
                 <Minimize2 size={18} />
-                <span className='text-xs font-bold uppercase tracking-widest'>
+                <span className='text-[11px] font-black uppercase tracking-[0.2em]'>
                   {t("exitFocus")}
                 </span>
               </button>
@@ -1279,6 +1348,7 @@ export const ChristmasMode = ({
           }
         }}
         onPalmDrag={handlePalmDrag}
+        onLoading={setIsGestureLoading}
         onError={(msg: string) => showFeedback(`⚠️ ${msg}`, 3000)}
         labels={{
           noSupport: t("gestures.noSupport"),
@@ -1378,27 +1448,29 @@ const DockButton = ({
   onClick,
   icon,
   label,
+  className = "",
 }: {
   active: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   label: string;
+  className?: string;
 }) => (
   <button
     onClick={onClick}
-    className={`relative group flex items-center gap-1.5 md:gap-2 px-2 md:px-4 py-2 rounded-2xl transition-all duration-300 flex-shrink-0 ${
+    className={`relative group flex items-center justify-center gap-1 md:gap-2 p-2 sm:px-3 sm:py-2 md:px-4 rounded-full sm:rounded-2xl transition-all duration-300 flex-shrink-0 ${
       active
         ? "bg-[#FFD700]/20 text-[#FFD700] ring-1 ring-[#FFD700]/50"
         : "text-white/40 hover:text-white hover:bg-white/5 active:scale-95"
-    }`}
+    } ${className}`}
   >
     <div
-      className={`transition-transform duration-300 ${active ? "scale-110" : ""}`}
+      className={`flex items-center justify-center transition-transform duration-300 ${active ? "scale-110" : ""}`}
     >
       {icon}
     </div>
     <span
-      className={`text-[10px] font-bold uppercase tracking-[0.1em] overflow-hidden transition-all duration-300 ${
+      className={`text-[10px] font-bold uppercase tracking-[0.1em] overflow-hidden whitespace-nowrap transition-all duration-300 ${
         active
           ? "max-w-0 md:max-w-[80px] opacity-0 md:opacity-100 hidden md:block" // Mobile always hides label
           : "max-w-0 opacity-0 md:group-hover:max-w-[80px] md:group-hover:opacity-100 hidden md:block"
@@ -1409,7 +1481,7 @@ const DockButton = ({
     {active && (
       <motion.div
         layoutId='dock-indicator'
-        className='absolute inset-0 bg-[#FFD700]/5 rounded-2xl -z-10'
+        className='absolute inset-0 bg-[#FFD700]/5 rounded-full sm:rounded-2xl -z-10'
         transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
       />
     )}

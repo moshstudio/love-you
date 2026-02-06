@@ -16,7 +16,7 @@ import { Photo } from "./types";
 import { ParticleGallery } from "./ParticleGallery";
 import { SHARED_TEXT_KEY, DEFAULT_GREETING_TEXT } from "./utils";
 import { LoadingOverlay } from "@/components/game/LoadingOverlay";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 
 // 向 R3F 注册 TextGeometry - Removed as we use Canvas now
@@ -699,70 +699,84 @@ const SettingsModal = ({
     setText(initialText);
   }, [initialText]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className='absolute inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-md transition-all duration-300'>
-      <div
-        className='w-full max-w-sm bg-black/80 border border-white/10 rounded-2xl p-6 shadow-2xl overflow-hidden'
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className='flex items-center justify-between mb-8'>
-          <h3 className='text-white/90 text-sm font-medium tracking-[0.2em] uppercase'>
-            {t("settings")}
-          </h3>
-          <button
+    <AnimatePresence>
+      {isOpen && (
+        <div className='absolute inset-0 z-[100] flex items-center justify-center p-4'>
+          {/* Backdrop */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             onClick={onClose}
-            className='text-white/40 hover:text-white transition-colors'
+            className='absolute inset-0 bg-black/40 backdrop-blur-md transition-all duration-300'
+          />
+
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.95 }}
+            className='w-full max-w-sm bg-black/80 border border-white/10 rounded-[2.5rem] p-8 shadow-2xl overflow-hidden relative z-10'
+            onClick={(e) => e.stopPropagation()}
           >
-            <svg
-              className='w-5 h-5'
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={1.5}
-                d='M6 18L18 6M6 6l12 12'
-              />
-            </svg>
-          </button>
-        </div>
+            <div className='flex items-center justify-between mb-8'>
+              <h3 className='text-white/90 text-xs font-bold tracking-[0.2em] uppercase'>
+                {t("settings")}
+              </h3>
+              <button
+                onClick={onClose}
+                className='text-white/40 hover:text-white transition-colors p-2 -mr-2'
+              >
+                <svg
+                  className='w-5 h-5'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={1.5}
+                    d='M6 18L18 6M6 6l12 12'
+                  />
+                </svg>
+              </button>
+            </div>
 
-        <div className='space-y-6'>
-          <div className='space-y-3'>
-            <label className='block text-white/40 text-[10px] uppercase tracking-[0.2em] ml-1'>
-              {t("introText")}
-            </label>
-            <input
-              type='text'
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              className='w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[#FFD700] text-sm focus:outline-none focus:border-[#FFD700]/50 focus:bg-white/10 transition-all placeholder:text-white/20'
-              placeholder={t("enterText")}
-              maxLength={12}
-            />
-          </div>
+            <div className='space-y-8'>
+              <div className='space-y-3'>
+                <label className='block text-white/30 text-[10px] font-bold uppercase tracking-[0.2em] ml-1'>
+                  {t("introText")}
+                </label>
+                <input
+                  type='text'
+                  value={text}
+                  onChange={(e) => setText(e.target.value)}
+                  className='w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-[#FFD700] text-sm focus:outline-none focus:border-[#FFD700]/50 focus:bg-white/10 transition-all placeholder:text-white/20'
+                  placeholder={t("enterText")}
+                  maxLength={12}
+                />
+              </div>
 
-          <div className='flex gap-3 pt-4'>
-            <button
-              onClick={onClose}
-              className='flex-1 px-4 py-2.5 rounded-xl border border-white/5 text-white/40 hover:bg-white/5 hover:text-white transition-all text-xs font-medium uppercase tracking-widest'
-            >
-              {t("cancel")}
-            </button>
-            <button
-              onClick={() => onSave(text)}
-              className='flex-1 px-4 py-2.5 rounded-xl bg-[#FFD700] text-black hover:bg-[#FFD700]/90 transition-all text-xs font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(255,215,0,0.2)]'
-            >
-              {t("save")}
-            </button>
-          </div>
+              <div className='flex gap-4 pt-4'>
+                <button
+                  onClick={onClose}
+                  className='flex-1 px-4 py-3.5 rounded-2xl border border-white/5 text-white/40 hover:bg-white/5 hover:text-white transition-all text-[11px] font-bold uppercase tracking-widest'
+                >
+                  {t("cancel")}
+                </button>
+                <button
+                  onClick={() => onSave(text)}
+                  className='flex-1 px-4 py-3.5 rounded-2xl bg-[#FFD700] text-black hover:bg-[#FFD700]/90 transition-all text-[11px] font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(255,215,0,0.2)]'
+                >
+                  {t("save")}
+                </button>
+              </div>
+            </div>
+          </motion.div>
         </div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   );
 };
 
@@ -998,6 +1012,29 @@ export function ImmersiveView({
               </span>
 
               <div className='h-4 w-px bg-white/10 mx-1' />
+
+              <button
+                onClick={() => {
+                  if (document.fullscreenElement) document.exitFullscreen();
+                  else document.documentElement.requestFullscreen();
+                }}
+                className='p-2.5 rounded-xl text-white/40 hover:bg-white/10 hover:text-white transition-all'
+                title={t("fullscreen")}
+              >
+                <svg
+                  className='w-4 h-4'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                  strokeWidth={1.5}
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    d='M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5v-4m0 4h-4m4 0l-5-5'
+                  />
+                </svg>
+              </button>
 
               <button
                 onClick={() => setIsSettingsOpen(true)}
