@@ -8,6 +8,12 @@
   "main": ".open-next/worker.js",
   "compatibility_date": "2025-12-01",
   "compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+  "routes": [
+    {
+      "pattern": "loveyou.moshangapp.com",
+      "custom_domain": true,
+    },
+  ],
   "assets": {
     "binding": "ASSETS",
     "directory": ".open-next/assets",
@@ -39,6 +45,7 @@
     },
   ],
   "vars": {
-    "PHOTOS_BUCKET_URL": "https://pub-b2b6fc060a0145a28c94b81ffade7f90.r2.dev",
+    "R2_BUCKET_NAME": "love-you-photos",
+    "PHOTOS_BUCKET_URL": "https://love-you-photos.moshangapp.com",
   },
 }
