@@ -289,7 +289,7 @@ export const ChristmasTreeScene = ({
           <Text
             fontSize={3.4}
             color={themeColor}
-            font='https://cdn.jsdelivr.net/npm/inter-ui@3.19.3/Inter%20(web)/Inter-Regular.woff'
+            font='/fonts/inter-latin-400-normal.woff'
             characters={displayText}
             anchorX='center'
             anchorY='middle'
@@ -313,7 +313,7 @@ export const ChristmasTreeScene = ({
           <Text
             fontSize={3.4}
             color={themeColor}
-            font='https://cdn.jsdelivr.net/npm/inter-ui@3.19.3/Inter%20(web)/Inter-Regular.woff'
+            font='/fonts/inter-latin-400-normal.woff'
             characters={displayText}
             anchorX='center'
             anchorY='middle'

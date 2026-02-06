@@ -39,8 +39,7 @@ const COLORS = {
 // -----------------------------------------------------------------------------
 // 0. Resources & Utils
 // -----------------------------------------------------------------------------
-const FONT_URL =
-  "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json";
+const FONT_URL = "/fonts/helvetiker_bold.typeface.json";
 
 function useCountdownParticles(fontUrl: string, texts: string[]) {
   const [pointsData, setPointsData] = useState<THREE.Vector3[][]>([]);

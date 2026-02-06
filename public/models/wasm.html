@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="description" content="@mediapipe/tasks-vision CDN by jsDelivr - A free, fast, and reliable Open Source CDN for npm and GitHub">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>@mediapipe/tasks-vision CDN by jsDelivr - A free, fast, and reliable Open Source CDN</title>
+		<style>
+			body {
+				font: 15px/1.4em Arial, "Helvetica Neue", Helvetica, sans-serif;
+				margin: 0;
+				padding: 20px 20px 30px;
+				background-color: #ffffff;
+			}
+
+			.container {
+				max-width: 960px;
+				margin: 0 auto;
+				padding: 10px 0;
+				background-color: #fff;
+			}
+
+			.header {
+				display: -webkit-box;
+				display: -ms-flexbox;
+				display: flex;
+				-webkit-box-align: center;
+				-ms-flex-align: center;
+				align-items: center;
+				-webkit-box-pack: justify;
+				-ms-flex-pack: justify;
+				justify-content: space-between;
+				flex-wrap: wrap;
+			}
+
+			h1 {
+				font-size: 28px;
+				line-height: 38px;
+				margin: 0 0 15px;
+			}
+
+			h2 {
+				font-size: 18px;
+				font-weight: 400;
+				margin: 0;
+			}
+
+			.versions {
+				max-width: 400px;
+				padding: 2px 12px 2px 6px;
+			}
+
+			.description {
+				margin: 10px 0;
+				font-size: 16px;
+				color: #666;
+			}
+
+			.path {
+				display: -webkit-box;
+				display: -ms-flexbox;
+				display: flex;
+				-webkit-box-align: center;
+				-ms-flex-align: center;
+				align-items: center;
+				-webkit-box-pack: justify;
+				-ms-flex-pack: justify;
+				justify-content: space-between;
+				flex-wrap: wrap;
+				margin: 15px 0 0;
+				padding: 15px 0 30px;
+				border-top: 1px solid #e5e5e5;
+			}
+
+			.path .versions,
+			.path ol {
+				margin: 15px 0 0;
+			}
+
+			.path ol {
+				padding: 0;
+				list-style: none;
+				font-size: 18px;
+				font-weight: 400;
+			}
+
+			.path ol li {
+				display: inline;
+			}
+
+			.listing {
+				border: 1px solid #dfe3e7;
+				border-radius: 6px;
+				-webkit-box-shadow: 0 5px 10px -5px #dfe3e7;
+				box-shadow: 0 5px 10px -5px #dfe3e7;
+			}
+
+			table {
+				width: 100%;
+				border-spacing: 0;
+			}
+
+			th, td {
+				padding: 8px 20px;
+				border-bottom: 1px solid #dfe3e7;
+			}
+
+			tr:last-child td {
+				border-bottom: 0;
+			}
+
+			.name.level-up {
+				border-bottom: 1px solid #dfe3e7;
+			}
+
+			.name.level-up a {
+				padding-left: 0;
+			}
+
+			.name {
+				width: auto;
+				text-align: left;
+				padding-right: 20px;
+			}
+
+			.name a {
+				color: #17233b;
+				padding-left: 5px;
+				position: relative;
+			}
+
+			.name svg {
+				display: inline-block;
+				margin-bottom: -4px;
+			}
+
+			.size {
+				max-width: 80px;
+				text-align: right;
+				color: #444;
+			}
+
+			th.name, th.size {
+				color: #999;
+				text-transform: uppercase;
+				font-size: 12px;
+				letter-spacing: 1px;
+			}
+
+			a {
+				color: #ff5627;
+				text-decoration: none;
+			}
+
+			a:hover, a:focus {
+				color: #ff5627;
+				text-decoration: underline;
+			}
+
+			.landing {
+				margin-top: 30px;
+				text-align: center;
+			}
+
+			.landing p {
+				margin: 0 0 15px;
+			}
+
+			.landing a {
+				display: block;
+				text-overflow: ellipsis;
+				overflow: hidden;
+			}
+
+			footer {
+				max-width: 960px;
+				display: -webkit-box;
+				display: -ms-flexbox;
+				display: flex;
+				-webkit-box-orient: vertical;
+				-webkit-box-direction: normal;
+				-ms-flex-direction: column;
+				flex-direction: column;
+				-webkit-box-pack: justify;
+				-ms-flex-pack: justify;
+				justify-content: space-between;
+				margin: 0 auto;
+				padding: 20px 0 0 0;
+				text-align: center;
+				font-size: 14px;
+				color: #666;
+				border-top: 1px solid #edf0f2;
+			}
+
+			.footer-left, .footer-right {
+				display: -webkit-box;
+				display: -ms-flexbox;
+				display: flex;
+				-webkit-box-orient: vertical;
+				-webkit-box-direction: normal;
+				-ms-flex-direction: column;
+				flex-direction: column;
+				-webkit-box-align: center;
+				-ms-flex-align: center;
+				align-items: center;
+				margin-bottom: 20px;
+			}
+
+			.logo {
+				width: 115px;
+			}
+
+			.copyright {
+				color: #79849a;
+				margin: 0;
+			}
+
+			@media (min-width: 576px) {
+				.footer-left, .footer-right {
+					-ms-flex-pack: distribute;
+					justify-content: space-around;
+					-webkit-box-orient: horizontal;
+					-webkit-box-direction: normal;
+					-ms-flex-direction: row;
+					flex-direction: row;
+				}
+			}
+
+			@media (min-width: 768px) {
+				body {
+					padding-top: 40px;
+				}
+
+				footer {
+					-webkit-box-orient: horizontal;
+					-webkit-box-direction: normal;
+					-ms-flex-direction: row;
+					flex-direction: row;
+					padding-top: 30px;
+				}
+
+				.container {
+					padding-bottom: 20px;
+				}
+
+				.footer-right a:first-child, .logo {
+					margin-right: 20px;
+				}
+
+				.landing {
+					display: -webkit-box;
+					display: -ms-flexbox;
+					display: flex;
+					-webkit-box-align: start;
+					-ms-flex-align: start;
+					align-items: flex-start;
+					-webkit-box-pack: justify;
+					-ms-flex-pack: justify;
+					justify-content: space-between;
+					margin-top: 40px;
+				}
+
+				.landing .right {
+					text-align: right;
+				}
+			}
+
+			.select-css {
+				display: block;
+				padding: 8px 20px 8px 12px;
+				box-sizing: border-box;
+				margin: 0;
+				border: 1px solid #aaa;
+				border-radius: .5em;
+				-moz-appearance: none;
+				-webkit-appearance: none;
+				appearance: none;
+				background-color: #fff;
+				background-image: url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/icons/caret-down-fill.svg');
+				background-repeat: no-repeat, repeat;
+				background-position: right 8px top 50%, 0 0;
+				background-size: 10px auto, 100%;
+				outline: none;
+			}
+
+			.select-css::-ms-expand {
+				display: none;
+			}
+
+			.select-css:hover {
+				border-color: #888;
+			}
+
+			.select-css option {
+				font-weight: normal;
+			}
+		</style>
+	</head>
+
+	<body>
+		<div class="container">
+			<div class="header">
+				<h1>@mediapipe/tasks-vision CDN files</h1>
+
+				<a class="badge" href="https://www.jsdelivr.com/package/npm/@mediapipe/tasks-vision" title="jsDelivr monthly hits">
+					<img alt="jsDelivr monthly hits badge" src="https://data.jsdelivr.com/v1/package/npm/@mediapipe/tasks-vision/badge">
+				</a>
+			</div>
+
+
+			<div class="path">
+				<ol itemscope itemtype="https://schema.org/BreadcrumbList">
+					<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+						<a itemscope itemtype="https://schema.org/WebPage" itemprop="item"
+						   itemid="/npm/@mediapipe/tasks-vision@0.10.0/"
+						   href="/npm/@mediapipe/tasks-vision@0.10.0/" rel="nofollow">
+							<span itemprop="name">@mediapipe/tasks-vision@0.10.0</span></a> /
+						<meta itemprop="position" content="0">
+					</li>
+					<li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+						<span itemprop="name">wasm</span>
+						<meta itemprop="position" content="1">
+					</li>
+				</ol>
+
+				<select class="versions select-css">
+					<option value="@mediapipe/tasks-vision@20230920.0.0">@mediapipe/tasks-vision@20230920.0.0</option>
+					<option value="@mediapipe/tasks-vision@20230919.0.0">@mediapipe/tasks-vision@20230919.0.0</option>
+					<option value="@mediapipe/tasks-vision@0.10.32">@mediapipe/tasks-vision@0.10.32</option>
+					<option value="@mediapipe/tasks-vision@0.10.22-rc.20250304">@mediapipe/tasks-vision@0.10.22-rc.20250304</option>
+					<option value="@mediapipe/tasks-vision@0.10.21">@mediapipe/tasks-vision@0.10.21</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250206">@mediapipe/tasks-vision@0.10.21-rc.20250206</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250205">@mediapipe/tasks-vision@0.10.21-rc.20250205</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250204">@mediapipe/tasks-vision@0.10.21-rc.20250204</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250203">@mediapipe/tasks-vision@0.10.21-rc.20250203</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250202">@mediapipe/tasks-vision@0.10.21-rc.20250202</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250201">@mediapipe/tasks-vision@0.10.21-rc.20250201</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250131">@mediapipe/tasks-vision@0.10.21-rc.20250131</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250130">@mediapipe/tasks-vision@0.10.21-rc.20250130</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250129">@mediapipe/tasks-vision@0.10.21-rc.20250129</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250128">@mediapipe/tasks-vision@0.10.21-rc.20250128</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250127">@mediapipe/tasks-vision@0.10.21-rc.20250127</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250126">@mediapipe/tasks-vision@0.10.21-rc.20250126</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250125">@mediapipe/tasks-vision@0.10.21-rc.20250125</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250124">@mediapipe/tasks-vision@0.10.21-rc.20250124</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250123">@mediapipe/tasks-vision@0.10.21-rc.20250123</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250122">@mediapipe/tasks-vision@0.10.21-rc.20250122</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250121">@mediapipe/tasks-vision@0.10.21-rc.20250121</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250120">@mediapipe/tasks-vision@0.10.21-rc.20250120</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250119">@mediapipe/tasks-vision@0.10.21-rc.20250119</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250118">@mediapipe/tasks-vision@0.10.21-rc.20250118</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250117">@mediapipe/tasks-vision@0.10.21-rc.20250117</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250116">@mediapipe/tasks-vision@0.10.21-rc.20250116</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250115">@mediapipe/tasks-vision@0.10.21-rc.20250115</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250114">@mediapipe/tasks-vision@0.10.21-rc.20250114</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250113">@mediapipe/tasks-vision@0.10.21-rc.20250113</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250112">@mediapipe/tasks-vision@0.10.21-rc.20250112</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250111">@mediapipe/tasks-vision@0.10.21-rc.20250111</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250110">@mediapipe/tasks-vision@0.10.21-rc.20250110</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250109">@mediapipe/tasks-vision@0.10.21-rc.20250109</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250108">@mediapipe/tasks-vision@0.10.21-rc.20250108</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250107">@mediapipe/tasks-vision@0.10.21-rc.20250107</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250106">@mediapipe/tasks-vision@0.10.21-rc.20250106</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250105">@mediapipe/tasks-vision@0.10.21-rc.20250105</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250104">@mediapipe/tasks-vision@0.10.21-rc.20250104</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250103">@mediapipe/tasks-vision@0.10.21-rc.20250103</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250102">@mediapipe/tasks-vision@0.10.21-rc.20250102</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20250101">@mediapipe/tasks-vision@0.10.21-rc.20250101</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241231">@mediapipe/tasks-vision@0.10.21-rc.20241231</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241230">@mediapipe/tasks-vision@0.10.21-rc.20241230</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241229">@mediapipe/tasks-vision@0.10.21-rc.20241229</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241228">@mediapipe/tasks-vision@0.10.21-rc.20241228</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241227">@mediapipe/tasks-vision@0.10.21-rc.20241227</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241226">@mediapipe/tasks-vision@0.10.21-rc.20241226</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241225">@mediapipe/tasks-vision@0.10.21-rc.20241225</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241224">@mediapipe/tasks-vision@0.10.21-rc.20241224</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241223">@mediapipe/tasks-vision@0.10.21-rc.20241223</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241222">@mediapipe/tasks-vision@0.10.21-rc.20241222</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241221">@mediapipe/tasks-vision@0.10.21-rc.20241221</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241220">@mediapipe/tasks-vision@0.10.21-rc.20241220</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241219">@mediapipe/tasks-vision@0.10.21-rc.20241219</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241218">@mediapipe/tasks-vision@0.10.21-rc.20241218</option>
+					<option value="@mediapipe/tasks-vision@0.10.21-rc.20241217">@mediapipe/tasks-vision@0.10.21-rc.20241217</option>
+					<option value="@mediapipe/tasks-vision@0.10.20">@mediapipe/tasks-vision@0.10.20</option>
+					<option value="@mediapipe/tasks-vision@0.10.20-rc.20241216">@mediapipe/tasks-vision@0.10.20-rc.20241216</option>
+					<option value="@mediapipe/tasks-vision@0.10.20-rc.20241215">@mediapipe/tasks-vision@0.10.20-rc.20241215</option>
+					<option value="@mediapipe/tasks-vision@0.10.20-rc.20241214">@mediapipe/tasks-vision@0.10.20-rc.20241214</option>
+					<option value="@mediapipe/tasks-vision@0.10.20-rc.20241213">@mediapipe/tasks-vision@0.10.20-rc.20241213</option>
+					<option value="@mediapipe/tasks-vision@0.10.20-rc.20241212">@mediapipe/tasks-vision@0.10.20-rc.20241212</option>
+					<option value="@mediapipe/tasks-vision@0.10.19">@mediapipe/tasks-vision@0.10.19</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241211">@mediapipe/tasks-vision@0.10.19-rc.20241211</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241210">@mediapipe/tasks-vision@0.10.19-rc.20241210</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241209">@mediapipe/tasks-vision@0.10.19-rc.20241209</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241208">@mediapipe/tasks-vision@0.10.19-rc.20241208</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241207">@mediapipe/tasks-vision@0.10.19-rc.20241207</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241206">@mediapipe/tasks-vision@0.10.19-rc.20241206</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241205">@mediapipe/tasks-vision@0.10.19-rc.20241205</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241204">@mediapipe/tasks-vision@0.10.19-rc.20241204</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241203">@mediapipe/tasks-vision@0.10.19-rc.20241203</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241202">@mediapipe/tasks-vision@0.10.19-rc.20241202</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241201">@mediapipe/tasks-vision@0.10.19-rc.20241201</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241130">@mediapipe/tasks-vision@0.10.19-rc.20241130</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241129">@mediapipe/tasks-vision@0.10.19-rc.20241129</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241128">@mediapipe/tasks-vision@0.10.19-rc.20241128</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241127">@mediapipe/tasks-vision@0.10.19-rc.20241127</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241126">@mediapipe/tasks-vision@0.10.19-rc.20241126</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241125">@mediapipe/tasks-vision@0.10.19-rc.20241125</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241124">@mediapipe/tasks-vision@0.10.19-rc.20241124</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241123">@mediapipe/tasks-vision@0.10.19-rc.20241123</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241122">@mediapipe/tasks-vision@0.10.19-rc.20241122</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241121">@mediapipe/tasks-vision@0.10.19-rc.20241121</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241120">@mediapipe/tasks-vision@0.10.19-rc.20241120</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241119">@mediapipe/tasks-vision@0.10.19-rc.20241119</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241118">@mediapipe/tasks-vision@0.10.19-rc.20241118</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241117">@mediapipe/tasks-vision@0.10.19-rc.20241117</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241116">@mediapipe/tasks-vision@0.10.19-rc.20241116</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241115">@mediapipe/tasks-vision@0.10.19-rc.20241115</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241114">@mediapipe/tasks-vision@0.10.19-rc.20241114</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241113">@mediapipe/tasks-vision@0.10.19-rc.20241113</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241112">@mediapipe/tasks-vision@0.10.19-rc.20241112</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241111">@mediapipe/tasks-vision@0.10.19-rc.20241111</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241110">@mediapipe/tasks-vision@0.10.19-rc.20241110</option>
+					<option value="@mediapipe/tasks-vision@0.10.19-rc.20241109">@mediapipe/tasks-vision@0.10.19-rc.20241109</option>
+					<option value="@mediapipe/tasks-vision@0.10.18">@mediapipe/tasks-vision@0.10.18</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241108">@mediapipe/tasks-vision@0.10.18-rc.20241108</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241106">@mediapipe/tasks-vision@0.10.18-rc.20241106</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241105">@mediapipe/tasks-vision@0.10.18-rc.20241105</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241104">@mediapipe/tasks-vision@0.10.18-rc.20241104</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241103">@mediapipe/tasks-vision@0.10.18-rc.20241103</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241102">@mediapipe/tasks-vision@0.10.18-rc.20241102</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241101">@mediapipe/tasks-vision@0.10.18-rc.20241101</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241031">@mediapipe/tasks-vision@0.10.18-rc.20241031</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241030">@mediapipe/tasks-vision@0.10.18-rc.20241030</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241029">@mediapipe/tasks-vision@0.10.18-rc.20241029</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241028">@mediapipe/tasks-vision@0.10.18-rc.20241028</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241027">@mediapipe/tasks-vision@0.10.18-rc.20241027</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241026">@mediapipe/tasks-vision@0.10.18-rc.20241026</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241025">@mediapipe/tasks-vision@0.10.18-rc.20241025</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241024">@mediapipe/tasks-vision@0.10.18-rc.20241024</option>
+					<option value="@mediapipe/tasks-vision@0.10.18-rc.20241023">@mediapipe/tasks-vision@0.10.18-rc.20241023</option>
+					<option value="@mediapipe/tasks-vision@0.10.17">@mediapipe/tasks-vision@0.10.17</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241022">@mediapipe/tasks-vision@0.10.17-rc.20241022</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241019">@mediapipe/tasks-vision@0.10.17-rc.20241019</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241018">@mediapipe/tasks-vision@0.10.17-rc.20241018</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241017">@mediapipe/tasks-vision@0.10.17-rc.20241017</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241016">@mediapipe/tasks-vision@0.10.17-rc.20241016</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241015">@mediapipe/tasks-vision@0.10.17-rc.20241015</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241014">@mediapipe/tasks-vision@0.10.17-rc.20241014</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241013">@mediapipe/tasks-vision@0.10.17-rc.20241013</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241012">@mediapipe/tasks-vision@0.10.17-rc.20241012</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241011">@mediapipe/tasks-vision@0.10.17-rc.20241011</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241010">@mediapipe/tasks-vision@0.10.17-rc.20241010</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241009">@mediapipe/tasks-vision@0.10.17-rc.20241009</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241008">@mediapipe/tasks-vision@0.10.17-rc.20241008</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241007">@mediapipe/tasks-vision@0.10.17-rc.20241007</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241006">@mediapipe/tasks-vision@0.10.17-rc.20241006</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241005">@mediapipe/tasks-vision@0.10.17-rc.20241005</option>
+					<option value="@mediapipe/tasks-vision@0.10.17-rc.20241004">@mediapipe/tasks-vision@0.10.17-rc.20241004</option>
+					<option value="@mediapipe/tasks-vision@0.10.16">@mediapipe/tasks-vision@0.10.16</option>
+					<option value="@mediapipe/tasks-vision@0.10.16-rc.20241003">@mediapipe/tasks-vision@0.10.16-rc.20241003</option>
+					<option value="@mediapipe/tasks-vision@0.10.16-rc.20241002">@mediapipe/tasks-vision@0.10.16-rc.20241002</option>
+					<option value="@mediapipe/tasks-vision@0.10.16-rc.20241001">@mediapipe/tasks-vision@0.10.16-rc.20241001</option>
+					<option value="@mediapipe/tasks-vision@0.10.16-rc.20240930">@mediapipe/tasks-vision@0.10.16-rc.20240930</option>
+					<option value="@mediapipe/tasks-vision@0.10.16-rc.20240929">@mediapipe/tasks-vision@0.10.16-rc.20240929</option>
+					<option value="@mediapipe/tasks-vision@0.10.16-rc.20240928">@mediapipe/tasks-vision@0.10.16-rc.20240928</option>
+					<option value="@mediapipe/tasks-vision@0.10.16-rc.20240927">@mediapipe/tasks-vision@0.10.16-rc.20240927</option>
+					<option value="@mediapipe/tasks-vision@0.10.16-rc.20240926">@mediapipe/tasks-vision@0.10.16-rc.20240926</option>
+					<option value="@mediapipe/tasks-vision@0.10.16-rc.20240925">@mediapipe/tasks-vision@0.10.16-rc.20240925</option>
+					<option value="@mediapipe/tasks-vision@0.10.16-rc.20240923">@mediapipe/tasks-vision@0.10.16-rc.20240923</option>
+					<option value="@mediapipe/tasks-vision@0.10.16-rc.20240922">@mediapipe/tasks-vision@0.10.16-rc.20240922</option>
+					<option value="@mediapipe/tasks-vision@0.10.16-rc.20240921">@mediapipe/tasks-vision@0.10.16-rc.20240921</option>
+					<option value="@mediapipe/tasks-vision@0.10.15">@mediapipe/tasks-vision@0.10.15</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240902">@mediapipe/tasks-vision@0.10.15-rc.20240902</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240901">@mediapipe/tasks-vision@0.10.15-rc.20240901</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240831">@mediapipe/tasks-vision@0.10.15-rc.20240831</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240830">@mediapipe/tasks-vision@0.10.15-rc.20240830</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240829">@mediapipe/tasks-vision@0.10.15-rc.20240829</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240828">@mediapipe/tasks-vision@0.10.15-rc.20240828</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240827">@mediapipe/tasks-vision@0.10.15-rc.20240827</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240826">@mediapipe/tasks-vision@0.10.15-rc.20240826</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240825">@mediapipe/tasks-vision@0.10.15-rc.20240825</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240824">@mediapipe/tasks-vision@0.10.15-rc.20240824</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240823">@mediapipe/tasks-vision@0.10.15-rc.20240823</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240822">@mediapipe/tasks-vision@0.10.15-rc.20240822</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240821">@mediapipe/tasks-vision@0.10.15-rc.20240821</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240820">@mediapipe/tasks-vision@0.10.15-rc.20240820</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240819">@mediapipe/tasks-vision@0.10.15-rc.20240819</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240818">@mediapipe/tasks-vision@0.10.15-rc.20240818</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240817">@mediapipe/tasks-vision@0.10.15-rc.20240817</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240816">@mediapipe/tasks-vision@0.10.15-rc.20240816</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240815">@mediapipe/tasks-vision@0.10.15-rc.20240815</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240814">@mediapipe/tasks-vision@0.10.15-rc.20240814</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240813">@mediapipe/tasks-vision@0.10.15-rc.20240813</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240812">@mediapipe/tasks-vision@0.10.15-rc.20240812</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240811">@mediapipe/tasks-vision@0.10.15-rc.20240811</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240810">@mediapipe/tasks-vision@0.10.15-rc.20240810</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240809">@mediapipe/tasks-vision@0.10.15-rc.20240809</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240808">@mediapipe/tasks-vision@0.10.15-rc.20240808</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240807">@mediapipe/tasks-vision@0.10.15-rc.20240807</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240806">@mediapipe/tasks-vision@0.10.15-rc.20240806</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240805">@mediapipe/tasks-vision@0.10.15-rc.20240805</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240804">@mediapipe/tasks-vision@0.10.15-rc.20240804</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240803">@mediapipe/tasks-vision@0.10.15-rc.20240803</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240802">@mediapipe/tasks-vision@0.10.15-rc.20240802</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240801">@mediapipe/tasks-vision@0.10.15-rc.20240801</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240731">@mediapipe/tasks-vision@0.10.15-rc.20240731</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240730">@mediapipe/tasks-vision@0.10.15-rc.20240730</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240729">@mediapipe/tasks-vision@0.10.15-rc.20240729</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240728">@mediapipe/tasks-vision@0.10.15-rc.20240728</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240727">@mediapipe/tasks-vision@0.10.15-rc.20240727</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240726">@mediapipe/tasks-vision@0.10.15-rc.20240726</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240725">@mediapipe/tasks-vision@0.10.15-rc.20240725</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240724">@mediapipe/tasks-vision@0.10.15-rc.20240724</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240723">@mediapipe/tasks-vision@0.10.15-rc.20240723</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240722">@mediapipe/tasks-vision@0.10.15-rc.20240722</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240721">@mediapipe/tasks-vision@0.10.15-rc.20240721</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240720">@mediapipe/tasks-vision@0.10.15-rc.20240720</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240719">@mediapipe/tasks-vision@0.10.15-rc.20240719</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240718">@mediapipe/tasks-vision@0.10.15-rc.20240718</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240717">@mediapipe/tasks-vision@0.10.15-rc.20240717</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240716">@mediapipe/tasks-vision@0.10.15-rc.20240716</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240715">@mediapipe/tasks-vision@0.10.15-rc.20240715</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240714">@mediapipe/tasks-vision@0.10.15-rc.20240714</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240713">@mediapipe/tasks-vision@0.10.15-rc.20240713</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240712">@mediapipe/tasks-vision@0.10.15-rc.20240712</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240711">@mediapipe/tasks-vision@0.10.15-rc.20240711</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240710">@mediapipe/tasks-vision@0.10.15-rc.20240710</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240709">@mediapipe/tasks-vision@0.10.15-rc.20240709</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240708">@mediapipe/tasks-vision@0.10.15-rc.20240708</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240707">@mediapipe/tasks-vision@0.10.15-rc.20240707</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240706">@mediapipe/tasks-vision@0.10.15-rc.20240706</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240705">@mediapipe/tasks-vision@0.10.15-rc.20240705</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240704">@mediapipe/tasks-vision@0.10.15-rc.20240704</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240703">@mediapipe/tasks-vision@0.10.15-rc.20240703</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240702">@mediapipe/tasks-vision@0.10.15-rc.20240702</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240625">@mediapipe/tasks-vision@0.10.15-rc.20240625</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240624">@mediapipe/tasks-vision@0.10.15-rc.20240624</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240623">@mediapipe/tasks-vision@0.10.15-rc.20240623</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240622">@mediapipe/tasks-vision@0.10.15-rc.20240622</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240620">@mediapipe/tasks-vision@0.10.15-rc.20240620</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240619">@mediapipe/tasks-vision@0.10.15-rc.20240619</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240617">@mediapipe/tasks-vision@0.10.15-rc.20240617</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240616">@mediapipe/tasks-vision@0.10.15-rc.20240616</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240615">@mediapipe/tasks-vision@0.10.15-rc.20240615</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240614">@mediapipe/tasks-vision@0.10.15-rc.20240614</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240613">@mediapipe/tasks-vision@0.10.15-rc.20240613</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240612">@mediapipe/tasks-vision@0.10.15-rc.20240612</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240611">@mediapipe/tasks-vision@0.10.15-rc.20240611</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240610">@mediapipe/tasks-vision@0.10.15-rc.20240610</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240609">@mediapipe/tasks-vision@0.10.15-rc.20240609</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240608">@mediapipe/tasks-vision@0.10.15-rc.20240608</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240607">@mediapipe/tasks-vision@0.10.15-rc.20240607</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240606">@mediapipe/tasks-vision@0.10.15-rc.20240606</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240605">@mediapipe/tasks-vision@0.10.15-rc.20240605</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240604">@mediapipe/tasks-vision@0.10.15-rc.20240604</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240603">@mediapipe/tasks-vision@0.10.15-rc.20240603</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240602">@mediapipe/tasks-vision@0.10.15-rc.20240602</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240601">@mediapipe/tasks-vision@0.10.15-rc.20240601</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240531">@mediapipe/tasks-vision@0.10.15-rc.20240531</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240530">@mediapipe/tasks-vision@0.10.15-rc.20240530</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240529">@mediapipe/tasks-vision@0.10.15-rc.20240529</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240528">@mediapipe/tasks-vision@0.10.15-rc.20240528</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240527">@mediapipe/tasks-vision@0.10.15-rc.20240527</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240526">@mediapipe/tasks-vision@0.10.15-rc.20240526</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240525">@mediapipe/tasks-vision@0.10.15-rc.20240525</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240524">@mediapipe/tasks-vision@0.10.15-rc.20240524</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240523">@mediapipe/tasks-vision@0.10.15-rc.20240523</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240522">@mediapipe/tasks-vision@0.10.15-rc.20240522</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240521">@mediapipe/tasks-vision@0.10.15-rc.20240521</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240520">@mediapipe/tasks-vision@0.10.15-rc.20240520</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240519">@mediapipe/tasks-vision@0.10.15-rc.20240519</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240518">@mediapipe/tasks-vision@0.10.15-rc.20240518</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240517">@mediapipe/tasks-vision@0.10.15-rc.20240517</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240516">@mediapipe/tasks-vision@0.10.15-rc.20240516</option>
+					<option value="@mediapipe/tasks-vision@0.10.15-rc.20240515">@mediapipe/tasks-vision@0.10.15-rc.20240515</option>
+					<option value="@mediapipe/tasks-vision@0.10.14">@mediapipe/tasks-vision@0.10.14</option>
+					<option value="@mediapipe/tasks-vision@0.10.14-rc.20240514">@mediapipe/tasks-vision@0.10.14-rc.20240514</option>
+					<option value="@mediapipe/tasks-vision@0.10.14-rc.20240513">@mediapipe/tasks-vision@0.10.14-rc.20240513</option>
+					<option value="@mediapipe/tasks-vision@0.10.14-rc.20240512">@mediapipe/tasks-vision@0.10.14-rc.20240512</option>
+					<option value="@mediapipe/tasks-vision@0.10.14-rc.20240511">@mediapipe/tasks-vision@0.10.14-rc.20240511</option>
+					<option value="@mediapipe/tasks-vision@0.10.14-rc.20240510">@mediapipe/tasks-vision@0.10.14-rc.20240510</option>
+					<option value="@mediapipe/tasks-vision@0.10.14-rc.20240508">@mediapipe/tasks-vision@0.10.14-rc.20240508</option>
+					<option value="@mediapipe/tasks-vision@0.10.14-rc.20240507">@mediapipe/tasks-vision@0.10.14-rc.20240507</option>
+					<option value="@mediapipe/tasks-vision@0.10.13">@mediapipe/tasks-vision@0.10.13</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240506">@mediapipe/tasks-vision@0.10.13-rc.20240506</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240505">@mediapipe/tasks-vision@0.10.13-rc.20240505</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240504">@mediapipe/tasks-vision@0.10.13-rc.20240504</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240503">@mediapipe/tasks-vision@0.10.13-rc.20240503</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240502">@mediapipe/tasks-vision@0.10.13-rc.20240502</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240501">@mediapipe/tasks-vision@0.10.13-rc.20240501</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240430">@mediapipe/tasks-vision@0.10.13-rc.20240430</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240429">@mediapipe/tasks-vision@0.10.13-rc.20240429</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240428">@mediapipe/tasks-vision@0.10.13-rc.20240428</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240427">@mediapipe/tasks-vision@0.10.13-rc.20240427</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240426">@mediapipe/tasks-vision@0.10.13-rc.20240426</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240425">@mediapipe/tasks-vision@0.10.13-rc.20240425</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240424">@mediapipe/tasks-vision@0.10.13-rc.20240424</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240423">@mediapipe/tasks-vision@0.10.13-rc.20240423</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240422">@mediapipe/tasks-vision@0.10.13-rc.20240422</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240421">@mediapipe/tasks-vision@0.10.13-rc.20240421</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240420">@mediapipe/tasks-vision@0.10.13-rc.20240420</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240419">@mediapipe/tasks-vision@0.10.13-rc.20240419</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240418">@mediapipe/tasks-vision@0.10.13-rc.20240418</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240417">@mediapipe/tasks-vision@0.10.13-rc.20240417</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240416">@mediapipe/tasks-vision@0.10.13-rc.20240416</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240415">@mediapipe/tasks-vision@0.10.13-rc.20240415</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240414">@mediapipe/tasks-vision@0.10.13-rc.20240414</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240413">@mediapipe/tasks-vision@0.10.13-rc.20240413</option>
+					<option value="@mediapipe/tasks-vision@0.10.13-rc.20240412">@mediapipe/tasks-vision@0.10.13-rc.20240412</option>
+					<option value="@mediapipe/tasks-vision@0.10.12">@mediapipe/tasks-vision@0.10.12</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240411">@mediapipe/tasks-vision@0.10.12-rc.20240411</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240410">@mediapipe/tasks-vision@0.10.12-rc.20240410</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240409">@mediapipe/tasks-vision@0.10.12-rc.20240409</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240408">@mediapipe/tasks-vision@0.10.12-rc.20240408</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240407">@mediapipe/tasks-vision@0.10.12-rc.20240407</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240406">@mediapipe/tasks-vision@0.10.12-rc.20240406</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240405">@mediapipe/tasks-vision@0.10.12-rc.20240405</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240404">@mediapipe/tasks-vision@0.10.12-rc.20240404</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240403">@mediapipe/tasks-vision@0.10.12-rc.20240403</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240402">@mediapipe/tasks-vision@0.10.12-rc.20240402</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240401">@mediapipe/tasks-vision@0.10.12-rc.20240401</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240331">@mediapipe/tasks-vision@0.10.12-rc.20240331</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240330">@mediapipe/tasks-vision@0.10.12-rc.20240330</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240329">@mediapipe/tasks-vision@0.10.12-rc.20240329</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240327">@mediapipe/tasks-vision@0.10.12-rc.20240327</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240326">@mediapipe/tasks-vision@0.10.12-rc.20240326</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240325">@mediapipe/tasks-vision@0.10.12-rc.20240325</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240324">@mediapipe/tasks-vision@0.10.12-rc.20240324</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240323">@mediapipe/tasks-vision@0.10.12-rc.20240323</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240322">@mediapipe/tasks-vision@0.10.12-rc.20240322</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240321">@mediapipe/tasks-vision@0.10.12-rc.20240321</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240320">@mediapipe/tasks-vision@0.10.12-rc.20240320</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240319">@mediapipe/tasks-vision@0.10.12-rc.20240319</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240318">@mediapipe/tasks-vision@0.10.12-rc.20240318</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240317">@mediapipe/tasks-vision@0.10.12-rc.20240317</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240316">@mediapipe/tasks-vision@0.10.12-rc.20240316</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240315">@mediapipe/tasks-vision@0.10.12-rc.20240315</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240314">@mediapipe/tasks-vision@0.10.12-rc.20240314</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240313">@mediapipe/tasks-vision@0.10.12-rc.20240313</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240312">@mediapipe/tasks-vision@0.10.12-rc.20240312</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240311">@mediapipe/tasks-vision@0.10.12-rc.20240311</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240310">@mediapipe/tasks-vision@0.10.12-rc.20240310</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240309">@mediapipe/tasks-vision@0.10.12-rc.20240309</option>
+					<option value="@mediapipe/tasks-vision@0.10.12-rc.20240308">@mediapipe/tasks-vision@0.10.12-rc.20240308</option>
+					<option value="@mediapipe/tasks-vision@0.10.11">@mediapipe/tasks-vision@0.10.11</option>
+					<option value="@mediapipe/tasks-vision@0.10.11-rc.20240307">@mediapipe/tasks-vision@0.10.11-rc.20240307</option>
+					<option value="@mediapipe/tasks-vision@0.10.11-rc.20240306">@mediapipe/tasks-vision@0.10.11-rc.20240306</option>
+					<option value="@mediapipe/tasks-vision@0.10.11-rc.20240305">@mediapipe/tasks-vision@0.10.11-rc.20240305</option>
+					<option value="@mediapipe/tasks-vision@0.10.11-rc.20240304">@mediapipe/tasks-vision@0.10.11-rc.20240304</option>
+					<option value="@mediapipe/tasks-vision@0.10.11-rc.20240301">@mediapipe/tasks-vision@0.10.11-rc.20240301</option>
+					<option value="@mediapipe/tasks-vision@0.10.11-rc.20240229">@mediapipe/tasks-vision@0.10.11-rc.20240229</option>
+					<option value="@mediapipe/tasks-vision@0.10.11-rc.20240228">@mediapipe/tasks-vision@0.10.11-rc.20240228</option>
+					<option value="@mediapipe/tasks-vision@0.10.11-rc.20240227">@mediapipe/tasks-vision@0.10.11-rc.20240227</option>
+					<option value="@mediapipe/tasks-vision@0.10.11-rc.20240226">@mediapipe/tasks-vision@0.10.11-rc.20240226</option>
+					<option value="@mediapipe/tasks-vision@0.10.10">@mediapipe/tasks-vision@0.10.10</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240225">@mediapipe/tasks-vision@0.10.10-rc.20240225</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240224">@mediapipe/tasks-vision@0.10.10-rc.20240224</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240223">@mediapipe/tasks-vision@0.10.10-rc.20240223</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240222">@mediapipe/tasks-vision@0.10.10-rc.20240222</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240221">@mediapipe/tasks-vision@0.10.10-rc.20240221</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240220">@mediapipe/tasks-vision@0.10.10-rc.20240220</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240219">@mediapipe/tasks-vision@0.10.10-rc.20240219</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240218">@mediapipe/tasks-vision@0.10.10-rc.20240218</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240217">@mediapipe/tasks-vision@0.10.10-rc.20240217</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240216">@mediapipe/tasks-vision@0.10.10-rc.20240216</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240215">@mediapipe/tasks-vision@0.10.10-rc.20240215</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240214">@mediapipe/tasks-vision@0.10.10-rc.20240214</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240213">@mediapipe/tasks-vision@0.10.10-rc.20240213</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240212">@mediapipe/tasks-vision@0.10.10-rc.20240212</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240211">@mediapipe/tasks-vision@0.10.10-rc.20240211</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240210">@mediapipe/tasks-vision@0.10.10-rc.20240210</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240209">@mediapipe/tasks-vision@0.10.10-rc.20240209</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240208">@mediapipe/tasks-vision@0.10.10-rc.20240208</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240207">@mediapipe/tasks-vision@0.10.10-rc.20240207</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240206">@mediapipe/tasks-vision@0.10.10-rc.20240206</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240205">@mediapipe/tasks-vision@0.10.10-rc.20240205</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240204">@mediapipe/tasks-vision@0.10.10-rc.20240204</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240203">@mediapipe/tasks-vision@0.10.10-rc.20240203</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240202">@mediapipe/tasks-vision@0.10.10-rc.20240202</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240201">@mediapipe/tasks-vision@0.10.10-rc.20240201</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240131">@mediapipe/tasks-vision@0.10.10-rc.20240131</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240130">@mediapipe/tasks-vision@0.10.10-rc.20240130</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240129">@mediapipe/tasks-vision@0.10.10-rc.20240129</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240128">@mediapipe/tasks-vision@0.10.10-rc.20240128</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240127">@mediapipe/tasks-vision@0.10.10-rc.20240127</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240126">@mediapipe/tasks-vision@0.10.10-rc.20240126</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240125">@mediapipe/tasks-vision@0.10.10-rc.20240125</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240124">@mediapipe/tasks-vision@0.10.10-rc.20240124</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240123">@mediapipe/tasks-vision@0.10.10-rc.20240123</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240122">@mediapipe/tasks-vision@0.10.10-rc.20240122</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240121">@mediapipe/tasks-vision@0.10.10-rc.20240121</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240120">@mediapipe/tasks-vision@0.10.10-rc.20240120</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240119">@mediapipe/tasks-vision@0.10.10-rc.20240119</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240118">@mediapipe/tasks-vision@0.10.10-rc.20240118</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240117">@mediapipe/tasks-vision@0.10.10-rc.20240117</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240116">@mediapipe/tasks-vision@0.10.10-rc.20240116</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240115">@mediapipe/tasks-vision@0.10.10-rc.20240115</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240114">@mediapipe/tasks-vision@0.10.10-rc.20240114</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20240113">@mediapipe/tasks-vision@0.10.10-rc.20240113</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20231218">@mediapipe/tasks-vision@0.10.10-rc.20231218</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20231217">@mediapipe/tasks-vision@0.10.10-rc.20231217</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20231216">@mediapipe/tasks-vision@0.10.10-rc.20231216</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20231215">@mediapipe/tasks-vision@0.10.10-rc.20231215</option>
+					<option value="@mediapipe/tasks-vision@0.10.10-rc.20231214">@mediapipe/tasks-vision@0.10.10-rc.20231214</option>
+					<option value="@mediapipe/tasks-vision@0.10.9">@mediapipe/tasks-vision@0.10.9</option>
+					<option value="@mediapipe/tasks-vision@0.10.9-rc.20231213">@mediapipe/tasks-vision@0.10.9-rc.20231213</option>
+					<option value="@mediapipe/tasks-vision@0.10.9-rc.20231212">@mediapipe/tasks-vision@0.10.9-rc.20231212</option>
+					<option value="@mediapipe/tasks-vision@0.10.9-rc.20231211">@mediapipe/tasks-vision@0.10.9-rc.20231211</option>
+					<option value="@mediapipe/tasks-vision@0.10.9-rc.20231210">@mediapipe/tasks-vision@0.10.9-rc.20231210</option>
+					<option value="@mediapipe/tasks-vision@0.10.9-rc.20231209">@mediapipe/tasks-vision@0.10.9-rc.20231209</option>
+					<option value="@mediapipe/tasks-vision@0.10.9-rc.20231208">@mediapipe/tasks-vision@0.10.9-rc.20231208</option>
+					<option value="@mediapipe/tasks-vision@0.10.8">@mediapipe/tasks-vision@0.10.8</option>
+					<option value="@mediapipe/tasks-vision@0.10.7">@mediapipe/tasks-vision@0.10.7</option>
+					<option value="@mediapipe/tasks-vision@0.10.6">@mediapipe/tasks-vision@0.10.6</option>
+					<option value="@mediapipe/tasks-vision@0.10.5">@mediapipe/tasks-vision@0.10.5</option>
+					<option value="@mediapipe/tasks-vision@0.10.4">@mediapipe/tasks-vision@0.10.4</option>
+					<option value="@mediapipe/tasks-vision@0.10.3">@mediapipe/tasks-vision@0.10.3</option>
+					<option value="@mediapipe/tasks-vision@0.10.2">@mediapipe/tasks-vision@0.10.2</option>
+					<option value="@mediapipe/tasks-vision@0.10.2-rc2">@mediapipe/tasks-vision@0.10.2-rc2</option>
+					<option value="@mediapipe/tasks-vision@0.10.2-rc1">@mediapipe/tasks-vision@0.10.2-rc1</option>
+					<option value="@mediapipe/tasks-vision@0.10.1">@mediapipe/tasks-vision@0.10.1</option>
+					<option value="@mediapipe/tasks-vision@0.10.0">@mediapipe/tasks-vision@0.10.0</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-9">@mediapipe/tasks-vision@0.1.0-alpha-9</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-8">@mediapipe/tasks-vision@0.1.0-alpha-8</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-7">@mediapipe/tasks-vision@0.1.0-alpha-7</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-6">@mediapipe/tasks-vision@0.1.0-alpha-6</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-5">@mediapipe/tasks-vision@0.1.0-alpha-5</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-4">@mediapipe/tasks-vision@0.1.0-alpha-4</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-3">@mediapipe/tasks-vision@0.1.0-alpha-3</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-2">@mediapipe/tasks-vision@0.1.0-alpha-2</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-17">@mediapipe/tasks-vision@0.1.0-alpha-17</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1670012900">@mediapipe/tasks-vision@0.1.0-alpha-1670012900</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1669754728">@mediapipe/tasks-vision@0.1.0-alpha-1669754728</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1668661712-patch-1">@mediapipe/tasks-vision@0.1.0-alpha-1668661712-patch-1</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1668661712">@mediapipe/tasks-vision@0.1.0-alpha-1668661712</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1668655831">@mediapipe/tasks-vision@0.1.0-alpha-1668655831</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1668548454">@mediapipe/tasks-vision@0.1.0-alpha-1668548454</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1668548453">@mediapipe/tasks-vision@0.1.0-alpha-1668548453</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1668548452">@mediapipe/tasks-vision@0.1.0-alpha-1668548452</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1668548451">@mediapipe/tasks-vision@0.1.0-alpha-1668548451</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1668548449">@mediapipe/tasks-vision@0.1.0-alpha-1668548449</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1668548448">@mediapipe/tasks-vision@0.1.0-alpha-1668548448</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1668420868">@mediapipe/tasks-vision@0.1.0-alpha-1668420868</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1668420867">@mediapipe/tasks-vision@0.1.0-alpha-1668420867</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-16">@mediapipe/tasks-vision@0.1.0-alpha-16</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-15">@mediapipe/tasks-vision@0.1.0-alpha-15</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-14">@mediapipe/tasks-vision@0.1.0-alpha-14</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-13">@mediapipe/tasks-vision@0.1.0-alpha-13</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-12">@mediapipe/tasks-vision@0.1.0-alpha-12</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-11">@mediapipe/tasks-vision@0.1.0-alpha-11</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-10">@mediapipe/tasks-vision@0.1.0-alpha-10</option>
+					<option value="@mediapipe/tasks-vision@0.1.0-alpha-1">@mediapipe/tasks-vision@0.1.0-alpha-1</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231128">@mediapipe/tasks-vision@0.0.0-nightly-20231128</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231127">@mediapipe/tasks-vision@0.0.0-nightly-20231127</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231126">@mediapipe/tasks-vision@0.0.0-nightly-20231126</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231125">@mediapipe/tasks-vision@0.0.0-nightly-20231125</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231124">@mediapipe/tasks-vision@0.0.0-nightly-20231124</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231123">@mediapipe/tasks-vision@0.0.0-nightly-20231123</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231122">@mediapipe/tasks-vision@0.0.0-nightly-20231122</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231121">@mediapipe/tasks-vision@0.0.0-nightly-20231121</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231120">@mediapipe/tasks-vision@0.0.0-nightly-20231120</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231119">@mediapipe/tasks-vision@0.0.0-nightly-20231119</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231118">@mediapipe/tasks-vision@0.0.0-nightly-20231118</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231117">@mediapipe/tasks-vision@0.0.0-nightly-20231117</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231116">@mediapipe/tasks-vision@0.0.0-nightly-20231116</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231115">@mediapipe/tasks-vision@0.0.0-nightly-20231115</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231114">@mediapipe/tasks-vision@0.0.0-nightly-20231114</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231113">@mediapipe/tasks-vision@0.0.0-nightly-20231113</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231112">@mediapipe/tasks-vision@0.0.0-nightly-20231112</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231111">@mediapipe/tasks-vision@0.0.0-nightly-20231111</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231110">@mediapipe/tasks-vision@0.0.0-nightly-20231110</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231109">@mediapipe/tasks-vision@0.0.0-nightly-20231109</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231108">@mediapipe/tasks-vision@0.0.0-nightly-20231108</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231107">@mediapipe/tasks-vision@0.0.0-nightly-20231107</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231106">@mediapipe/tasks-vision@0.0.0-nightly-20231106</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231105">@mediapipe/tasks-vision@0.0.0-nightly-20231105</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231104">@mediapipe/tasks-vision@0.0.0-nightly-20231104</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231103">@mediapipe/tasks-vision@0.0.0-nightly-20231103</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231102">@mediapipe/tasks-vision@0.0.0-nightly-20231102</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231101">@mediapipe/tasks-vision@0.0.0-nightly-20231101</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231031">@mediapipe/tasks-vision@0.0.0-nightly-20231031</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231030">@mediapipe/tasks-vision@0.0.0-nightly-20231030</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231029">@mediapipe/tasks-vision@0.0.0-nightly-20231029</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231028">@mediapipe/tasks-vision@0.0.0-nightly-20231028</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231027">@mediapipe/tasks-vision@0.0.0-nightly-20231027</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231026">@mediapipe/tasks-vision@0.0.0-nightly-20231026</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231025">@mediapipe/tasks-vision@0.0.0-nightly-20231025</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231024">@mediapipe/tasks-vision@0.0.0-nightly-20231024</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231023">@mediapipe/tasks-vision@0.0.0-nightly-20231023</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231022">@mediapipe/tasks-vision@0.0.0-nightly-20231022</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231021">@mediapipe/tasks-vision@0.0.0-nightly-20231021</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231020">@mediapipe/tasks-vision@0.0.0-nightly-20231020</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231019">@mediapipe/tasks-vision@0.0.0-nightly-20231019</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231018">@mediapipe/tasks-vision@0.0.0-nightly-20231018</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231017">@mediapipe/tasks-vision@0.0.0-nightly-20231017</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231016">@mediapipe/tasks-vision@0.0.0-nightly-20231016</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231015">@mediapipe/tasks-vision@0.0.0-nightly-20231015</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231014">@mediapipe/tasks-vision@0.0.0-nightly-20231014</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231013">@mediapipe/tasks-vision@0.0.0-nightly-20231013</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231012">@mediapipe/tasks-vision@0.0.0-nightly-20231012</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231011">@mediapipe/tasks-vision@0.0.0-nightly-20231011</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231010">@mediapipe/tasks-vision@0.0.0-nightly-20231010</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231009">@mediapipe/tasks-vision@0.0.0-nightly-20231009</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231008">@mediapipe/tasks-vision@0.0.0-nightly-20231008</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231007">@mediapipe/tasks-vision@0.0.0-nightly-20231007</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231006">@mediapipe/tasks-vision@0.0.0-nightly-20231006</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231004">@mediapipe/tasks-vision@0.0.0-nightly-20231004</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231003">@mediapipe/tasks-vision@0.0.0-nightly-20231003</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231002">@mediapipe/tasks-vision@0.0.0-nightly-20231002</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20231001">@mediapipe/tasks-vision@0.0.0-nightly-20231001</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20230930">@mediapipe/tasks-vision@0.0.0-nightly-20230930</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20230929">@mediapipe/tasks-vision@0.0.0-nightly-20230929</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20230928">@mediapipe/tasks-vision@0.0.0-nightly-20230928</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20230927">@mediapipe/tasks-vision@0.0.0-nightly-20230927</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20230926">@mediapipe/tasks-vision@0.0.0-nightly-20230926</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20230925">@mediapipe/tasks-vision@0.0.0-nightly-20230925</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20230924">@mediapipe/tasks-vision@0.0.0-nightly-20230924</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20230923">@mediapipe/tasks-vision@0.0.0-nightly-20230923</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20230922">@mediapipe/tasks-vision@0.0.0-nightly-20230922</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20230921">@mediapipe/tasks-vision@0.0.0-nightly-20230921</option>
+					<option value="@mediapipe/tasks-vision@0.0.0-nightly-20230920">@mediapipe/tasks-vision@0.0.0-nightly-20230920</option>
+				</select>
+			</div>
+
+			<div class="listing">
+				<table>
+					<tbody>
+					<tr>
+						<td class="name level-up" colspan="2"><a href="../">...</a></td>
+					</tr>
+
+					<tr>
+						<td class="name">
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4C4 2.89543 4.89543 2 6 2H11L16 7V16C16 17.1046 15.1046 18 14 18H6C4.89543 18 4 17.1046 4 16V4Z" stroke="#5C667A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+							<a rel="nofollow" href="/npm/@mediapipe/tasks-vision@0.10.0/wasm/vision_wasm_internal.js">vision_wasm_internal.js</a>
+						</td>
+						<td class="size">243.22 KB</td>
+					</tr>
+					<tr>
+						<td class="name">
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4C4 2.89543 4.89543 2 6 2H11L16 7V16C16 17.1046 15.1046 18 14 18H6C4.89543 18 4 17.1046 4 16V4Z" stroke="#5C667A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+							<a rel="nofollow" href="/npm/@mediapipe/tasks-vision@0.10.0/wasm/vision_wasm_internal.wasm">vision_wasm_internal.wasm</a>
+						</td>
+						<td class="size">8.65 MB</td>
+					</tr>
+					<tr>
+						<td class="name">
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4C4 2.89543 4.89543 2 6 2H11L16 7V16C16 17.1046 15.1046 18 14 18H6C4.89543 18 4 17.1046 4 16V4Z" stroke="#5C667A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+							<a rel="nofollow" href="/npm/@mediapipe/tasks-vision@0.10.0/wasm/vision_wasm_nosimd_internal.js">vision_wasm_nosimd_internal.js</a>
+						</td>
+						<td class="size">242.99 KB</td>
+					</tr>
+					<tr>
+						<td class="name">
+							<svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 4C4 2.89543 4.89543 2 6 2H11L16 7V16C16 17.1046 15.1046 18 14 18H6C4.89543 18 4 17.1046 4 16V4Z" stroke="#5C667A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+							<a rel="nofollow" href="/npm/@mediapipe/tasks-vision@0.10.0/wasm/vision_wasm_nosimd_internal.wasm">vision_wasm_nosimd_internal.wasm</a>
+						</td>
+						<td class="size">7.76 MB</td>
+					</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<div class="landing">
+				<p class="left">Free Open Source CDN for <strong>@mediapipe/tasks-vision</strong></p>
+
+				<p class="right">
+					Looking for a nice landing page for your package?
+					<a href="https://www.jsdelivr.com/package/npm/@mediapipe/tasks-vision">https://www.jsdelivr.com/package/npm/@mediapipe/tasks-vision</a>
+				</p>
+			</div>
+		</div>
+
+		<footer>
+			<div class="footer-left">
+				<svg class="logo" viewBox="0 0 140 34" xmlns="http://www.w3.org/2000/svg">
+					<g fill="#1e3b45">
+						<path
+							d="m43.616 19.576c0 4.005-1.389 6.008-4.168 6.008-.432 0-.853-.059-1.261-.174v-1.112c.455.154.883.232 1.285.232 1.065 0 1.833-.404 2.304-1.209.471-.807.706-2.063.706-3.769v-10.859h1.134z"/>
+						<path
+							d="m47.065 24.705v-1.309c1.188.756 2.393 1.135 3.612 1.135 1.296 0 2.28-.268 2.952-.805.671-.537 1.007-1.288 1.007-2.251 0-.85-.226-1.528-.678-2.032-.451-.506-1.429-1.194-2.935-2.067-1.682-.979-2.747-1.799-3.195-2.46-.447-.66-.671-1.422-.671-2.286 0-1.172.455-2.169 1.366-2.988.911-.817 2.126-1.227 3.647-1.227.988 0 1.975.166 2.963.498v1.204c-.972-.44-2.011-.66-3.113-.66-1.127 0-2.02.287-2.681.858-.659.571-.99 1.297-.99 2.177 0 .848.226 1.524.677 2.026.452.5 1.426 1.184 2.923 2.048 1.551.881 2.584 1.663 3.097 2.345.514.684.77 1.469.77 2.356 0 1.274-.442 2.311-1.325 3.114-.884.803-2.133 1.204-3.746 1.204-.572 0-1.229-.09-1.973-.266-.745-.178-1.313-.383-1.707-.614z"/>
+						<path
+							d="m59.104 25.295v-16.602h5.881c5.895 0 8.844 2.698 8.844 8.093 0 2.585-.805 4.65-2.413 6.194-1.61 1.543-3.753 2.315-6.431 2.315zm3.74-13.556v10.522h1.852c1.621 0 2.892-.485 3.814-1.458s1.383-2.296 1.383-3.97c0-1.583-.457-2.827-1.372-3.734-.914-.907-2.199-1.36-3.85-1.36z"/>
+						<path
+							d="m86.841 25.295h-9.957v-16.602h9.574v3.046h-5.834v3.693h5.43v3.032h-5.43v3.796h6.217z"/>
+						<path d="m99.893 25.295h-9.887v-16.602h3.74v13.568h6.147z"/>
+						<path d="m105.989 8.693v16.602h-3.74v-16.602z"/>
+						<path
+							d="m123.834 8.693-5.719 16.602h-4.236l-5.651-16.602h4.029l3.462 11.553c.186.625.297 1.178.336 1.657h.068c.055-.518.174-1.084.36-1.702l3.439-11.508z"/>
+						<path
+							d="m140 25.295h-4.295l-2.581-4.273c-.193-.322-.379-.613-.555-.868-.178-.254-.358-.473-.539-.654-.182-.18-.369-.321-.567-.416-.197-.096-.41-.145-.643-.145h-1.006v6.356h-3.74v-16.602h5.926c4.029 0 6.043 1.506 6.043 4.515 0 .578-.088 1.114-.266 1.604s-.428.932-.752 1.325c-.324.395-.717.733-1.176 1.02-.459.285-.969.508-1.534.67v.047c.248.076.486.203.719.375.231.174.455.377.67.61.217.231.424.479.619.746.197.266.377.526.539.782zm-10.185-13.8v4.619h1.62c.803 0 1.448-.231 1.932-.694.494-.471.742-1.053.742-1.749 0-1.45-.87-2.177-2.605-2.177h-1.689z"/>
+					</g>
+					<path d="m15.386.338-3.106 11.038v.104 11.039l3.106 11.143 3.194-11.143v-11.039-.104z"
+						  fill="#bd483b"/>
+					<path d="m15.386.338-15.386 5.542 2.186 20.492 13.2 7.29" fill="#e64e3d"/>
+					<path d="m15.386 33.662 13.268-7.365 2.483-20.49-15.751-5.469" fill="#bd483b"/>
+					<path
+						d="m12.594 25.088c-1.514-.473-2.864-1.317-3.94-2.431l-.003-.002c-.131-.137-.257-.274-.381-.418-.838-.979-1.478-2.13-1.857-3.396.251.233.518.447.796.647.003.008.008.016.011.027-.003-.012-.008-.02-.011-.027.398.279.822.526 1.269.737.141.064.282.125.427.186.177.07.36.135.542.195.011.006.024.006.035.01.032.012.065.023.097.033.074.756.649 1.372 1.39 1.504.287 1.157.833 2.146 1.625 2.935z"
+						fill="#fec82f"/>
+					<path
+						d="m13.174 11.794c0 .324.088.627.243.883-1.25 1.753-2.108 3.656-2.479 5.539-.041.209-.077.416-.105.619-.429.113-.79.393-1.016.762-.013 0-.024-.004-.035-.01-.023-.006-.04-.014-.061-.021-.142-.045-.281-.098-.417-.152-.204-.08-.403-.174-.598-.272-.663-.338-1.26-.772-1.781-1.291-.11-.111-.213-.219-.311-.332l-.041-.049c-.038-.045-.078-.092-.115-.137-.017-.021-.032-.039-.047-.059-.014-.018-.024-.031-.037-.045-.005-.01-.013-.016-.017-.023-.02-.022-.037-.047-.053-.068-.008-.012-.017-.022-.023-.029-.001-.004-.002-.004-.004-.008-.013-.014-.024-.033-.037-.049-.055-.072-.107-.149-.157-.225-.009-.012-.019-.024-.025-.039-.006-.006-.015-.018-.02-.027-.014-.203-.02-.408-.02-.617 0-1.882.557-3.636 1.512-5.105.113-.176.235-.348.361-.514.12-.16.245-.319.374-.467 1.126-1.317 2.61-2.315 4.299-2.847.026.182.059.367.095.553.192.967.513 1.942.949 2.898-.271.3-.434.698-.434 1.132z"
+						fill="#fec82f"/>
+					<path
+						d="m12.176 20.479c0 .221-.079.424-.212.58-.029.037-.061.068-.096.1-.161.141-.368.225-.596.225-.173 0-.335-.049-.472-.135-.147-.09-.265-.219-.342-.375-.058-.121-.089-.252-.089-.395 0-.26.11-.494.286-.658.029-.027.06-.051.091-.074.148-.107.331-.17.526-.17.206 0 .395.068.546.186.085.063.155.139.213.229.094.137.145.307.145.487z"
+						fill="#fec82f"/>
+					<path
+						d="m15.777 11.794c0 .147-.032.281-.094.403-.148.299-.456.502-.808.502-.044 0-.087-.002-.128-.006-.008-.004-.016-.004-.025-.006-.383-.066-.684-.369-.741-.756-.007-.043-.01-.09-.01-.137 0-.102.017-.201.05-.295.123-.354.46-.606.854-.606h.002.036c.392.018.72.285.827.645.025.082.037.168.037.256z"
+						fill="#fec82f"/>
+					<path
+						d="m24.752 16.143c0 .907-.129 1.782-.368 2.61-.799-.211-1.606-.52-2.4-.914.022-.109.033-.221.033-.336 0-.225-.044-.442-.125-.639.031-.029.064-.061.095-.094.957-.977 1.763-2.055 2.404-3.212.234.821.361 1.69.361 2.585z"
+						fill="#df9c26"/>
+					<path
+						d="m23.881 12.196c-.063.139-.131.277-.201.416-.627 1.235-1.455 2.382-2.459 3.407-.009.01-.02.02-.028.027-.255-.156-.557-.244-.879-.244-.375 0-.722.123-1.004.328-.514-.404-1.011-.848-1.49-1.327-.608-.604-1.157-1.247-1.647-1.909.252-.297.405-.68.405-1.102 0-.313-.087-.61-.237-.862 1.21-1.163 2.547-2.106 3.917-2.788 1.572.961 2.841 2.372 3.623 4.054z"
+						fill="#df9c26"/>
+					<path
+						d="m21.217 17.503c0 .379-.23.701-.556.836-.108.045-.225.07-.348.07-.063 0-.125-.008-.185-.02-.385-.082-.681-.408-.715-.805.011-.01.021-.016.028-.022-.01-.008-.021-.014-.03-.023-.001-.012-.001-.022-.001-.037 0-.389.25-.723.601-.85.095-.033.196-.053.302-.053.09 0 .179.014.262.039.346.105.606.412.64.785.002.027.002.055.002.08z"
+						fill="#df9c26"/>
+					<path
+						d="m21.452 18.767c-.301.274-.7.44-1.139.44-.351 0-.677-.107-.949-.289-.039.025-.078.051-.115.072-1.233.781-2.538 1.352-3.864 1.698v4.824c3.887 0 7.222-2.37 8.64-5.744-.859-.237-1.723-.573-2.573-1.001z"
+						fill="#df9c26"/>
+					<path
+						d="m15.386 20.688c-.793.205-1.591.33-2.385.367-.042.002-.086.006-.128.008-.151.41-.454.744-.839.94.245.909.688 1.698 1.319 2.327.524.524 1.162.92 1.891 1.18.046 0 .093.002.142.002z"
+						fill="#fec82f"/>
+					<path
+						d="m18.612 17.503c0-.172.026-.34.074-.498-.562-.44-1.106-.92-1.625-1.442-.614-.614-1.172-1.262-1.675-1.934v5.946c1.124-.324 2.235-.823 3.291-1.489.009-.006.02-.014.03-.022-.061-.174-.095-.364-.095-.561z"
+						fill="#df9c26"/>
+					<path
+						d="m15.386 13.629c-.045-.059-.091-.113-.132-.174-.123.029-.249.043-.378.043-.227 0-.441-.045-.637-.123-1.134 1.606-1.912 3.341-2.25 5.049-.032.162-.059.32-.083.475.477.195.848.596.996 1.092.016-.004.029-.004.046-.004.809-.039 1.627-.18 2.438-.412z"
+						fill="#fec82f"/>
+					<path
+						d="m15.386 6.778v3.394c.048.016.098.033.145.055 1.106-1.073 2.316-1.979 3.573-2.681-1.14-.496-2.399-.768-3.718-.768z"
+						fill="#df9c26"/>
+					<path
+						d="m15.386 6.778c-.608 0-1.201.055-1.773.168.025.197.06.404.101.606.168.86.449 1.725.829 2.575.106-.02.219-.033.333-.033.178 0 .347.027.51.078z"
+						fill="#fec82f"/>
+				</svg>
+
+				<p class="copyright">&copy; jsdelivr.com, 2012 - 2026</p>
+			</div>
+
+			<div class="footer-right">
+				<a href="https://github.com/jsdelivr/jsdelivr">
+					<span class="gh-icon">
+						<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="12" height="12" viewBox="0 0 16 16" xml:space="preserve">
+						<path id="XMLID_1_" fill="#ff5627" d="M8,0.2c-4.4,0-8,3.6-8,8c0,3.5,2.3,6.5,5.5,7.6C5.9,15.9,6,15.6,6,15.4c0-0.2,0-0.7,0-1.4
+							C3.8,14.5,3.3,13,3.3,13c-0.4-0.9-0.9-1.2-0.9-1.2c-0.7-0.5,0.1-0.5,0.1-0.5c0.8,0.1,1.2,0.8,1.2,0.8C4.4,13.4,5.6,13,6,12.8
+							c0.1-0.5,0.3-0.9,0.5-1.1c-1.8-0.2-3.6-0.9-3.6-4c0-0.9,0.3-1.6,0.8-2.1c-0.1-0.2-0.4-1,0.1-2.1c0,0,0.7-0.2,2.2,0.8
+							c0.6-0.2,1.3-0.3,2-0.3c0.7,0,1.4,0.1,2,0.3c1.5-1,2.2-0.8,2.2-0.8c0.4,1.1,0.2,1.9,0.1,2.1c0.5,0.6,0.8,1.3,0.8,2.1
+							c0,3.1-1.9,3.7-3.7,3.9C9.7,12,10,12.5,10,13.2c0,1.1,0,1.9,0,2.2c0,0.2,0.1,0.5,0.6,0.4c3.2-1.1,5.5-4.1,5.5-7.6
+							C16,3.8,12.4,0.2,8,0.2z"/>
+						</svg>
+					</span>
+					Documentation
+				</a>
+
+				<a href="https://www.jsdelivr.com/features">Learn more about jsDelivr</a>
+			</div>
+		</footer>
+
+		<script>
+			var versions = document.querySelector('.versions');
+
+			[].slice.call(versions.querySelectorAll('option')).forEach(function(option) {
+				if (option.value === '@mediapipe/tasks-vision@0.10.0') {
+					option.selected = true;
+				}
+			});
+
+			versions.addEventListener('change', function() {
+				location.pathname = '/npm/' + this.value + '/wasm/';
+			});
+		</script>
+	</body>
+</html>

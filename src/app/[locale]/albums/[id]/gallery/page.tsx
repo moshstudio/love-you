@@ -102,7 +102,7 @@ export default function AlbumGalleryPage() {
   }
 
   return (
-    <div className='relative min-h-screen bg-black text-rose-100 font-sans overflow-hidden selection:bg-rose-500/30 safe-area-inset-top safe-area-inset-bottom'>
+    <div className='relative h-screen bg-black text-rose-100 font-sans overflow-hidden selection:bg-rose-500/30 safe-area-inset-top safe-area-inset-bottom'>
       <ParticleBackground />
 
       {/* Header - Hidden in Immersive Mode if playing, or maybe just hidden in Immersive Mode? 
@@ -175,7 +175,7 @@ export default function AlbumGalleryPage() {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className='relative z-10 w-full h-full min-h-screen'>
+      <main className='relative z-10 w-full h-full'>
         <div className='relative w-full h-full'>
           <div
             key='grid-wrapper'
@@ -187,6 +187,7 @@ export default function AlbumGalleryPage() {
               width: "100%",
               height: "100%",
               zIndex: 10,
+              overflowY: "auto",
             }}
           >
             <GalleryGrid
