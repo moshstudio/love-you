@@ -45,11 +45,19 @@ export const GestureHandler = ({
   const requestRef = useRef<number | null>(null);
   const lastVideoTimeRef = useRef<number>(-1);
 
+  // 使用 ref 保存 enabled 状态，确保 predictWebcam 能访问最新值
+  const enabledRef = useRef(enabled);
+  const predictionStartedRef = useRef(false);
+
   // Keep latest callbacks in refs to avoid stale closures in the animation loop
   const onNavigateRef = useRef(onNavigate);
   const setFocusedIndexRef = useRef(setFocusedIndex);
   const setIsScatteredRef = useRef(setIsScattered);
   const onPalmDragRef = useRef(onPalmDrag);
+
+  useEffect(() => {
+    enabledRef.current = enabled;
+  }, [enabled]);
 
   useEffect(() => {
     onNavigateRef.current = onNavigate;
@@ -144,6 +152,9 @@ export const GestureHandler = ({
 
   // Camera stream
   useEffect(() => {
+    // 重置预测启动状态
+    predictionStartedRef.current = false;
+
     if (!enabled || !isLoaded) {
       if (videoRef.current && videoRef.current.srcObject) {
         const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
@@ -164,6 +175,46 @@ export const GestureHandler = ({
       return;
     }
 
+    let isCancelled = false;
+    let pollingTimeoutRef: any = null;
+
+    const tryStartPrediction = () => {
+      if (isCancelled || predictionStartedRef.current) return;
+
+      const video = videoRef.current;
+      if (!video) return;
+
+      // 检查视频是否真正准备好
+      if (
+        video.readyState >= 2 &&
+        video.videoWidth > 0 &&
+        video.videoHeight > 0
+      ) {
+        console.log(
+          "[Gesture] Video ready, starting prediction loop. readyState:",
+          video.readyState,
+          "size:",
+          video.videoWidth,
+          "x",
+          video.videoHeight,
+        );
+        predictionStartedRef.current = true;
+        predictWebcam();
+      } else {
+        console.log(
+          "[Gesture] Video not ready yet. readyState:",
+          video.readyState,
+          "size:",
+          video.videoWidth || 0,
+          "x",
+          video.videoHeight || 0,
+        );
+        // 100ms 后重试
+        if (pollingTimeoutRef) clearTimeout(pollingTimeoutRef);
+        pollingTimeoutRef = setTimeout(tryStartPrediction, 100);
+      }
+    };
+
     const startCamera = async () => {
       try {
         setError(null);
@@ -174,6 +225,7 @@ export const GestureHandler = ({
           return;
         }
 
+        console.log("[Gesture] Requesting camera access...");
         const stream = await navigator.mediaDevices.getUserMedia({
           video: {
             width: { ideal: 640 },
@@ -183,21 +235,42 @@ export const GestureHandler = ({
         });
         console.log("[Gesture] Camera stream obtained successfully");
 
+        if (isCancelled) {
+          // 如果在等待期间被取消，停止流
+          stream.getTracks().forEach((t) => t.stop());
+          return;
+        }
+
         if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.onloadedmetadata = () => {
-            console.log("[Gesture] Video metadata loaded, starting playback");
-            videoRef.current
-              ?.play()
-              .then(() => console.log("[Gesture] Video playback started"))
-              .catch((e) => console.error("[Gesture] Video play error:", e));
+          const video = videoRef.current;
+          video.srcObject = stream;
+
+          // 使用多种事件来确保捕获视频就绪
+          const handleVideoReady = () => {
+            console.log("[Gesture] Video ready event fired");
+            tryStartPrediction();
           };
-          videoRef.current.addEventListener("loadeddata", () => {
-            console.log(
-              "[Gesture] Video data loaded, starting prediction loop",
-            );
-            predictWebcam();
-          });
+
+          video.onloadedmetadata = () => {
+            console.log("[Gesture] Video metadata loaded, starting playback");
+            video
+              .play()
+              .then(() => {
+                console.log("[Gesture] Video playback started");
+                // 延迟一点再尝试启动预测，让视频完全准备好
+                setTimeout(tryStartPrediction, 100);
+              })
+              .catch((e) => {
+                console.error("[Gesture] Video play error:", e);
+                // 某些移动浏览器需要用户交互才能播放
+                if (onError) onError("Tap screen to enable camera");
+              });
+          };
+
+          // 添加多个备用事件
+          video.oncanplay = handleVideoReady;
+          video.onloadeddata = handleVideoReady;
+          video.onplaying = handleVideoReady;
         }
       } catch (err: any) {
         console.error("[Gesture] Error accessing webcam:", err);
@@ -215,9 +288,17 @@ export const GestureHandler = ({
     startCamera();
 
     return () => {
+      isCancelled = true;
+      if (pollingTimeoutRef) clearTimeout(pollingTimeoutRef);
+      predictionStartedRef.current = false;
+      if (requestRef.current) {
+        cancelAnimationFrame(requestRef.current);
+        requestRef.current = null;
+      }
       if (videoRef.current && videoRef.current.srcObject) {
         const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
         tracks.forEach((track) => track.stop());
+        videoRef.current.srcObject = null;
       }
     };
   }, [enabled, isLoaded]);
@@ -228,8 +309,28 @@ export const GestureHandler = ({
   const frameCount = useRef<number>(0);
 
   const predictWebcam = async () => {
-    if (!handLandmarkerRef.current || !videoRef.current || !canvasRef.current) {
-      console.log("[Gesture] Missing refs, skipping frame");
+    const now = performance.now();
+    frameCount.current++;
+    // 每 60 帧输出一次调试信息
+    const shouldLog = frameCount.current % 60 === 0;
+
+    if (
+      !handLandmarkerRef.current ||
+      !videoRef.current ||
+      !canvasRef.current ||
+      !enabledRef.current
+    ) {
+      if (shouldLog) {
+        console.log(
+          "[Gesture] Stopping prediction loop. Refs:",
+          !!handLandmarkerRef.current,
+          !!videoRef.current,
+          !!canvasRef.current,
+          "Enabled:",
+          enabledRef.current,
+        );
+      }
+      predictionStartedRef.current = false;
       return;
     }
 
@@ -239,8 +340,10 @@ export const GestureHandler = ({
       !videoRef.current.videoHeight
     ) {
       // 视频尚未准备好，继续等待
-      if (enabled) {
+      if (enabledRef.current) {
         requestRef.current = requestAnimationFrame(predictWebcam);
+      } else {
+        predictionStartedRef.current = false;
       }
       return;
     }
@@ -256,20 +359,16 @@ export const GestureHandler = ({
       );
     }
 
-    const now = performance.now();
-
     // 帧率限制：避免过于频繁地检测
     if (now - lastDetectionTime.current < minDetectionInterval) {
-      if (enabled) {
+      if (enabledRef.current) {
         requestRef.current = requestAnimationFrame(predictWebcam);
+      } else {
+        predictionStartedRef.current = false;
       }
       return;
     }
     lastDetectionTime.current = now;
-    frameCount.current++;
-
-    // 每 60 帧输出一次调试信息
-    const shouldLog = frameCount.current % 60 === 0;
 
     let results;
     try {
@@ -285,8 +384,10 @@ export const GestureHandler = ({
       }
     } catch (detectError) {
       console.error("[Gesture] Detection error:", detectError);
-      if (enabled) {
+      if (enabledRef.current) {
         requestRef.current = requestAnimationFrame(predictWebcam);
+      } else {
+        predictionStartedRef.current = false;
       }
       return;
     }
@@ -335,8 +436,10 @@ export const GestureHandler = ({
       canvasCtx.restore();
     }
 
-    if (enabled) {
+    if (enabledRef.current) {
       requestRef.current = requestAnimationFrame(predictWebcam);
+    } else {
+      predictionStartedRef.current = false;
     }
   };
 
