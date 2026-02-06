@@ -51,6 +51,14 @@ export default async function LocaleLayout({
           href='/favicon.svg'
           type='image/svg+xml'
         ></link>
+        <link
+          rel='apple-touch-icon'
+          href='/favicon.svg'
+        ></link>
+        <link
+          rel='manifest'
+          href='/site.webmanifest'
+        ></link>
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen relative flex flex-col`}

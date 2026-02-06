@@ -1,0 +1,21 @@
+{
+  "name": "Love You",
+  "short_name": "LoveYou",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "theme_color": "#FF4D94",
+  "background_color": "#ffffff",
+  "display": "standalone"
+}
