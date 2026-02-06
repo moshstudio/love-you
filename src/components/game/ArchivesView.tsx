@@ -23,6 +23,7 @@ import {
 import { albumsApi, photosApi, storiesApi, shareApi } from "@/lib/api";
 import { useRouter, Link } from "@/i18n/routing";
 import { compressImage } from "@/lib/imageCompression";
+import { LoadingOverlay } from "@/components/game/LoadingOverlay";
 
 interface Photo {
   id: string;
@@ -62,6 +63,7 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
   const [album, setAlbum] = useState<Album | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<"photos" | "stories">("photos");
+  const [isOpeningGallery, setIsOpeningGallery] = useState(false);
 
   const [showDeleteAlbumConfirm, setShowDeleteAlbumConfirm] = useState(false);
   const [isDeletingAlbum, setIsDeletingAlbum] = useState(false);
@@ -229,6 +231,13 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
 
   return (
     <div className='w-full max-w-7xl mx-auto p-3 sm:p-4 z-20 h-full flex flex-col'>
+      <AnimatePresence>
+        {isOpeningGallery &&
+          createPortal(
+            <LoadingOverlay message={t("openingVault")} />,
+            document.body,
+          )}
+      </AnimatePresence>
       {/* Header */}
       <div className='flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 border-b border-rose-100/50 pb-4 sm:pb-6 shrink-0 gap-4'>
         <div>
@@ -248,8 +257,12 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
         </div>
         <div className='flex items-center gap-2 sm:gap-3 flex-wrap'>
           <button
-            onClick={() => router.push(`/albums/${albumId}/gallery`)}
-            className='flex items-center justify-center p-2 sm:p-3 bg-rose-50 text-rose-400 hover:bg-rose-100 rounded-full transition-all touch-target'
+            onClick={() => {
+              setIsOpeningGallery(true);
+              router.push(`/albums/${albumId}/gallery`);
+            }}
+            disabled={isOpeningGallery}
+            className='flex items-center justify-center p-2 sm:p-3 bg-rose-50 text-rose-400 hover:bg-rose-100 rounded-full transition-all touch-target disabled:opacity-50'
             title={detailT("viewGallery")}
           >
             <GalleryHorizontal className='w-4 h-4 sm:w-5 sm:h-5' />

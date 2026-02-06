@@ -38,6 +38,7 @@ export const GestureHandler = ({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [hasHand, setHasHand] = useState(false);
   const handLandmarkerRef = useRef<HandLandmarker | null>(null);
   const requestRef = useRef<number | null>(null);
   const lastVideoTimeRef = useRef<number>(-1);
@@ -72,6 +73,7 @@ export const GestureHandler = ({
   useEffect(() => {
     const initMediaPipe = async () => {
       try {
+        console.log("Initializing MediaPipe Hand Landmarker...");
         const vision = await FilesetResolver.forVisionTasks(
           "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm",
         );
@@ -79,18 +81,24 @@ export const GestureHandler = ({
           vision,
           {
             baseOptions: {
-              modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+              modelAssetPath: `https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm/hand_landmarker.task`,
               delegate: "GPU",
             },
             runningMode: "VIDEO",
             numHands: 1,
+            minHandDetectionConfidence: 0.4,
+            minHandPresenceConfidence: 0.4,
+            minTrackingConfidence: 0.4,
           },
         );
 
+        console.log("MediaPipe Hand Landmarker loaded successfully.");
         setIsLoaded(true);
         if (onClientReady) onClientReady();
       } catch (error) {
         console.error("Error initializing MediaPipe:", error);
+        setError("Failed to load AI models. Please check your connection.");
+        if (onError) onError("Failed to load AI models.");
       }
     };
 
@@ -109,7 +117,6 @@ export const GestureHandler = ({
       }
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
 
-      // Reset drag state when gesture is disabled
       if (isDragging.current && onPalmDragRef.current) {
         onPalmDragRef.current(0, 0, false);
       }
@@ -117,6 +124,7 @@ export const GestureHandler = ({
       isDragging.current = false;
       currentDragGesture.current = null;
       lastIndexX.current = null;
+      setHasHand(false);
 
       return;
     }
@@ -124,7 +132,6 @@ export const GestureHandler = ({
     const startCamera = async () => {
       try {
         setError(null);
-        // Check if mediaDevices is supported
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
           const msg = labels?.noSupport || "Browser doesn't support camera";
           setError(msg);
@@ -133,10 +140,19 @@ export const GestureHandler = ({
         }
 
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { width: 320, height: 240 },
+          video: {
+            width: { ideal: 640 },
+            height: { ideal: 480 },
+            facingMode: "user",
+          },
         });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current
+              ?.play()
+              .catch((e) => console.error("Video play error:", e));
+          };
           videoRef.current.addEventListener("loadeddata", predictWebcam);
         }
       } catch (err: any) {
@@ -166,6 +182,17 @@ export const GestureHandler = ({
     if (!handLandmarkerRef.current || !videoRef.current || !canvasRef.current)
       return;
 
+    if (
+      !videoRef.current ||
+      !videoRef.current.videoWidth ||
+      !videoRef.current.videoHeight
+    ) {
+      if (enabled) {
+        requestRef.current = requestAnimationFrame(predictWebcam);
+      }
+      return;
+    }
+
     if (canvasRef.current.width !== videoRef.current.videoWidth) {
       canvasRef.current.width = videoRef.current.videoWidth;
       canvasRef.current.height = videoRef.current.videoHeight;
@@ -189,7 +216,10 @@ export const GestureHandler = ({
           canvasRef.current.height,
         );
 
-        if (results.landmarks && results.landmarks.length > 0) {
+        const handDetected = results.landmarks && results.landmarks.length > 0;
+        setHasHand(handDetected);
+
+        if (handDetected) {
           const drawingUtils = new DrawingUtils(canvasCtx);
           for (const landmarks of results.landmarks) {
             drawingUtils.drawConnectors(
@@ -349,24 +379,37 @@ export const GestureHandler = ({
   if (!enabled) return null;
 
   return (
-    <div className='fixed top-24 right-4 md:top-auto md:bottom-4 md:right-4 z-[60] flex flex-col items-center pointer-events-none'>
-      <div className='relative rounded-lg overflow-hidden border-2 border-[#FFD700] shadow-[0_0_20px_rgba(255,215,0,0.3)] bg-black'>
+    <div
+      className={`fixed top-20 right-4 md:top-auto md:bottom-8 md:right-8 z-[60] flex flex-col items-center pointer-events-none transition-all duration-500 ${
+        hasHand ? "opacity-100 scale-100" : "opacity-30 scale-90"
+      }`}
+    >
+      <div className='relative rounded-xl overflow-hidden border border-white/20 shadow-2xl bg-black/80 backdrop-blur-md'>
         <video
           ref={videoRef}
           autoPlay
           playsInline
           muted
-          className='w-32 h-24 object-cover rotate-y-180 transform -scale-x-100'
+          className='w-24 h-18 md:w-32 md:h-24 object-cover rotate-y-180 transform -scale-x-100 sticky'
         />
         <canvas
           ref={canvasRef}
           className='absolute inset-0 w-full h-full transform -scale-x-100'
         />
+        {hasHand && (
+          <div className='absolute inset-0 border-2 border-[#FFD700]/50 rounded-xl animate-pulse pointer-events-none' />
+        )}
       </div>
       <div
-        className={`mt-2 text-xs font-mono bg-black/50 px-2 py-1 rounded backdrop-blur-sm ${error ? "text-red-400 border border-red-400/30" : "text-[#FFD700]"}`}
+        className={`mt-2 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full backdrop-blur-md border transition-colors duration-300 ${
+          error
+            ? "text-red-400 border-red-400/30 bg-red-400/10"
+            : hasHand
+              ? "text-[#FFD700] border-[#FFD700]/30 bg-[#FFD700]/10"
+              : "text-white/40 border-white/10 bg-white/5"
+        }`}
       >
-        {error ? error : labels?.active || "Gesture Active"}
+        {error ? error : hasHand ? labels?.active || "Gesture Active" : "..."}
       </div>
     </div>
   );

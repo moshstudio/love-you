@@ -238,7 +238,7 @@ export const GalaxyScene = ({
           <Text
             fontSize={4}
             color={themeColor}
-            font='https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff'
+            font='https://cdn.jsdelivr.net/npm/inter-ui@3.19.3/Inter%20(web)/Inter-Regular.woff'
             characters={displayText}
             anchorX='center'
             anchorY='middle'
@@ -263,7 +263,7 @@ export const GalaxyScene = ({
           <Text
             fontSize={4}
             color={themeColor}
-            font='https://fonts.gstatic.com/s/inter/v12/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hjp-Ek-_EeA.woff'
+            font='https://cdn.jsdelivr.net/npm/inter-ui@3.19.3/Inter%20(web)/Inter-Regular.woff'
             characters={displayText}
             anchorX='center'
             anchorY='middle'

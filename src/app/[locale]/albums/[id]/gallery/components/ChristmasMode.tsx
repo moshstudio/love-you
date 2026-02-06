@@ -45,7 +45,7 @@ import {
   ChristmasTreeEffectLogic,
 } from "./effects/ChristmasTreeEffect"; // Updated import
 import { SHARED_TEXT_KEY, DEFAULT_GREETING_TEXT } from "./utils";
-import { LoadingOverlay } from "./LoadingOverlay";
+import { LoadingOverlay } from "@/components/game/LoadingOverlay";
 
 // --- Configuration ---
 const PARTICLE_COUNT = 25000;
@@ -911,7 +911,7 @@ export const ChristmasMode = ({
       </Canvas>
 
       {/* Main UI Controls */}
-      <div className='absolute inset-0 pointer-events-none z-50 p-6 flex flex-col justify-between'>
+      <div className='absolute inset-0 pointer-events-none z-50 p-2 md:p-6 flex flex-col justify-between'>
         {/* Top Bar */}
         <div className='flex justify-end items-start pointer-events-auto gap-3'>
           <button
@@ -1046,7 +1046,7 @@ export const ChristmasMode = ({
           </AnimatePresence>
 
           {/* Control Dock */}
-          <div className='w-full max-w-full flex justify-center px-4'>
+          <div className='w-full max-w-full flex justify-center px-1 md:px-4'>
             <div className='flex items-center gap-1 md:gap-1.5 p-1 md:p-1.5 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-2xl overflow-x-auto no-scrollbar max-w-full'>
               <div className='flex items-center gap-1 md:gap-1.5 flex-shrink-0'>
                 <DockButton
@@ -1364,7 +1364,7 @@ const DockButton = ({
 }) => (
   <button
     onClick={onClick}
-    className={`relative group flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 rounded-2xl transition-all duration-300 flex-shrink-0 ${
+    className={`relative group flex items-center gap-1.5 md:gap-2 px-2 md:px-4 py-2 rounded-2xl transition-all duration-300 flex-shrink-0 ${
       active
         ? "bg-[#FFD700]/20 text-[#FFD700] ring-1 ring-[#FFD700]/50"
         : "text-white/40 hover:text-white hover:bg-white/5 active:scale-95"

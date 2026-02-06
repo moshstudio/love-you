@@ -15,7 +15,7 @@ import { Stars, useProgress } from "@react-three/drei";
 import { Photo } from "./types";
 import { ParticleGallery } from "./ParticleGallery";
 import { SHARED_TEXT_KEY, DEFAULT_GREETING_TEXT } from "./utils";
-import { LoadingOverlay } from "./LoadingOverlay";
+import { LoadingOverlay } from "@/components/game/LoadingOverlay";
 import { AnimatePresence } from "framer-motion";
 import { useTranslations } from "next-intl";
 
