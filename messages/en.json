@@ -196,6 +196,7 @@
       "selectMission": "OPEN SPECIAL MEMORIES",
       "uploadMemory": "TREASURE NEW MOMENT",
       "uploadMemorySub": "Make this moment eternal",
+      "upload": "UPLOAD",
       "accessArchives": "TIME CAPSULE",
       "accessArchivesSub": "Find those touching moments",
       "dataSecured": "MOMENT ETERNAL",
@@ -286,6 +287,57 @@
     "contact": {
       "title": "Contact Us",
       "content": "If you have any questions about this Privacy Policy, please contact us."
+    }
+  },
+  "Gallery": {
+    "loading": "Revisiting beautiful memories...",
+    "startJourney": "Starting immersive journey...",
+    "initializing": "Initializing time tunnel...",
+    "loadingFestive": "Loading festive scene...",
+    "festiveGreeting": "Happy 2026",
+    "settings": "Gallery Settings",
+    "visualMode": "Visual Mode",
+    "customText": "Custom Text",
+    "intensity": "Intensity",
+    "theme": "Theme",
+    "scatter": "Scatter",
+    "converge": "Converge",
+    "gesture": "Gesture",
+    "exitFocus": "Exit Focus",
+    "enterText": "Enter text...",
+    "cancel": "Cancel",
+    "save": "Save Changes",
+    "play": "Auto-Play",
+    "pause": "Pause",
+    "exit": "Exit",
+    "introText": "Intro Text",
+    "gestures": {
+      "active": "Gesture Active",
+      "noSupport": "Browser doesn't support camera (HTTPS required)",
+      "noAccess": "Cannot access camera",
+      "denied": "Camera permission denied",
+      "notFound": "Camera device not found"
+    },
+    "effects": {
+      "heart": "Heart",
+      "galaxy": "Galaxy",
+      "christmas": "Christmas"
+    },
+    "gestureGuide": {
+      "title": "Gesture Control Guide",
+      "converge": "Converge",
+      "convergeDesc": "Clench fist to form the particles",
+      "scatter": "Scatter",
+      "scatterDesc": "Open palm to let text scatter",
+      "switch": "Switch",
+      "switchDesc": "Point index finger left/right to switch photos",
+      "select": "Select",
+      "selectDesc": "Pinch fingers to view photo in full screen"
+    },
+    "feedback": {
+      "focused": "👌 Focused",
+      "next": "👉 Next",
+      "prev": "👈 Previous"
     }
   }
 }

@@ -27,6 +27,7 @@ export const albums = sqliteTable("albums", {
   startDate: integer("start_date", { mode: "timestamp" }),
   endDate: integer("end_date", { mode: "timestamp" }),
   location: text("location"),
+  customText: text("custom_text"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()
     .default(sql`CURRENT_TIMESTAMP`),

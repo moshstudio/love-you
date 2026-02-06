@@ -9,7 +9,7 @@ interface LoadingOverlayProps {
 }
 
 export const LoadingOverlay: React.FC<LoadingOverlayProps> = ({
-  message = "正在加载记忆...",
+  message = "Loading...",
   progress,
 }) => {
   return (

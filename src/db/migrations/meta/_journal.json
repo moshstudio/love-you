@@ -8,6 +8,13 @@
       "when": 1769759457253,
       "tag": "0000_kind_the_renegades",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1770351452180,
+      "tag": "0001_smiling_human_fly",
+      "breakpoints": true
     }
   ]
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import { shareApi } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import ParticleBackground from "@/components/game/ParticleBackground";
@@ -30,6 +30,7 @@ interface Album {
   coverPhotoUrl?: string;
   startDate?: string;
   endDate?: string;
+  customText?: string | null;
 }
 
 interface Photo {
@@ -55,6 +56,7 @@ export default function SharedAlbumPage() {
   const [album, setAlbum] = useState<Album | null>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [stories, setStories] = useState<Story[]>([]);
+  const [customText, setCustomText] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState<"photos" | "stories">("photos");
@@ -100,10 +102,12 @@ export default function SharedAlbumPage() {
         album: Album;
         photos: Photo[];
         stories: Story[];
+        customText?: string;
       };
       setAlbum(data.album);
       setPhotos(data.photos);
       setStories(data.stories);
+      setCustomText(data.customText);
     } catch (err) {
       setError(
         err instanceof Error
@@ -349,6 +353,7 @@ export default function SharedAlbumPage() {
                     photos={photos}
                     onClose={() => setViewMode("grid")}
                     isActive={viewMode === "christmas"}
+                    initialText={customText}
                   />
                 </div>
               )}
@@ -384,6 +389,7 @@ export default function SharedAlbumPage() {
                     onTogglePlay={() => setIsPlaying(!isPlaying)}
                     onClose={() => setViewMode("grid")}
                     isActive={viewMode === "immersive"}
+                    initialText={customText}
                   />
                 </div>
               )}

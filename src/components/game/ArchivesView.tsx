@@ -162,6 +162,7 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
       const response = (await shareApi.create(albumId, expireDuration)) as {
         shareUrl: string;
       };
+
       setShareUrl(response.shareUrl);
     } catch (err) {
       console.error("Failed to generate share link", err);

@@ -111,7 +111,7 @@ export function AlbumList({ onSelectAlbum, onStartUpload }: AlbumListProps) {
           >
             <Camera className='w-3.5 h-3.5 sm:w-4 sm:h-4' />
             <span className='hidden xs:inline'>{gameT("uploadMemory")}</span>
-            <span className='xs:hidden'>Upload</span>
+            <span className='xs:hidden'>{gameT("upload")}</span>
           </button>
 
           <button

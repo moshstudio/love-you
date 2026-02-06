@@ -14,6 +14,7 @@ import {
   Html,
 } from "@react-three/drei";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import { useTranslations } from "next-intl";
 import * as THREE from "three";
 import * as TWEEN from "@tweenjs/tween.js";
 import { FontLoader } from "three-stdlib";
@@ -348,7 +349,13 @@ function Fireworks({ onComplete }: { onComplete: () => void }) {
 // -----------------------------------------------------------------------------
 // 3. Main Scene (Cake + Media)
 // -----------------------------------------------------------------------------
-function CakeScene({ userTexture }: { userTexture: THREE.Texture | null }) {
+function CakeScene({
+  userTexture,
+  festiveGreeting,
+}: {
+  userTexture: THREE.Texture | null;
+  festiveGreeting: string;
+}) {
   // 3 Layers of instances
   // Shapes: Sphere, Cylinder, Cone
 
@@ -376,7 +383,7 @@ function CakeScene({ userTexture }: { userTexture: THREE.Texture | null }) {
           bevelOffset={0}
           bevelSegments={5}
         >
-          2026 祝你开心
+          {festiveGreeting}
           <meshStandardMaterial
             color={COLORS.gold}
             emissive={COLORS.gold}
@@ -505,6 +512,8 @@ function LayerInstances({
 // Main Component
 // -----------------------------------------------------------------------------
 export default function ImmersiveView() {
+  const t = useTranslations("Gallery");
+  const detailT = useTranslations("AlbumDetail");
   const [phase, setPhase] = useState<GamePhase>("intro");
   const [userTexture, setUserTexture] = useState<THREE.Texture | null>(null);
 
@@ -570,7 +579,12 @@ export default function ImmersiveView() {
               {phase === "fireworks" && (
                 <Fireworks onComplete={() => setPhase("main")} />
               )}
-              {phase === "main" && <CakeScene userTexture={userTexture} />}
+              {phase === "main" && (
+                <CakeScene
+                  userTexture={userTexture}
+                  festiveGreeting={t("festiveGreeting")}
+                />
+              )}
             </>
           )}
 
@@ -641,7 +655,7 @@ export default function ImmersiveView() {
                 letterSpacing: "1px",
               }}
             >
-              上传你的照片 (Upload Photo)
+              {detailT("uploadPhoto")}
               <input
                 type='file'
                 accept='image/*'

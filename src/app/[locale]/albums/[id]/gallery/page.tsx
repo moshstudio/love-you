@@ -216,6 +216,8 @@ export default function AlbumGalleryPage() {
                 photos={photos}
                 onClose={() => setViewMode("grid")}
                 isActive={viewMode === "christmas"}
+                initialText={album.customText || undefined}
+                albumId={albumId}
               />
             </div>
           )}
@@ -250,6 +252,8 @@ export default function AlbumGalleryPage() {
                 onTogglePlay={() => setIsPlaying(!isPlaying)}
                 onClose={() => setViewMode("grid")}
                 isActive={viewMode === "immersive"}
+                initialText={album.customText || undefined}
+                albumId={albumId}
               />
             </div>
           )}

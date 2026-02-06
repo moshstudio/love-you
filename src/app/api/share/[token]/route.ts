@@ -48,7 +48,7 @@ export async function GET(
       return NextResponse.json({ error: "Album not found" }, { status: 404 });
     }
 
-    // Get album photos
+    const albumData = album[0];
     const albumPhotos = await db
       .select()
       .from(photos)
@@ -61,9 +61,10 @@ export async function GET(
       .where(eq(stories.albumId, shareLink.albumId));
 
     return NextResponse.json({
-      album: album[0],
+      album: albumData,
       photos: albumPhotos,
       stories: albumStories,
+      customText: albumData.customText,
     });
   } catch (error) {
     console.error("Get shared album error:", error);

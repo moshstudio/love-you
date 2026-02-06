@@ -21,6 +21,7 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { EffectComposer, Bloom, Vignette } from "@react-three/postprocessing";
 import { motion, AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 import {
   X,
   Maximize2,
@@ -572,13 +573,18 @@ interface ChristmasModeProps {
   photos: Photo[];
   onClose?: () => void;
   isActive: boolean;
+  initialText?: string;
+  albumId?: string;
 }
 
 export const ChristmasMode = ({
   photos,
   onClose,
   isActive,
+  initialText,
+  albumId,
 }: ChristmasModeProps) => {
+  const t = useTranslations("Gallery");
   const [mode, setMode] = useState<EffectType>("HEART");
   const [color, setColor] = useState("#FFD700");
   const [intensity, setIntensity] = useState(0.8);
@@ -659,14 +665,39 @@ export const ChristmasMode = ({
     [],
   );
 
-  // 使用惰性初始化从 localStorage 读取
+  // 使用惰性初始化从 props 或 localStorage 读取
   const [displayText, setDisplayText] = useState(() => {
+    if (initialText) return initialText;
     if (typeof window !== "undefined") {
       const savedText = localStorage.getItem(SHARED_TEXT_KEY);
       return savedText !== null ? savedText : DEFAULT_GREETING_TEXT;
     }
     return DEFAULT_GREETING_TEXT;
   });
+
+  // 当 initialText 改变时更新 displayText (用于分享页面动态更新)
+  useEffect(() => {
+    if (initialText) {
+      setDisplayText(initialText);
+    }
+  }, [initialText]);
+
+  // Handle saving to database
+  useEffect(() => {
+    if (!albumId || !isActive) return;
+
+    const timer = setTimeout(async () => {
+      try {
+        const { albumsApi } = await import("@/lib/api");
+        await albumsApi.update(albumId, { customText: displayText });
+        console.log("Album custom text updated");
+      } catch (error) {
+        console.error("Failed to update album custom text", error);
+      }
+    }, 1000); // 1s debounce
+
+    return () => clearTimeout(timer);
+  }, [displayText, albumId, isActive]);
 
   // 跟踪是否已初始化，避免初始渲染时覆盖
   const isInitializedRef = useRef(false);
@@ -728,15 +759,26 @@ export const ChristmasMode = ({
     setFocusedIndex((prev) => (prev! - 1 + photos.length) % photos.length);
   };
 
-  const effectOptions: {
-    id: EffectType;
-    icon: React.ReactNode;
-    label: string;
-  }[] = [
-    { id: "HEART", icon: <Heart size={16} />, label: "Heart" },
-    { id: "GALAXY", icon: <Orbit size={16} />, label: "Galaxy" },
-    { id: "TREE", icon: <Trees size={16} />, label: "Tree" },
-  ];
+  const effectOptions = useMemo(
+    () => [
+      {
+        id: "HEART" as EffectType,
+        icon: <Heart size={18} />,
+        label: t("effects.heart"),
+      },
+      {
+        id: "GALAXY" as EffectType,
+        icon: <Orbit size={18} />,
+        label: t("effects.galaxy"),
+      },
+      {
+        id: "TREE" as EffectType,
+        icon: <Trees size={18} />,
+        label: t("effects.christmas"),
+      },
+    ],
+    [t],
+  );
 
   // Feedback timeout ref to prevent flickering
   const feedbackTimeoutRef = useRef<any>(null);
@@ -765,7 +807,7 @@ export const ChristmasMode = ({
       <AnimatePresence>
         {isInitializing && (
           <LoadingOverlay
-            message='正在加载节日场景...'
+            message={t("loadingFestive")}
             progress={progress}
           />
         )}
@@ -798,7 +840,7 @@ export const ChristmasMode = ({
         <Suspense
           fallback={
             <Html center>
-              <LoadingOverlay message='正在初始化场景...' />
+              <LoadingOverlay message={t("initializing")} />
             </Html>
           }
         >
@@ -903,8 +945,8 @@ export const ChristmasMode = ({
                 className='w-full max-w-[min(400px,90vw)] bg-black/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] p-6 shadow-2xl overflow-hidden'
               >
                 <div className='flex items-center justify-between mb-6'>
-                  <h3 className='text-xs font-bold uppercase tracking-[0.2em] text-[#FFD700]'>
-                    Settings
+                  <h3 className='text-xs font-bold uppercase tracking-[0.2em] text-[#FFD700] text-shadow-glow'>
+                    {t("settings")}
                   </h3>
                   <button
                     onClick={() => setIsMenuOpen(false)}
@@ -918,7 +960,7 @@ export const ChristmasMode = ({
                   {/* Mode Selector */}
                   <div className='space-y-3'>
                     <label className='text-[10px] text-white/30 uppercase tracking-widest font-bold'>
-                      Visual Mode
+                      {t("visualMode")}
                     </label>
                     <div className='grid grid-cols-3 gap-3'>
                       {effectOptions.map((opt) => (
@@ -943,14 +985,14 @@ export const ChristmasMode = ({
                   {/* Input Field */}
                   <div className='space-y-2'>
                     <label className='text-[10px] text-white/30 uppercase tracking-widest font-bold'>
-                      Custom Text
+                      {t("customText")}
                     </label>
                     <input
                       type='text'
                       value={displayText}
                       onChange={(e) => setDisplayText(e.target.value)}
                       className='w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm focus:outline-none focus:border-[#FFD700]/30 transition-colors'
-                      placeholder='Type message...'
+                      placeholder={t("enterText")}
                       maxLength={12}
                     />
                   </div>
@@ -960,7 +1002,7 @@ export const ChristmasMode = ({
                     <div className='space-y-2'>
                       <div className='flex justify-between'>
                         <label className='text-[10px] text-white/30 uppercase tracking-widest font-bold'>
-                          Intensity
+                          {t("intensity")}
                         </label>
                         <span className='text-[10px] font-mono text-[#FFD700]'>
                           {Math.round(intensity * 100)}%
@@ -980,7 +1022,7 @@ export const ChristmasMode = ({
                     </div>
                     <div className='space-y-2'>
                       <label className='text-[10px] text-white/30 uppercase tracking-widest font-bold block'>
-                        Theme
+                        {t("theme")}
                       </label>
                       <div
                         className='relative h-10 rounded-xl border border-white/10 overflow-hidden flex items-center justify-center'
@@ -1004,29 +1046,50 @@ export const ChristmasMode = ({
           </AnimatePresence>
 
           {/* Control Dock */}
-          <div className='flex items-center gap-1.5 p-1.5 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-2xl'>
-            <DockButton
-              active={isScattered}
-              onClick={() => setIsScattered(!isScattered)}
-              icon={
-                isScattered ? <Minimize2 size={18} /> : <Shuffle size={18} />
-              }
-              label={isScattered ? "Gather" : "Scattered"}
-            />
-            <div className='w-px h-5 bg-white/10' />
-            <DockButton
-              active={isGestureEnabled}
-              onClick={() => setIsGestureEnabled(!isGestureEnabled)}
-              icon={<Hand size={18} />}
-              label='Gestures'
-            />
-            <div className='w-px h-5 bg-white/10' />
-            <DockButton
-              active={isMenuOpen}
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              icon={<Settings2 size={18} />}
-              label='Settings'
-            />
+          <div className='w-full max-w-full flex justify-center px-4'>
+            <div className='flex items-center gap-1 md:gap-1.5 p-1 md:p-1.5 bg-black/40 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-2xl overflow-x-auto no-scrollbar max-w-full'>
+              <div className='flex items-center gap-1 md:gap-1.5 flex-shrink-0'>
+                <DockButton
+                  active={isScattered}
+                  onClick={() => setIsScattered(!isScattered)}
+                  icon={
+                    isScattered ? (
+                      <Minimize2 size={18} />
+                    ) : (
+                      <Shuffle size={18} />
+                    )
+                  }
+                  label={isScattered ? t("converge") : t("scatter")}
+                />
+                <div className='w-px h-5 bg-white/10 mx-0.5 flex-shrink-0' />
+
+                {/* 核心特效快捷切换 */}
+                {effectOptions.map((opt) => (
+                  <DockButton
+                    key={opt.id}
+                    active={mode === opt.id}
+                    onClick={() => setMode(opt.id)}
+                    icon={opt.icon}
+                    label={opt.label}
+                  />
+                ))}
+
+                <div className='w-px h-5 bg-white/10 mx-0.5 flex-shrink-0' />
+                <DockButton
+                  active={isGestureEnabled}
+                  onClick={() => setIsGestureEnabled(!isGestureEnabled)}
+                  icon={<Hand size={18} />}
+                  label={t("gesture")}
+                />
+                <div className='w-px h-5 bg-white/10 mx-0.5 flex-shrink-0' />
+                <DockButton
+                  active={isMenuOpen}
+                  onClick={() => setIsMenuOpen(!isMenuOpen)}
+                  icon={<Settings2 size={18} />}
+                  label={t("settings")}
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -1034,7 +1097,8 @@ export const ChristmasMode = ({
       {/* Footer Info (Auto-fades) */}
       <div className='absolute bottom-6 left-0 right-0 text-center pointer-events-none'>
         <p className='text-[10px] text-[#FFD700]/50 uppercase tracking-[0.3em] font-light animate-pulse'>
-          Love You 2026 - {mode.replace("_", " ")}
+          Love You 2026 -{" "}
+          {effectOptions.find((o) => o.id === mode)?.label || mode}
         </p>
       </div>
 
@@ -1065,7 +1129,7 @@ export const ChristmasMode = ({
               >
                 <Minimize2 size={18} />
                 <span className='text-xs font-bold uppercase tracking-widest'>
-                  Close View
+                  {t("exitFocus")}
                 </span>
               </button>
             </motion.div>
@@ -1179,21 +1243,28 @@ export const ChristmasMode = ({
           // If we ARE focused, pinch probably just refreshes or does nothing visible,
           // so avoiding "OK Focused" spam when holding pinch is good.
           if (focusedIndex === null) {
-            showFeedback("👌 Focused");
+            showFeedback(t("feedback.focused"));
           }
           setFocusedIndex(val);
         }}
         onNavigate={(dir: "next" | "prev") => {
           if (dir === "next") {
             handleNext();
-            showFeedback("👉 Next", 800);
+            showFeedback(t("feedback.next"), 800);
           } else {
             handlePrev();
-            showFeedback("👈 Prev", 800);
+            showFeedback(t("feedback.prev"), 800);
           }
         }}
         onPalmDrag={handlePalmDrag}
         onError={(msg: string) => showFeedback(`⚠️ ${msg}`, 3000)}
+        labels={{
+          noSupport: t("gestures.noSupport"),
+          noAccess: t("gestures.noAccess"),
+          denied: t("gestures.denied"),
+          notFound: t("gestures.notFound"),
+          active: t("gestures.active"),
+        }}
       />
 
       {/* Gesture Feedback Toast */}
@@ -1224,35 +1295,51 @@ export const ChristmasMode = ({
             className='fixed top-24 right-6 w-64 z-40 bg-black/60 backdrop-blur-xl border border-white/10 rounded-2xl p-5 text-white/70 shadow-2xl pointer-events-none hidden md:block'
           >
             <h3 className='text-xs font-bold uppercase tracking-widest border-b border-white/10 pb-2 mb-4 flex items-center gap-2 text-[#FFD700]'>
-              <Hand size={14} /> Gesture Guide
+              <Hand size={14} /> {t("gestureGuide.title")}
             </h3>
             <div className='space-y-4 text-[11px] font-light leading-relaxed'>
               <div className='flex items-center gap-4'>
                 <span className='text-xl w-6'>✊</span>
                 <div>
-                  <p className='font-bold text-white/90'>Converge</p>
-                  <p className='text-white/40'>Fist to gather particles</p>
+                  <p className='font-bold text-white/90'>
+                    {t("gestureGuide.converge")}
+                  </p>
+                  <p className='text-white/40'>
+                    {t("gestureGuide.convergeDesc")}
+                  </p>
                 </div>
               </div>
               <div className='flex items-center gap-4'>
                 <span className='text-xl w-6'>✋</span>
                 <div>
-                  <p className='font-bold text-white/90'>Scatter</p>
-                  <p className='text-white/40'>Open hand to scatter</p>
+                  <p className='font-bold text-white/90'>
+                    {t("gestureGuide.scatter")}
+                  </p>
+                  <p className='text-white/40'>
+                    {t("gestureGuide.scatterDesc")}
+                  </p>
                 </div>
               </div>
               <div className='flex items-center gap-4'>
                 <span className='text-xl w-6'>👉</span>
                 <div>
-                  <p className='font-bold text-white/90'>Navigate</p>
-                  <p className='text-white/40'>Point to skip images</p>
+                  <p className='font-bold text-white/90'>
+                    {t("gestureGuide.switch")}
+                  </p>
+                  <p className='text-white/40'>
+                    {t("gestureGuide.switchDesc")}
+                  </p>
                 </div>
               </div>
               <div className='flex items-center gap-4'>
                 <span className='text-xl w-6'>👌</span>
                 <div>
-                  <p className='font-bold text-white/90'>Select</p>
-                  <p className='text-white/40'>Pinch to focus photo</p>
+                  <p className='font-bold text-white/90'>
+                    {t("gestureGuide.select")}
+                  </p>
+                  <p className='text-white/40'>
+                    {t("gestureGuide.selectDesc")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -1277,7 +1364,7 @@ const DockButton = ({
 }) => (
   <button
     onClick={onClick}
-    className={`relative group flex items-center gap-2 px-4 py-2 rounded-2xl transition-all duration-300 ${
+    className={`relative group flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 rounded-2xl transition-all duration-300 flex-shrink-0 ${
       active
         ? "bg-[#FFD700]/20 text-[#FFD700] ring-1 ring-[#FFD700]/50"
         : "text-white/40 hover:text-white hover:bg-white/5 active:scale-95"
@@ -1291,7 +1378,7 @@ const DockButton = ({
     <span
       className={`text-[10px] font-bold uppercase tracking-[0.1em] overflow-hidden transition-all duration-300 ${
         active
-          ? "max-w-[80px] opacity-100"
+          ? "max-w-0 md:max-w-[80px] opacity-0 md:opacity-100 hidden md:block" // Mobile always hides label
           : "max-w-0 opacity-0 md:group-hover:max-w-[80px] md:group-hover:opacity-100 hidden md:block"
       }`}
     >

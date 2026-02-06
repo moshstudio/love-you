@@ -15,6 +15,13 @@ export interface GestureHandlerProps {
   onNavigate: (direction: "next" | "prev") => void;
   onPalmDrag?: (deltaX: number, deltaY: number, isDragging: boolean) => void;
   onError?: (error: string) => void;
+  labels?: {
+    noSupport: string;
+    noAccess: string;
+    denied: string;
+    notFound: string;
+    active: string;
+  };
 }
 
 export const GestureHandler = ({
@@ -25,6 +32,7 @@ export const GestureHandler = ({
   onNavigate,
   onPalmDrag,
   onError,
+  labels,
 }: GestureHandlerProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -118,7 +126,7 @@ export const GestureHandler = ({
         setError(null);
         // Check if mediaDevices is supported
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-          const msg = "浏览器不支持摄像头 (需使用 HTTPS)";
+          const msg = labels?.noSupport || "Browser doesn't support camera";
           setError(msg);
           if (onError) onError(msg);
           return;
@@ -133,11 +141,11 @@ export const GestureHandler = ({
         }
       } catch (err: any) {
         console.error("Error accessing webcam:", err);
-        let msg = "无法访问摄像头";
+        let msg = labels?.noAccess || "Cannot access camera";
         if (err.name === "NotAllowedError") {
-          msg = "摄像头权限被拒绝";
+          msg = labels?.denied || "Camera permission denied";
         } else if (err.name === "NotFoundError") {
-          msg = "未找到摄像头设备";
+          msg = labels?.notFound || "Camera device not found";
         }
         setError(msg);
         if (onError) onError(msg);
@@ -358,7 +366,7 @@ export const GestureHandler = ({
       <div
         className={`mt-2 text-xs font-mono bg-black/50 px-2 py-1 rounded backdrop-blur-sm ${error ? "text-red-400 border border-red-400/30" : "text-[#FFD700]"}`}
       >
-        {error ? error : "Gesture Active"}
+        {error ? error : labels?.active || "Gesture Active"}
       </div>
     </div>
   );

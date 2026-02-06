@@ -1,0 +1,1 @@
+ALTER TABLE `albums` ADD `custom_text` text;

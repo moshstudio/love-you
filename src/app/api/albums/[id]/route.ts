@@ -52,15 +52,23 @@ export async function PUT(
     }
     const userId = session.user.id;
 
-    const { title, description, location, startDate, endDate, coverPhotoUrl } =
-      (await request.json()) as {
-        title?: string;
-        description?: string;
-        location?: string;
-        startDate?: string;
-        endDate?: string;
-        coverPhotoUrl?: string;
-      };
+    const {
+      title,
+      description,
+      location,
+      startDate,
+      endDate,
+      coverPhotoUrl,
+      customText,
+    } = (await request.json()) as {
+      title?: string;
+      description?: string;
+      location?: string;
+      startDate?: string;
+      endDate?: string;
+      coverPhotoUrl?: string;
+      customText?: string;
+    };
 
     const { env } = await getCloudflareContext({ async: true });
     const db = getDb(env.DB);
@@ -86,6 +94,7 @@ export async function PUT(
         startDate: startDate ? new Date(startDate) : album[0].startDate,
         endDate: endDate ? new Date(endDate) : album[0].endDate,
         coverPhotoUrl: coverPhotoUrl || album[0].coverPhotoUrl,
+        customText: customText !== undefined ? customText : album[0].customText,
         updatedAt: new Date(),
       })
       .where(eq(albums.id, id));

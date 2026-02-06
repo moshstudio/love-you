@@ -2,7 +2,6 @@
 
 import { ReactNode, useMemo } from "react";
 import { SessionProvider, useSession, signIn, signOut } from "next-auth/react";
-import { useTranslations } from "next-intl";
 
 interface User {
   id: string;
@@ -19,7 +18,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
 export function useAuth() {
   const { data: session, status } = useSession();
-  const t = useTranslations("Login");
 
   const login = async (email: string, password: string) => {
     const result = await signIn("credentials", {
@@ -31,7 +29,7 @@ export function useAuth() {
     if (result?.error) {
       // NextAuth generic error might be just "CredentialsSignin" or similar.
       if (result.error === "CredentialsSignin") {
-        throw new Error(t("errorCredentials"));
+        throw new Error("Invalid email or password");
       }
       // We can return a generic message.
       throw new Error("Log in failed: " + result.error);

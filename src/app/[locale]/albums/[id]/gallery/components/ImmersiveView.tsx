@@ -17,6 +17,7 @@ import { ParticleGallery } from "./ParticleGallery";
 import { SHARED_TEXT_KEY, DEFAULT_GREETING_TEXT } from "./utils";
 import { LoadingOverlay } from "./LoadingOverlay";
 import { AnimatePresence } from "framer-motion";
+import { useTranslations } from "next-intl";
 
 // 向 R3F 注册 TextGeometry - Removed as we use Canvas now
 // extend({ TextGeometry });
@@ -691,6 +692,7 @@ const SettingsModal = ({
   initialText: string;
   onSave: (text: string) => void;
 }) => {
+  const t = useTranslations("Gallery");
   const [text, setText] = useState(initialText);
 
   useEffect(() => {
@@ -707,7 +709,7 @@ const SettingsModal = ({
       >
         <div className='flex items-center justify-between mb-8'>
           <h3 className='text-white/90 text-sm font-medium tracking-[0.2em] uppercase'>
-            Gallery Settings
+            {t("settings")}
           </h3>
           <button
             onClick={onClose}
@@ -732,14 +734,14 @@ const SettingsModal = ({
         <div className='space-y-6'>
           <div className='space-y-3'>
             <label className='block text-white/40 text-[10px] uppercase tracking-[0.2em] ml-1'>
-              Intro Text
+              {t("introText")}
             </label>
             <input
               type='text'
               value={text}
               onChange={(e) => setText(e.target.value)}
               className='w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-[#FFD700] text-sm focus:outline-none focus:border-[#FFD700]/50 focus:bg-white/10 transition-all placeholder:text-white/20'
-              placeholder='Enter text...'
+              placeholder={t("enterText")}
               maxLength={12}
             />
           </div>
@@ -749,13 +751,13 @@ const SettingsModal = ({
               onClick={onClose}
               className='flex-1 px-4 py-2.5 rounded-xl border border-white/5 text-white/40 hover:bg-white/5 hover:text-white transition-all text-xs font-medium uppercase tracking-widest'
             >
-              Cancel
+              {t("cancel")}
             </button>
             <button
               onClick={() => onSave(text)}
               className='flex-1 px-4 py-2.5 rounded-xl bg-[#FFD700] text-black hover:bg-[#FFD700]/90 transition-all text-xs font-bold uppercase tracking-widest shadow-[0_0_20px_rgba(255,215,0,0.2)]'
             >
-              Save Changes
+              {t("save")}
             </button>
           </div>
         </div>
@@ -773,6 +775,8 @@ export function ImmersiveView({
   onTogglePlay,
   onClose,
   isActive,
+  initialText,
+  albumId,
 }: {
   photos: Photo[];
   currentIndex: number;
@@ -781,15 +785,27 @@ export function ImmersiveView({
   onTogglePlay: () => void;
   onClose: () => void;
   isActive: boolean;
+  initialText?: string;
+  albumId?: string;
 }) {
+  const t = useTranslations("Gallery");
   const [scenePhase, setScenePhase] = useState<
     "intro" | "fireworks" | "main" | null
   >(null);
-  const [targetText, setTargetText] = useState(DEFAULT_GREETING_TEXT);
+  const [targetText, setTargetText] = useState(
+    initialText || DEFAULT_GREETING_TEXT,
+  );
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [resetKey, setResetKey] = useState(0);
   const { progress, active } = useProgress();
   const [isInitializing, setIsInitializing] = useState(true);
+
+  // 当 initialText 改变时更新 targetText
+  useEffect(() => {
+    if (initialText) {
+      setTargetText(initialText);
+    }
+  }, [initialText]);
 
   useEffect(() => {
     if (isActive) {
@@ -806,9 +822,11 @@ export function ImmersiveView({
   }, [isActive, active, isInitializing]);
 
   useEffect(() => {
-    const saved = localStorage.getItem(SHARED_TEXT_KEY);
-    if (saved) setTargetText(saved);
-  }, []);
+    if (!initialText) {
+      const saved = localStorage.getItem(SHARED_TEXT_KEY);
+      if (saved) setTargetText(saved);
+    }
+  }, [initialText]);
 
   useEffect(() => {
     if (isActive && !isInitializing) {
@@ -827,9 +845,19 @@ export function ImmersiveView({
     }
   }, [isActive, isInitializing, isPlaying, scenePhase]);
 
-  const handleSaveSettings = (text: string) => {
+  const handleSaveSettings = async (text: string) => {
     setTargetText(text);
     localStorage.setItem(SHARED_TEXT_KEY, text);
+
+    if (albumId) {
+      try {
+        const { albumsApi } = await import("@/lib/api");
+        await albumsApi.update(albumId, { customText: text });
+      } catch (error) {
+        console.error("Failed to save custom text to album", error);
+      }
+    }
+
     setIsSettingsOpen(false);
   };
 
@@ -852,7 +880,7 @@ export function ImmersiveView({
       <AnimatePresence>
         {isInitializing && (
           <LoadingOverlay
-            message='正在开启沉浸旅程...'
+            message={t("startJourney")}
             progress={progress}
           />
         )}
@@ -930,7 +958,7 @@ export function ImmersiveView({
                     ? "bg-[#FFD700] text-black shadow-[0_0_15px_rgba(255,215,0,0.3)]"
                     : "text-white/60 hover:bg-white/10 hover:text-white"
                 }`}
-                title={isPlaying ? "Pause" : "Auto-Play"}
+                title={isPlaying ? t("pause") : t("play")}
               >
                 {isPlaying ? (
                   <svg
@@ -974,7 +1002,7 @@ export function ImmersiveView({
               <button
                 onClick={() => setIsSettingsOpen(true)}
                 className='p-2.5 rounded-xl text-white/40 hover:bg-white/10 hover:text-white transition-all'
-                title='Settings'
+                title={t("settings")}
               >
                 <svg
                   className='w-4 h-4'
@@ -1000,7 +1028,7 @@ export function ImmersiveView({
               <button
                 onClick={onClose}
                 className='p-2.5 rounded-xl text-white/40 hover:bg-red-500/20 hover:text-red-400 transition-all flex'
-                title='Exit'
+                title={t("exit")}
               >
                 <svg
                   className='w-4 h-4'
