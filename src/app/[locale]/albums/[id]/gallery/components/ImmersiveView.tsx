@@ -885,7 +885,7 @@ export function ImmersiveView({
 
   return (
     <div
-      className='relative w-full h-screen bg-black overflow-hidden font-sans group'
+      className='relative w-full h-[100dvh] bg-black overflow-hidden font-sans group'
       style={{
         visibility: isActive ? "visible" : "hidden",
         pointerEvents: isActive ? "auto" : "none",

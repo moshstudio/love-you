@@ -600,6 +600,23 @@ export const ChristmasMode = ({
   // 记住切换页面前的手势识别状态，用于恢复
   const gestureEnabledBeforeHiddenRef = useRef(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      const userAgent =
+        typeof window.navigator === "undefined" ? "" : navigator.userAgent;
+      const mobile =
+        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          userAgent,
+        );
+      setIsMobile(mobile);
+      if (mobile) {
+        setIsGestureEnabled(false);
+      }
+    };
+    checkMobile();
+  }, []);
 
   // Auto-scroll thumbnails when index changes
   useEffect(() => {
@@ -1144,13 +1161,17 @@ export const ChristmasMode = ({
                       />
                     ))}
 
-                    <div className='w-px h-5 bg-white/10 mx-0.5 sm:mx-1 flex-shrink-0' />
-                    <DockButton
-                      active={isGestureEnabled}
-                      onClick={() => setIsGestureEnabled(!isGestureEnabled)}
-                      icon={<Hand size={18} />}
-                      label={t("gesture")}
-                    />
+                    {!isMobile && (
+                      <>
+                        <div className='w-px h-5 bg-white/10 mx-0.5 sm:mx-1 flex-shrink-0' />
+                        <DockButton
+                          active={isGestureEnabled}
+                          onClick={() => setIsGestureEnabled(!isGestureEnabled)}
+                          icon={<Hand size={18} />}
+                          label={t("gesture")}
+                        />
+                      </>
+                    )}
                     <div className='w-px h-5 bg-white/10 mx-0.5 sm:mx-1 flex-shrink-0' />
                     <DockButton
                       active={isMenuOpen}
