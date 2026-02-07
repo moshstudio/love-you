@@ -41,7 +41,6 @@ export const GestureHandler = ({
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hasHand, setHasHand] = useState(false);
-  const [debugStatus, setDebugStatus] = useState<string>("Initializing...");
   const handLandmarkerRef = useRef<HandLandmarker | null>(null);
   const requestRef = useRef<number | null>(null);
   const lastVideoTimeRef = useRef<number>(-1);
@@ -128,12 +127,10 @@ export const GestureHandler = ({
           delegate,
         );
         setIsLoaded(true);
-        setDebugStatus("Model Loaded");
         if (onClientReady) onClientReady();
       } catch (error) {
         console.error("[Gesture] Error initializing MediaPipe:", error);
         setError("Failed to load AI models. Please check your connection.");
-        setDebugStatus("Model Error");
         if (onError) onError("Failed to load AI models.");
       } finally {
         if (onLoading) onLoading(false);
@@ -147,9 +144,7 @@ export const GestureHandler = ({
 
   // Camera stream
   useEffect(() => {
-    let isMounted = true;
     if (!enabled || !isLoaded) {
-      if (!enabled) setDebugStatus("Disabled");
       if (videoRef.current && videoRef.current.srcObject) {
         const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
         tracks.forEach((t) => t.stop());
@@ -172,7 +167,6 @@ export const GestureHandler = ({
     const startCamera = async () => {
       try {
         setError(null);
-        setDebugStatus("Starting Camera...");
         if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
           const msg = labels?.noSupport || "Browser doesn't support camera";
           setError(msg);
@@ -187,13 +181,6 @@ export const GestureHandler = ({
             facingMode: "user",
           },
         });
-
-        if (!isMounted) {
-          console.log("[Gesture] Component unmounted, stopping stream");
-          stream.getTracks().forEach((t) => t.stop());
-          return;
-        }
-
         console.log("[Gesture] Camera stream obtained successfully");
 
         if (videoRef.current) {
@@ -205,26 +192,12 @@ export const GestureHandler = ({
               .then(() => console.log("[Gesture] Video playback started"))
               .catch((e) => console.error("[Gesture] Video play error:", e));
           };
-
-          let hasStarted = false;
-          const onVideoLoaded = () => {
-            if (hasStarted) return;
-            hasStarted = true;
-
+          videoRef.current.addEventListener("loadeddata", () => {
             console.log(
               "[Gesture] Video data loaded, starting prediction loop",
             );
-            setDebugStatus("Running");
             predictWebcam();
-          };
-
-          videoRef.current.addEventListener("loadeddata", onVideoLoaded);
-
-          // Fallback: if loadeddata doesn't fire but state is ready (common on some mobile browsers)
-          if (videoRef.current.readyState >= 2) {
-            console.log("[Gesture] Video ready state check passed");
-            onVideoLoaded();
-          }
+          });
         }
       } catch (err: any) {
         console.error("[Gesture] Error accessing webcam:", err);
@@ -242,11 +215,6 @@ export const GestureHandler = ({
     startCamera();
 
     return () => {
-      isMounted = false;
-      if (requestRef.current) {
-        cancelAnimationFrame(requestRef.current);
-        requestRef.current = null;
-      }
       if (videoRef.current && videoRef.current.srcObject) {
         const tracks = (videoRef.current.srcObject as MediaStream).getTracks();
         tracks.forEach((track) => track.stop());
@@ -271,7 +239,6 @@ export const GestureHandler = ({
       !videoRef.current.videoHeight
     ) {
       // 视频尚未准备好，继续等待
-      // 此处不更新状态以免闪烁，但在 Loop 中如果长期处于此状态说明有问题
       if (enabled) {
         requestRef.current = requestAnimationFrame(predictWebcam);
       }
@@ -576,11 +543,7 @@ export const GestureHandler = ({
               : "text-white/40 border-white/10 bg-white/5"
         }`}
       >
-        {error
-          ? error
-          : hasHand
-            ? labels?.active || "Gesture Active"
-            : debugStatus}
+        {error ? error : hasHand ? labels?.active || "Gesture Active" : "..."}
       </div>
     </div>
   );

@@ -174,7 +174,7 @@ export const HeartScene = ({
           <Text
             fontSize={3}
             color={themeColor}
-            font='/fonts/inter-latin-400-normal.woff'
+            font='https://fonts.gstatic.com/ea/notosanssc/v1/NotoSansSC-Regular.woff'
             characters={displayText}
             anchorX='center'
             anchorY='middle'
@@ -198,7 +198,7 @@ export const HeartScene = ({
           <Text
             fontSize={3}
             color={themeColor}
-            font='/fonts/inter-latin-400-normal.woff'
+            font='https://fonts.gstatic.com/ea/notosanssc/v1/NotoSansSC-Regular.woff'
             characters={displayText}
             anchorX='center'
             anchorY='middle'
