@@ -1212,7 +1212,7 @@ export const ChristmasMode = ({
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className='absolute bottom-[180px] left-1/2 -translate-x-1/2 z-[60] pointer-events-auto shadow-2xl'
+              className='hidden absolute bottom-[180px] left-1/2 -translate-x-1/2 z-[60] pointer-events-auto shadow-2xl'
             >
               <button
                 onClick={() => setFocusedIndex(null)}
