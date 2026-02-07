@@ -78,7 +78,7 @@ export const GestureHandler = ({
       try {
         console.log("[Gesture] Initializing MediaPipe Hand Landmarker...");
         const vision = await FilesetResolver.forVisionTasks(
-          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.0/wasm",
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision/wasm",
         );
 
         // 尝试使用 GPU，如果失败则回退到 CPU

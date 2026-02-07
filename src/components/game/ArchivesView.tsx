@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, memo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { createPortal } from "react-dom";
@@ -51,6 +51,42 @@ interface Album {
   description?: string;
   location?: string;
 }
+
+const PhotoItem = memo(
+  ({
+    photo,
+    index,
+    onSelect,
+  }: {
+    photo: Photo;
+    index: number;
+    onSelect: (photo: Photo) => void;
+  }) => {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ y: -5 }}
+        transition={{ delay: index * 0.05 }}
+        className='relative group aspect-square cursor-pointer overflow-hidden rounded-xl sm:rounded-[2rem] border-2 sm:border-4 border-white shadow-md hover:shadow-xl transition-all bg-white'
+        onClick={() => onSelect(photo)}
+      >
+        <img
+          src={photo.url}
+          alt={photo.caption || "Memory"}
+          className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-700'
+          loading='lazy'
+        />
+        <div className='absolute inset-0 bg-gradient-to-t from-rose-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 sm:p-4'>
+          <p className='text-[9px] sm:text-[10px] text-white font-black truncate uppercase tracking-wider sm:tracking-widest'>
+            {photo.caption}
+          </p>
+        </div>
+      </motion.div>
+    );
+  },
+);
+PhotoItem.displayName = "PhotoItem";
 
 export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
   const t = useTranslations("Game.UI");
@@ -125,6 +161,10 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
       setShowUploadForm(true);
     }
   }, [searchParams]);
+
+  const handlePhotoSelect = useCallback((photo: Photo) => {
+    setSelectedPhoto(photo);
+  }, []);
 
   const handleDelete = async () => {
     if (!selectedPhoto) return;
@@ -456,26 +496,12 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
           ) : (
             <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6'>
               {photos.map((photo, index) => (
-                <motion.div
+                <PhotoItem
                   key={photo.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  whileHover={{ y: -5 }}
-                  transition={{ delay: index * 0.05 }}
-                  className='relative group aspect-square cursor-pointer overflow-hidden rounded-xl sm:rounded-[2rem] border-2 sm:border-4 border-white shadow-md hover:shadow-xl transition-all bg-white'
-                  onClick={() => setSelectedPhoto(photo)}
-                >
-                  <img
-                    src={photo.url}
-                    alt={photo.caption || "Memory"}
-                    className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-700'
-                  />
-                  <div className='absolute inset-0 bg-gradient-to-t from-rose-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 sm:p-4'>
-                    <p className='text-[9px] sm:text-[10px] text-white font-black truncate uppercase tracking-wider sm:tracking-widest'>
-                      {photo.caption}
-                    </p>
-                  </div>
-                </motion.div>
+                  photo={photo}
+                  index={index}
+                  onSelect={handlePhotoSelect}
+                />
               ))}
             </div>
           )
