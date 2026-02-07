@@ -52,42 +52,6 @@ interface Album {
   location?: string;
 }
 
-const PhotoItem = memo(
-  ({
-    photo,
-    index,
-    onSelect,
-  }: {
-    photo: Photo;
-    index: number;
-    onSelect: (photo: Photo) => void;
-  }) => {
-    return (
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{ y: -5 }}
-        transition={{ delay: index * 0.05 }}
-        className='relative group aspect-square cursor-pointer overflow-hidden rounded-xl sm:rounded-[2rem] border-2 sm:border-4 border-white shadow-md hover:shadow-xl transition-all bg-white'
-        onClick={() => onSelect(photo)}
-      >
-        <img
-          src={photo.url}
-          alt={photo.caption || "Memory"}
-          className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-700'
-          loading='lazy'
-        />
-        <div className='absolute inset-0 bg-gradient-to-t from-rose-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 sm:p-4'>
-          <p className='text-[9px] sm:text-[10px] text-white font-black truncate uppercase tracking-wider sm:tracking-widest'>
-            {photo.caption}
-          </p>
-        </div>
-      </motion.div>
-    );
-  },
-);
-PhotoItem.displayName = "PhotoItem";
-
 export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
   const t = useTranslations("Game.UI");
   const detailT = useTranslations("AlbumDetail");
@@ -161,10 +125,6 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
       setShowUploadForm(true);
     }
   }, [searchParams]);
-
-  const handlePhotoSelect = useCallback((photo: Photo) => {
-    setSelectedPhoto(photo);
-  }, []);
 
   const handleDelete = async () => {
     if (!selectedPhoto) return;
@@ -494,16 +454,10 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
               </p>
             </div>
           ) : (
-            <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6'>
-              {photos.map((photo, index) => (
-                <PhotoItem
-                  key={photo.id}
-                  photo={photo}
-                  index={index}
-                  onSelect={handlePhotoSelect}
-                />
-              ))}
-            </div>
+            <PhotoGrid
+              photos={photos}
+              onSelect={setSelectedPhoto}
+            />
           )
         ) : /* Stories Tab */
         stories.length === 0 ? (
@@ -558,20 +512,16 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
             onClick={() => setSelectedPhoto(null)}
           >
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
               className='max-w-5xl w-full max-h-[92vh] flex flex-col bg-white rounded-2xl sm:rounded-[3rem] shadow-2xl overflow-hidden relative border border-rose-100 flex-shrink'
               onClick={(e) => e.stopPropagation()}
             >
               <div className='relative flex-1 min-h-0 bg-rose-50/10 overflow-hidden flex items-center justify-center'>
                 <img
-                  key={selectedPhoto.id}
                   src={selectedPhoto.url}
                   alt={selectedPhoto.caption}
                   className='max-w-full max-h-full w-auto h-auto object-contain'
-                  loading='eager'
                 />
                 <button
                   onClick={() => setSelectedPhoto(null)}
@@ -768,3 +718,41 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
     </div>
   );
 }
+
+const PhotoGrid = memo(
+  ({
+    photos,
+    onSelect,
+  }: {
+    photos: Photo[];
+    onSelect: (photo: Photo) => void;
+  }) => {
+    return (
+      <div className='grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6'>
+        {photos.map((photo, index) => (
+          <motion.div
+            key={photo.id}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -5 }}
+            transition={{ delay: index * 0.05 }}
+            className='relative group aspect-square cursor-pointer overflow-hidden rounded-xl sm:rounded-[2rem] border-2 sm:border-4 border-white shadow-md hover:shadow-xl transition-all bg-white'
+            onClick={() => onSelect(photo)}
+          >
+            <img
+              src={photo.url}
+              alt={photo.caption || "Memory"}
+              className='w-full h-full object-cover group-hover:scale-110 transition-transform duration-700'
+              loading='lazy'
+            />
+            <div className='absolute inset-0 bg-gradient-to-t from-rose-950/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-end p-2 sm:p-4'>
+              <p className='text-[9px] sm:text-[10px] text-white font-black truncate uppercase tracking-wider sm:tracking-widest'>
+                {photo.caption}
+              </p>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    );
+  },
+);
