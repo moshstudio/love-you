@@ -558,16 +558,20 @@ export function ArchivesView({ albumId, onBack }: ArchivesViewProps) {
             onClick={() => setSelectedPhoto(null)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
               className='max-w-5xl w-full max-h-[92vh] flex flex-col bg-white rounded-2xl sm:rounded-[3rem] shadow-2xl overflow-hidden relative border border-rose-100 flex-shrink'
               onClick={(e) => e.stopPropagation()}
             >
               <div className='relative flex-1 min-h-0 bg-rose-50/10 overflow-hidden flex items-center justify-center'>
                 <img
+                  key={selectedPhoto.id}
                   src={selectedPhoto.url}
                   alt={selectedPhoto.caption}
                   className='max-w-full max-h-full w-auto h-auto object-contain'
+                  loading='eager'
                 />
                 <button
                   onClick={() => setSelectedPhoto(null)}
